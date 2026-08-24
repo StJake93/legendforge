@@ -1,0 +1,5 @@
+# Crawling is allowed so robots can see the page's noindex meta tag,
+# which keeps the site out of search indexes (direct-link only).
+# To launch publicly later: remove the noindex meta from index.html.
+User-agent: *
+Allow: /
