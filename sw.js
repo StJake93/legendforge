@@ -1,5 +1,5 @@
 /* Legend Forge service worker — cache-first for offline play */
-const CACHE = "legend-forge-v11";
+const CACHE = "legend-forge-v12";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {

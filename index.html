@@ -5112,6 +5112,274 @@ window.BACKSTORY_DATA = {
     "Illusionist": "You are no longer entirely certain which version of a room is real."
   }
 };
+// Option Features, D&D 2024 Player's Handbook. Original summaries; mechanics per 2024 rules.
+// Verified against: dnd2024.wikidot.com (Metamagic, Eldritch Invocation, Battle Master,
+// Beast Master, Draconic Sorcery pages) and the class feature text in data_classes_1/2/3.js.
+window.OPTION_FEATURES = {
+  "Metamagic": {
+    owner: "Sorcerer",
+    known: { 2: 2, 10: 4, 17: 6 },
+    label: "Metamagic options known",
+    options: [
+      { name: "Careful Spell", desc: "Spend 1 Sorcery Point when casting a spell that forces a save: a number of creatures up to your CHA modifier (min 1) auto-succeed and take no damage from an effect that deals half on a success." },
+      { name: "Distant Spell", desc: "Spend 1 Sorcery Point to double the range of a spell that has a range of 5+ feet, or to extend a Touch-range spell to 30 feet." },
+      { name: "Empowered Spell", desc: "Spend 1 Sorcery Point to reroll a number of the spell's damage dice up to your CHA modifier (min 1) and use the new rolls; usable alongside another Metamagic option on the same casting." },
+      { name: "Extended Spell", desc: "Spend 1 Sorcery Point to double the duration of a spell that normally lasts 1 minute or longer, to a maximum of 24 hours; Concentration saves to maintain it gain Advantage." },
+      { name: "Heightened Spell", desc: "Spend 2 Sorcery Points to give one target of a save-forcing spell Disadvantage on its saving throw against that casting." },
+      { name: "Quickened Spell", desc: "Spend 2 Sorcery Points to change a spell's casting time from an action to a Bonus Action; you can't also cast a level 1+ spell that turn." },
+      { name: "Seeking Spell", desc: "Spend 1 Sorcery Point to reroll a missed spell attack roll and use the new result; usable alongside another Metamagic option on the same casting." },
+      { name: "Subtle Spell", desc: "Spend 1 Sorcery Point to cast a spell without Verbal, Somatic, or Material components, except Material components that are consumed or have a listed cost." },
+      { name: "Transmuted Spell", desc: "Spend 1 Sorcery Point to change a spell's damage type to another from Acid, Cold, Fire, Lightning, Poison, or Thunder." },
+      { name: "Twinned Spell", desc: "Spend 1 Sorcery Point to increase a spell's effective level by 1, for any spell that can already be upcast to add a target." }
+    ]
+  },
+  "Eldritch Invocations": {
+    owner: "Warlock",
+    known: { 1: 1, 2: 3, 5: 5, 7: 6, 9: 7, 12: 8, 15: 9, 18: 10 },
+    label: "Eldritch Invocations known",
+    options: [
+      { name: "Agonizing Blast", prereq: "Level 2+, a damage-dealing cantrip", desc: "Add your CHA modifier to the damage rolls of one chosen Warlock damage cantrip. Repeatable for a different eligible cantrip." },
+      { name: "Armor of Shadows", desc: "Cast Mage Armor on yourself at will without expending a spell slot." },
+      { name: "Ascendant Step", prereq: "Level 5+", desc: "Cast Levitate on yourself at will without expending a spell slot." },
+      { name: "Devil's Sight", prereq: "Level 2+", desc: "See normally in Dim Light and Darkness, magical or not, out to 120 feet." },
+      { name: "Devouring Blade", prereq: "Level 12+, Thirsting Blade", desc: "The Extra Attack granted by Thirsting Blade becomes two extra attacks instead of one." },
+      { name: "Eldritch Mind", desc: "Gain Advantage on Constitution saving throws made to maintain Concentration." },
+      { name: "Eldritch Smite", prereq: "Level 5+, Pact of the Blade", desc: "Once per turn on a pact-weapon hit, expend a Pact Magic slot for an extra 1d8 Force damage plus 1d8 per slot level, and can Prone a Huge or smaller target." },
+      { name: "Eldritch Spear", prereq: "Level 2+, a damage-dealing cantrip", desc: "Add 30 feet times your Warlock level to the range of one chosen ranged damage cantrip. Repeatable for a different eligible cantrip." },
+      { name: "Fiendish Vigor", prereq: "Level 2+", desc: "Cast False Life on yourself at will without expending a spell slot, always gaining the maximum Temporary HP." },
+      { name: "Gaze of Two Minds", prereq: "Level 5+", desc: "Bonus Action to perceive through a willing touched creature's senses, sustaining the link each turn and casting spells from its space if within 60 feet of it." },
+      { name: "Gift of the Depths", prereq: "Level 5+", desc: "Gain water breathing and a Swim Speed equal to your Speed, plus a free daily casting of Water Breathing." },
+      { name: "Gift of the Protectors", prereq: "Level 9+, Pact of the Tome", desc: "Write names in your Book of Shadows; the first time a named creature would drop to 0 HP before your next Long Rest, it drops to 1 HP instead." },
+      { name: "Investment of the Chain Master", prereq: "Level 5+, Pact of the Chain", desc: "Your familiar gains a 40-foot Fly or Swim Speed, a Bonus Action Attack command, optional Necrotic or Radiant damage, your spell save DC, and a Reaction-granted Resistance." },
+      { name: "Lessons of the First Ones", prereq: "Level 2+", desc: "Gain an Origin feat of your choice. Repeatable, choosing a different Origin feat each time." },
+      { name: "Lifedrinker", prereq: "Level 9+, Pact of the Blade", desc: "Once per turn on a pact-weapon hit, deal extra Necrotic, Psychic, or Radiant damage (your choice) and spend a Hit Die to heal." },
+      { name: "Mask of Many Faces", prereq: "Level 2+", desc: "Cast Disguise Self at will without expending a spell slot." },
+      { name: "Master of Myriad Forms", prereq: "Level 5+", desc: "Cast Alter Self at will without expending a spell slot." },
+      { name: "Misty Visions", prereq: "Level 2+", desc: "Cast Silent Image at will without expending a spell slot." },
+      { name: "One with Shadows", prereq: "Level 5+", desc: "While in an area of Dim Light or Darkness, cast Invisibility on yourself without expending a spell slot." },
+      { name: "Otherworldly Leap", prereq: "Level 2+", desc: "Cast Jump on yourself at will without expending a spell slot." },
+      { name: "Pact of the Blade", desc: "Bonus Action to conjure or bond with a melee weapon; use CHA for its attack and damage rolls, and deal Necrotic, Psychic, Radiant, or its normal damage type with it." },
+      { name: "Pact of the Chain", desc: "Learn Find Familiar and cast it without a slot, choosing from an expanded list of familiar forms; forgo an attack to let your familiar attack with its Reaction." },
+      { name: "Pact of the Tome", desc: "Conjure a Book of Shadows holding three cantrips and two Ritual-tag level 1 spells drawn from any class list, always prepared while the book is on you." },
+      { name: "Repelling Blast", prereq: "Level 2+, a damage cantrip with an attack roll", desc: "On a hit with one chosen eligible cantrip, push a Large or smaller target up to 10 feet away. Repeatable for a different eligible cantrip." },
+      { name: "Thirsting Blade", prereq: "Level 5+, Pact of the Blade", desc: "Attack twice with your pact weapon instead of once when you take the Attack action." },
+      { name: "Visions of Distant Realms", prereq: "Level 9+", desc: "Cast Arcane Eye at will without expending a spell slot." },
+      { name: "Whispers of the Grave", prereq: "Level 7+", desc: "Cast Speak with Dead at will without expending a spell slot." },
+      { name: "Witch Sight", prereq: "Level 15+", desc: "Gain Truesight with a range of 30 feet." }
+    ]
+  },
+  "Combat Superiority": {
+    owner: "Battle Master",
+    known: { 3: 3, 7: 5, 10: 7, 15: 9 },
+    label: "Maneuvers known",
+    options: [
+      { name: "Ambush", desc: "Expend a Superiority Die and add it to a Dexterity (Stealth) check or an Initiative roll." },
+      { name: "Bait and Switch", desc: "Swap places with a willing adjacent creature without provoking Opportunity Attacks; you or that creature gains a bonus to AC equal to the die until your next turn." },
+      { name: "Commander's Strike", desc: "Forgo one attack to let a willing ally use its Reaction to strike with a weapon or Unarmed Strike, adding the die to that hit's damage." },
+      { name: "Commanding Presence", desc: "Expend a Superiority Die and add it to a Charisma (Intimidation, Performance, or Persuasion) check." },
+      { name: "Disarming Attack", desc: "On a hit, add the die to the damage roll and force a Strength save or the target drops one held item of your choice." },
+      { name: "Distracting Strike", desc: "On a hit, add the die to the damage roll; the next attack against the target before your next turn has Advantage." },
+      { name: "Evasive Footwork", desc: "Bonus Action to Disengage while adding the die to your AC until the start of your next turn." },
+      { name: "Feinting Attack", desc: "Bonus Action against an adjacent target to gain Advantage on your next attack roll against it this turn; on a hit, add the die to the damage roll." },
+      { name: "Goading Attack", desc: "On a hit, add the die to the damage roll and force a Wisdom save or the target has Disadvantage attacking anyone but you until the end of your next turn." },
+      { name: "Lunging Attack", desc: "Bonus Action to Dash; if you move at least 5 feet in a line before a melee hit this turn, add the die to that hit's damage." },
+      { name: "Maneuvering Attack", desc: "On a hit, add the die to the damage roll and let a willing ally use its Reaction to move half its Speed without provoking from your target." },
+      { name: "Menacing Attack", desc: "On a hit, add the die to the damage roll and force a Wisdom save or Frighten the target until the end of your next turn." },
+      { name: "Parry", desc: "Reaction when a melee attack damages you: reduce that damage by the die roll plus your Strength or Dexterity modifier." },
+      { name: "Precision Attack", desc: "On a missed attack roll, add the die to the roll, potentially turning the miss into a hit." },
+      { name: "Pushing Attack", desc: "On a hit, add the die to the damage roll and force a Strength save or push a Large or smaller target up to 15 feet away." },
+      { name: "Rally", desc: "Bonus Action to grant a willing ally within 30 feet Temporary HP equal to the die roll plus half your Fighter level." },
+      { name: "Riposte", desc: "Reaction when a melee attack misses you: make a melee attack against the attacker, adding the die to the damage on a hit." },
+      { name: "Sweeping Attack", desc: "On a melee hit, deal the die roll of the same damage type to a second creature within your reach and adjacent to the original target." },
+      { name: "Tactical Assessment", desc: "Expend a Superiority Die and add it to an Intelligence (History or Investigation) or Wisdom (Insight) check." },
+      { name: "Trip Attack", desc: "On a hit, add the die to the damage roll and force a Strength save or knock a Large or smaller target Prone." }
+    ]
+  },
+  "Rage of the Wilds": { all:true,
+    owner: "Path of the Wild Heart",
+    known: { 3: 3 },
+    label: "Rage of the Wilds animal (chosen each Rage)",
+    options: [
+      { name: "Bear", desc: "Gain Resistance to all damage types except Force, Necrotic, Psychic, and Radiant while Raging." },
+      { name: "Eagle", desc: "Disengage and Dash come free as part of your Rage's Bonus Action, and again as a Bonus Action on each turn you Rage." },
+      { name: "Wolf", desc: "Allies have Advantage on attack rolls against any enemy within 5 feet of you while you Rage." }
+    ]
+  },
+  "Aspect of the Wilds": { all:true,
+    owner: "Path of the Wild Heart",
+    known: { 6: 3 },
+    label: "Aspect of the Wilds animal (swappable each Long Rest)",
+    options: [
+      { name: "Owl", desc: "Gain 60-foot Darkvision, or +60 feet to Darkvision you already have." },
+      { name: "Panther", desc: "Gain a Climb Speed equal to your Speed." },
+      { name: "Salmon", desc: "Gain a Swim Speed equal to your Speed." }
+    ]
+  },
+  "Power of the Wilds": { all:true,
+    owner: "Path of the Wild Heart",
+    known: { 14: 3 },
+    label: "Power of the Wilds animal (chosen each Rage)",
+    options: [
+      { name: "Falcon", desc: "Gain a Fly Speed equal to your Speed while unarmored, active whenever you Rage." },
+      { name: "Lion", desc: "Enemies within 5 feet of you have Disadvantage attacking anyone but you or another active Lion Barbarian." },
+      { name: "Ram", desc: "Your melee hits can knock a Large or smaller creature Prone." }
+    ]
+  },
+  "Hunter's Prey": {
+    owner: "Hunter",
+    known: {3:1},
+    label: "Hunter's Prey tactic (swappable on a Short or Long Rest)",
+    options: [
+      { name: "Colossus Slayer", desc: "Once per turn, deal an extra 1d8 damage to a target that's missing any of its Hit Points." },
+      { name: "Horde Breaker", desc: "Once per turn, make an extra attack against a different creature within 5 feet of your original target." }
+    ]
+  },
+  "Defensive Tactics": {
+    owner: "Hunter",
+    known: {7:1},
+    label: "Defensive Tactics (swappable on a Short or Long Rest)",
+    options: [
+      { name: "Escape the Horde", desc: "Opportunity Attacks made against you have Disadvantage." },
+      { name: "Multiattack Defense", desc: "After a creature hits you with an attack, its other attacks against you that same turn have Disadvantage." }
+    ]
+  },
+  "Primal Companion": {
+    owner: "Beast Master",
+    known: {3:1},
+    label: "Primal Companion beast",
+    options: [
+      { name: "Beast of the Land", desc: "Medium beast with 40-foot Speed and Climb; its Strike deals 1d8 + WIS Bludgeoning, Piercing, or Slashing damage and can Prone a Large or smaller foe after a 20-foot charge." },
+      { name: "Beast of the Sea", desc: "Medium amphibious beast with a 60-foot Swim Speed; its Strike deals 1d6 + WIS Bludgeoning or Piercing damage and can Grapple the target." },
+      { name: "Beast of the Sky", desc: "Small beast with a 60-foot Fly Speed and no Opportunity Attacks when flying out of reach; its Strike deals 1d4 + WIS Slashing damage." }
+    ]
+  },
+  "Circle of the Land Spells": {
+    owner: "Circle of the Land",
+    known: {3:1},
+    label: "Land type (swappable on any Long Rest)",
+    options: [
+      { name: "Arid", desc: "Circle spells lean on fire and battlefield control, from Burning Hands and Fire Bolt at level 3 up to Wall of Stone at level 9. Swap land types on any Long Rest." },
+      { name: "Polar", desc: "Circle spells lean on cold and battlefield control, from Fog Cloud and Ray of Frost at level 3 up to Cone of Cold at level 9. Swap land types on any Long Rest." },
+      { name: "Temperate", desc: "Circle spells lean on lightning and mobility, from Misty Step and Shocking Grasp at level 3 up to Tree Stride at level 9. Swap land types on any Long Rest." },
+      { name: "Tropical", desc: "Circle spells lean on poison and debuffs, from Acid Splash and Web at level 3 up to Insect Plague at level 9. Swap land types on any Long Rest." }
+    ]
+  },
+  "Elemental Affinity": {
+    owner: "Draconic Sorcery",
+    known: {6:1},
+    label: "Draconic element",
+    options: [
+      { name: "Acid", desc: "Gain Resistance to Acid damage, and add your CHA modifier to one Acid damage roll of any spell you cast that deals it." },
+      { name: "Cold", desc: "Gain Resistance to Cold damage, and add your CHA modifier to one Cold damage roll of any spell you cast that deals it." },
+      { name: "Fire", desc: "Gain Resistance to Fire damage, and add your CHA modifier to one Fire damage roll of any spell you cast that deals it." },
+      { name: "Lightning", desc: "Gain Resistance to Lightning damage, and add your CHA modifier to one Lightning damage roll of any spell you cast that deals it." },
+      { name: "Poison", desc: "Gain Resistance to Poison damage, and add your CHA modifier to one Poison damage roll of any spell you cast that deals it." }
+    ]
+  },
+  "Divine Order": {
+    owner: "Cleric",
+    known: {1:1},
+    label: "Divine Order (chosen once)",
+    options: [
+      { name: "Protector", desc: "Gain proficiency with Martial weapons and training with Heavy armor." },
+      { name: "Thaumaturge", desc: "Learn one extra Cleric cantrip, and add your WIS modifier (min +1) to Arcana and Religion checks." }
+    ]
+  },
+  "Blessed Strikes": {
+    owner: "Cleric",
+    known: {7:1},
+    label: "Blessed Strikes (chosen once)",
+    options: [
+      { name: "Divine Strike", desc: "Once per turn, a weapon hit deals an extra 1d8 Necrotic or Radiant damage (your choice); becomes 2d8 at Cleric level 14." },
+      { name: "Potent Spellcasting", desc: "Add your WIS modifier to the damage of your Cleric cantrips." }
+    ]
+  },
+  "Primal Order": {
+    owner: "Druid",
+    known: {1:1},
+    label: "Primal Order (chosen once)",
+    options: [
+      { name: "Magician", desc: "Learn one extra Druid cantrip, and add your WIS modifier (min +1) to Arcana and Nature checks." },
+      { name: "Warden", desc: "Gain proficiency with Martial weapons and training with Medium armor." }
+    ]
+  },
+  "Elemental Fury": {
+    owner: "Druid",
+    known: {7:1},
+    label: "Elemental Fury (chosen once)",
+    options: [
+      { name: "Potent Spellcasting", desc: "Add your WIS modifier to the damage of your Druid cantrips." },
+      { name: "Primal Strike", desc: "Once per turn, a weapon or Wild Shape attack hit deals an extra 1d8 Cold, Fire, Lightning, or Thunder damage (your choice)." }
+    ]
+  },
+  "Cunning Strike": { all:true,
+    owner: "Rogue",
+    known: { 5: 3, 14: 6 },
+    label: "Cunning Strike effects known",
+    options: [
+      { name: "Poison", desc: "Trade one Sneak Attack die for 1d6 Poison damage and a Constitution save or the target is Poisoned for 1 minute; requires a Poisoner's Kit." },
+      { name: "Trip", desc: "Trade one Sneak Attack die for 1d6 damage and a Dexterity save or the target is knocked Prone if Large or smaller." },
+      { name: "Withdraw", desc: "Trade one Sneak Attack die for 1d6 damage and move up to half your Speed without provoking Opportunity Attacks." },
+      { name: "Daze", desc: "Trade 2d6 of Sneak Attack for a Constitution save or the target can only move or take one action or Bonus Action on its next turn, not both." },
+      { name: "Knock Out", desc: "Trade 6d6 of Sneak Attack for a Constitution save or the target falls Unconscious for 1 minute or until it takes damage." },
+      { name: "Obscure", desc: "Trade 3d6 of Sneak Attack for a Dexterity save or the target is Blinded until the end of its next turn." }
+    ]
+  },
+  "Steps of the Fey": { all:true,
+    owner: "Archfey Patron",
+    known: { 3: 2, 6: 4 },
+    label: "Steps of the Fey effects known",
+    options: [
+      { name: "Refreshing Step", desc: "A free casting of Misty Step grants 1d10 Temporary HP to yourself or a creature near your arrival point." },
+      { name: "Taunting Step", desc: "A free casting of Misty Step forces creatures within 5 feet of your departure point to save or have Disadvantage attacking anyone but you until your next turn." },
+      { name: "Disappearing Step", desc: "A free casting of Misty Step also turns you Invisible until the start of your next turn or until you attack." },
+      { name: "Dreadful Step", desc: "A free casting of Misty Step deals 2d10 Psychic damage to creatures near your departure and arrival points, Wisdom save negates." }
+    ]
+  },
+  "Fiendish Resilience": {
+    owner: "Fiend Patron",
+    known: {10:1},
+    label: "Damage type chosen after each rest",
+    options: [
+      { name: "Acid", desc: "Gain Resistance to Acid damage until you choose a different type after your next Short or Long Rest." },
+      { name: "Bludgeoning", desc: "Gain Resistance to Bludgeoning damage until you choose a different type after your next Short or Long Rest." },
+      { name: "Cold", desc: "Gain Resistance to Cold damage until you choose a different type after your next Short or Long Rest." },
+      { name: "Fire", desc: "Gain Resistance to Fire damage until you choose a different type after your next Short or Long Rest." },
+      { name: "Lightning", desc: "Gain Resistance to Lightning damage until you choose a different type after your next Short or Long Rest." },
+      { name: "Necrotic", desc: "Gain Resistance to Necrotic damage until you choose a different type after your next Short or Long Rest." },
+      { name: "Piercing", desc: "Gain Resistance to Piercing damage until you choose a different type after your next Short or Long Rest." },
+      { name: "Poison", desc: "Gain Resistance to Poison damage until you choose a different type after your next Short or Long Rest." },
+      { name: "Psychic", desc: "Gain Resistance to Psychic damage until you choose a different type after your next Short or Long Rest." },
+      { name: "Radiant", desc: "Gain Resistance to Radiant damage until you choose a different type after your next Short or Long Rest." },
+      { name: "Slashing", desc: "Gain Resistance to Slashing damage until you choose a different type after your next Short or Long Rest." },
+      { name: "Thunder", desc: "Gain Resistance to Thunder damage until you choose a different type after your next Short or Long Rest." }
+    ]
+  },
+  "Open Hand Technique": { all:true,
+    owner: "Warrior of the Open Hand",
+    known: { 3: 3 },
+    label: "Open Hand Technique effect (chosen per Flurry of Blows hit)",
+    options: [
+      { name: "Addle", desc: "The target can't make Opportunity Attacks until the start of its next turn." },
+      { name: "Push", desc: "The target makes a Strength save or is pushed up to 15 feet away from you." },
+      { name: "Topple", desc: "The target makes a Dexterity save or is knocked Prone." }
+    ]
+  }
+};
+
+window.FEAT_OPTIONS = {
+  "Elemental Adept": {
+    n: 1,
+    label: "Chosen element",
+    options: [
+      { name: "Acid", desc: "Your spells ignore Resistance to Acid damage, and you treat any 1 rolled on an Acid damage die as a 2." },
+      { name: "Cold", desc: "Your spells ignore Resistance to Cold damage, and you treat any 1 rolled on a Cold damage die as a 2." },
+      { name: "Fire", desc: "Your spells ignore Resistance to Fire damage, and you treat any 1 rolled on a Fire damage die as a 2." },
+      { name: "Lightning", desc: "Your spells ignore Resistance to Lightning damage, and you treat any 1 rolled on a Lightning damage die as a 2." },
+      { name: "Thunder", desc: "Your spells ignore Resistance to Thunder damage, and you treat any 1 rolled on a Thunder damage die as a 2." }
+    ]
+  }
+};
 const CLASS_DATA=window.CLASS_DATA, SUBCLASS_DATA=window.SUBCLASS_DATA, SPELL_DATA=window.SPELL_DATA;
 const SPECIES_DATA=window.SPECIES_DATA, BACKGROUND_DATA=window.BACKGROUND_DATA, FEAT_DATA=window.FEAT_DATA;
 const SPELL_TAGS=window.SPELL_TAGS, GLOSSARY_DATA=window.GLOSSARY_DATA;
@@ -5354,7 +5622,10 @@ function acquiredOptionFeatures(){
     const def=OF[key];
     const lvl=optOwnerLevel(def);
     const allowed=optAllowedAt(def, lvl);
-    if(allowed>0) out.push({key, def, allowed, chosen:optionState(key)});
+    if(allowed<=0) continue;
+    // all:true features grant every option automatically (used per-situation at the table)
+    if(def.all) out.push({key, def, allowed:def.options.length, chosen:def.options.map(o=>o.name), auto:true});
+    else out.push({key, def, allowed, chosen:optionState(key)});
   }
   return out;
 }
@@ -5450,6 +5721,7 @@ function pendingChoicesFor(cls, newClassLevel){
   const OF=window.OPTION_FEATURES||{};
   for(const key in OF){
     const def=OF[key];
+    if(def.all) continue;   // auto-granted menus need no pick
     const owns=def.owner===cls||S.subclasses[cls]===def.owner;
     if(!owns) continue;
     const prev=optAllowedAt(def,newClassLevel-1), now=optAllowedAt(def,newClassLevel);
@@ -5676,7 +5948,7 @@ function unfinishedChoices(){
     if(en.pick){ const m=featPickMissing(en.key,en.source); if(m) out.push(m+" for "+en.source); }
   }
   for(const e of acquiredOptionFeatures()){
-    if(e.chosen.length<e.allowed) out.push((e.allowed-e.chosen.length)+" "+(e.def.label||e.key));
+    if(!e.auto&&e.chosen.length<e.allowed) out.push((e.allowed-e.chosen.length)+" "+(e.def.label||e.key));
   }
   for(const f of S.feats){
     const def=(window.FEAT_OPTIONS||{})[f.name];
@@ -6470,9 +6742,9 @@ function talentsBlock(){
   let html="";
   for(const e of feats){
     html+=`<div class="kv"><span><b>${esc(e.key)}</b> <span class="hint">(${esc(e.def.owner)})</span></span>
-      <span><span class="counts">${e.chosen.length} / ${e.allowed}</span> <button class="btn" style="padding:2px 10px;font-size:12px" data-act="openopts" data-a="${esc(e.key)}">Manage</button></span></div>
+      <span>${e.auto?`<span class="hint" style="font-size:12px">all known, used in the moment</span>`:`<span class="counts">${e.chosen.length} / ${e.allowed}</span> <button class="btn" style="padding:2px 10px;font-size:12px" data-act="openopts" data-a="${esc(e.key)}">Manage</button>`}</span></div>
     ${e.chosen.length?e.chosen.map(n=>{const o=e.def.options.find(x=>x.name===n)||{};return `<div class="featline"><span class="fname" data-act="tipfeat" data-a="${esc(n)}" data-b="${esc(o.desc||"")}">${esc(n)}</span></div>`;}).join(""):`<div class="hint" style="font-size:12px">None chosen yet</div>`}
-    ${e.chosen.length<e.allowed?`<div class="nudge">${e.allowed-e.chosen.length} still to choose</div>`:""}
+    ${!e.auto&&e.chosen.length<e.allowed?`<div class="nudge">${e.allowed-e.chosen.length} still to choose</div>`:""}
     <hr class="orn" style="margin:8px 0">`;
   }
   for(const e of featOpts){
@@ -6572,7 +6844,7 @@ function revertFeatChoices(slotKey){
 function attachFeatSubChoices(featName, slotKey){
   revertFeatChoices(slotKey);
   if(S.pending) S.pending.choices=S.pending.choices.filter(c=>c.fromSlot!==slotKey);
-  const eff=(window.FEAT_EFFECTS||{})[featName]; if(!eff) return;
+  const eff=(window.FEAT_EFFECTS||{})[featName]||{};
   const add=[];
   if(eff.skills&&eff.skills.all){
     const gained=Object.keys(SKILL_ABIL).filter(sk=>!S.skills.includes(sk));
@@ -7293,7 +7565,7 @@ document.addEventListener("change",ev=>{
     case "asiB": { const i=+a; T.asiB[i]=el.value; if(S.pending&&S.pending.done[i]) S.pending.done[i]=false; render(); break; }
     case "featab": { const i=+a; T.featAb[i]=el.value; if(S.pending&&S.pending.done[i]) S.pending.done[i]=false; render(); break; }
     case "optmodal": {
-      const key=a, allowed=+b, name=el.dataset.c;
+      const key=a, allowed=+el.dataset.b, name=el.dataset.c;
       const arr=optionState(key);
       if(el.checked){ if(!arr.includes(name)&&arr.length<allowed) arr.push(name); }
       else S.options[key]=arr.filter(x=>x!==name);
