@@ -1,5 +1,8 @@
-/* Legend Forge service worker — cache-first for offline play */
-const CACHE = "legend-forge-v12";
+/* Legend Forge service worker.
+   Strategy: network-first for the page itself (so every online visit gets the
+   latest release immediately), cache-first for static assets, full cache
+   fallback when offline. */
+const CACHE = "legend-forge-v13";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {
@@ -12,11 +15,22 @@ self.addEventListener("activate", e => {
 });
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
-  e.respondWith(
-    caches.match(e.request).then(hit => hit || fetch(e.request).then(res => {
-      const copy = res.clone();
-      caches.open(CACHE).then(c => c.put(e.request, copy));
-      return res;
-    }).catch(() => caches.match("./index.html")))
-  );
+  const isPage = e.request.mode === "navigate" || new URL(e.request.url).pathname.endsWith("index.html");
+  if (isPage) {
+    e.respondWith(
+      fetch(e.request).then(res => {
+        const copy = res.clone();
+        caches.open(CACHE).then(c => c.put(e.request, copy));
+        return res;
+      }).catch(() => caches.match(e.request).then(r => r || caches.match("./index.html")))
+    );
+  } else {
+    e.respondWith(
+      caches.match(e.request).then(hit => hit || fetch(e.request).then(res => {
+        const copy = res.clone();
+        caches.open(CACHE).then(c => c.put(e.request, copy));
+        return res;
+      }).catch(() => caches.match("./index.html")))
+    );
+  }
 });
