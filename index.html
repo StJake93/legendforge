@@ -248,6 +248,7 @@ label.fld{display:block; font-size:12px; text-transform:uppercase; letter-spacin
 
 /* ============ Analysis ============ */
 .anagrid{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+.anagrid>.panel{margin-top:0; height:100%}
 @media(max-width:760px){.anagrid{grid-template-columns:1fr}}
 .ana-stat{font-size:15px}
 
@@ -260,6 +261,30 @@ label.fld{display:block; font-size:12px; text-transform:uppercase; letter-spacin
 .glossentry .gdef{font-size:14px; color:var(--ink-dim)}
 
 .footer-note{text-align:center; color:var(--muted); font-size:12.5px; margin-top:30px; letter-spacing:.05em}
+
+/* ============ Legend Forged (level 20 moment) ============ */
+#celebrate{
+  position:fixed; inset:0; z-index:80; display:flex; align-items:center; justify-content:center;
+  background:rgba(10,10,14,.55); backdrop-filter:blur(3px); cursor:pointer;
+  animation:lfFade .4s ease-out;
+}
+.scrollbanner{
+  background:var(--panel); border:2px solid var(--gold); border-radius:12px;
+  padding:34px 60px; text-align:center; max-width:90vw;
+  box-shadow:0 0 60px color-mix(in srgb, var(--gold) 40%, transparent), var(--shadow);
+  transform-origin:top center; animation:lfUnfurl .7s cubic-bezier(.2,.9,.3,1.15);
+}
+.lf-eyebrow{font-size:11px; text-transform:uppercase; letter-spacing:.3em; color:var(--muted)}
+.lf-title{
+  font-size:clamp(26px,6vw,40px); font-weight:800; letter-spacing:.24em; text-transform:uppercase;
+  color:var(--gold); margin-top:6px;
+  text-shadow:0 0 22px color-mix(in srgb, var(--gold) 55%, transparent);
+  animation:lfGlow 1.5s ease-in-out infinite alternate;
+}
+.lf-sub{color:var(--ink-dim); margin-top:10px; font-style:italic}
+@keyframes lfFade{from{opacity:0}}
+@keyframes lfUnfurl{0%{transform:scaleY(.06); opacity:0} 55%{transform:scaleY(1.05); opacity:1} 100%{transform:scaleY(1)}}
+@keyframes lfGlow{from{text-shadow:0 0 10px color-mix(in srgb, var(--gold) 40%, transparent)} to{text-shadow:0 0 34px color-mix(in srgb, var(--gold) 75%, transparent)}}
 
 /* ============ Mobile action bar ============ */
 #mobilebar{display:none}
@@ -393,9 +418,13 @@ window.CLASS_DATA = Object.assign(window.CLASS_DATA || {}, {
       "7": [ { name: "Countercharm", desc: "Reaction when you or a creature within 30 feet fails a save against a Charmed or Frightened effect: the save is rerolled with Advantage." } ],
       "8": [ { name: "Ability Score Improvement", desc: "Gain the Ability Score Improvement feat or another feat you qualify for.", asi: true } ],
       "9": [ { name: "Expertise", desc: "Gain Expertise in two more of your skill proficiencies." } ],
-      "10": [ { name: "Magical Secrets", desc: "Whenever your prepared-spell count increases or you replace a prepared Bard spell, you can choose spells from the Bard, Cleric, Druid, and Wizard lists; they count as Bard spells. Bardic die becomes d10." } ],
+      "10": [
+        { name: "Magical Secrets", desc: "Whenever your prepared-spell count increases or you replace a prepared Bard spell, you can choose spells from the Bard, Cleric, Druid, and Wizard lists; they count as Bard spells." },
+        { name: "Bardic Inspiration (d10)", desc: "Your Bardic Inspiration die becomes a d10." }
+      ],
       "12": [ { name: "Ability Score Improvement", desc: "Gain the Ability Score Improvement feat or another feat you qualify for.", asi: true } ],
-      "14": [ { name: "Subclass Feature", desc: "Gain a feature from your Bard College. Bardic die is d12 from level 15." } ],
+      "14": [ { name: "Subclass Feature", desc: "Gain a feature from your Bard College." } ],
+      "15": [ { name: "Bardic Inspiration (d12)", desc: "Your Bardic Inspiration die becomes a d12." } ],
       "16": [ { name: "Ability Score Improvement", desc: "Gain the Ability Score Improvement feat or another feat you qualify for.", asi: true } ],
       "18": [ { name: "Superior Inspiration", desc: "When you roll Initiative, you regain expended Bardic Inspiration uses until you have two if you have fewer." } ],
       "19": [ { name: "Epic Boon", desc: "Gain an Epic Boon feat (Boon of Spell Recall recommended) or another feat you qualify for.", epicBoon: true } ],
@@ -5380,6 +5409,80 @@ window.FEAT_OPTIONS = {
     ]
   }
 };
+// Resource-uses dataset: per-feature use-counts / point pools for the Actions card.
+// Keys are exact feature or trait names as they appear in data_classes_1/2/3.js or
+// data_species_backgrounds.js (grep each name before adding or editing an entry).
+//
+// Recognized value shapes (engine contract):
+//   formula: "CHA_MIN1" | "WIS_MIN1" | "INT_MIN1" | "PB" | "CLASS_LEVEL" | "LEVEL_X5" | <number>
+//   byLevel: { classLevel: uses }, with owner: "<ClassName>" (owner may also sit alongside
+//     formula when the formula needs to know which class's level to read, e.g. CLASS_LEVEL)
+//   pool: true marks a point pool (spent down) rather than a per-use counter
+//   recharge: short display string
+//   byClass: { "<ClassName>": { byLevel: {...} } } -- extension for a resource that shares
+//     one exact feature name across two different classes with different progressions
+//     (only Channel Divinity needs this: Cleric and Paladin both name the feature
+//     "Channel Divinity" but progress uses on different level tables).
+window.RESOURCE_USES = {
+  "Bardic Inspiration": { formula: "CHA_MIN1", recharge: "Long Rest; also Short Rest from Bard level 5" },
+
+  "Rage": { byLevel: { 1: 2, 3: 3, 6: 4, 12: 5, 17: 6 }, owner: "Barbarian", recharge: "Long Rest; regain one on Short Rest" },
+
+  "Second Wind": { byLevel: { 1: 2, 4: 3, 10: 4 }, owner: "Fighter", recharge: "Long Rest; regain one on Short Rest" },
+
+  "Action Surge": { byLevel: { 1: 1, 17: 2 }, owner: "Fighter", recharge: "Short Rest or Long Rest" },
+
+  // Cleric grants this at class level 2 (2/3/4 uses); Paladin grants it at class level 3
+  // (2/3 uses). Both features are named exactly "Channel Divinity" in the data files.
+  "Channel Divinity": {
+    byClass: {
+      "Cleric": { byLevel: { 2: 2, 6: 3, 18: 4 } },
+      "Paladin": { byLevel: { 3: 2, 11: 3 } }
+    },
+    recharge: "Short Rest; regain one, Long Rest; regain all"
+  },
+
+  "Wild Shape": { byLevel: { 2: 2, 6: 3, 17: 4 }, owner: "Druid", recharge: "Short Rest; regain one, Long Rest; regain all" },
+
+  // Monk's point pool feature is named "Monk's Focus", not "Focus Points".
+  "Monk's Focus": { formula: "CLASS_LEVEL", owner: "Monk", pool: true, recharge: "Short Rest or Long Rest" },
+
+  // Note the capital O: the feature is "Lay On Hands" in data_classes_2.js.
+  "Lay On Hands": { formula: "LEVEL_X5", owner: "Paladin", pool: true, recharge: "Long Rest" },
+
+  // Sorcerer's point pool feature is named "Font of Magic", not "Sorcery Points".
+  "Font of Magic": { formula: "CLASS_LEVEL", owner: "Sorcerer", pool: true, recharge: "Long Rest" },
+
+  "Divine Intervention": { formula: 1, owner: "Cleric", recharge: "Long Rest" },
+
+  // Dragonborn species trait; uses equal Proficiency Bonus.
+  "Breath Weapon": { formula: "PB", recharge: "Long Rest" }
+};
+// Wild Magic homage table: 20 original d20 surge outcomes in the spirit of the Sorcerer's
+// Wild Magic Surge table, but with wholly original effects and prose (never copying the
+// official table's text). Index 0 = roll of 1, index 19 = roll of 20.
+window.WILD_SURGE_TABLE = [
+  "You teleport up to 20 feet to a space you can see, arriving in a small burst of glitter.",
+  "A burst of force erupts around you, dealing 1d6 damage to a random creature within 10 feet, possibly yourself.",
+  "Your skin turns bright violet for 1 minute, with no mechanical effect beyond drawing every eye in the room.",
+  "You grow to twice your size for 1 minute, as if enlarged, though your armor and clothing stay the same size.",
+  "You shrink to half your size for 1 minute, as if reduced, and your voice rises an octave for the duration.",
+  "For the next minute, every spell you cast fills the air with the smell of fresh bread.",
+  "You regain one expended spell slot of your lowest level, but every spell you cast for the next minute must be spoken in rhyme.",
+  "A swarm of glowing moths bursts from your sleeves and scatters, shedding dim light in a 10-foot radius around you for 1 minute.",
+  "You float 10 feet into the air for 1 round, unable to move horizontally until you drift back down at the start of your next turn.",
+  "Unseen hands seem to steady your aim, granting your next attack roll this turn Advantage.",
+  "Your shadow peels away and repeats your last action a second late, giving Disadvantage on Insight checks made against you for 1 minute.",
+  "You are compelled to speak only in questions for the next minute, with no mechanical effect beyond your own confusion.",
+  "One object you are carrying turns invisible for 1 minute, functioning normally the whole time.",
+  "Static charge discharges from your fingertips, dealing 1d10 Lightning damage to you and leaving your hair standing on end for 1 hour.",
+  "You conjure a silent illusory duplicate of yourself in an adjacent space, lasting 1 minute or until it takes damage.",
+  "Every unlocked door and container within 30 feet swings open at once, then slams shut again a moment later.",
+  "Warm golden light wraps around you, restoring 2d4 Hit Points.",
+  "For the next minute you can understand and speak Sylvan, though you have no idea why.",
+  "Your next spoken sentence echoes back at you from a random direction within 30 feet, in a voice not quite your own.",
+  "Grass and small flowers sprout in a 5-foot radius around you, withering away after 1 minute."
+];
 const CLASS_DATA=window.CLASS_DATA, SUBCLASS_DATA=window.SUBCLASS_DATA, SPELL_DATA=window.SPELL_DATA;
 const SPECIES_DATA=window.SPECIES_DATA, BACKGROUND_DATA=window.BACKGROUND_DATA, FEAT_DATA=window.FEAT_DATA;
 const SPELL_TAGS=window.SPELL_TAGS, GLOSSARY_DATA=window.GLOSSARY_DATA;
@@ -5429,6 +5532,7 @@ function freshState(){
     options:{},             // option-feature key -> [chosen option names] (Metamagic, Invocations, ...)
     flavor:{alignment:null, hook:null, backstory:"", notes:""},
     archivedAt20:false,     // set once the level-20 auto-archive has fired
+    celebrated20:false,     // set once the Legend Forged moment has played
     humanBonusFeat:null,
     xp:0, log:[],           // log: {level, title, text, gains}
     ui:{tab:"start", wizStep:0, sheetOpen:{}},
@@ -5603,6 +5707,21 @@ function alwaysPrepared(cls){
   const ss=spellState(cls);
   return [...bonusSpellsFor(cls), ...Object.values(ss.mastery).filter(Boolean), ...ss.signature];
 }
+/* ---------------- Feature spell grants (subclass features that teach spells) ---------------- */
+const FEATURE_SPELL_GRANTS={
+  "Magical Discoveries": { n:2, lists:["Cleric","Druid","Wizard"], ownerClass:"Bard", includeCantrips:true,
+    abilityNote:"Charisma; they count as Bard spells and are always prepared (swap one when you gain a Bard level)" }
+};
+function pickConfigFor(featName){
+  const eff=(window.FEAT_EFFECTS||{})[featName];
+  if(eff&&eff.spellPick) return eff.spellPick;
+  const g=FEATURE_SPELL_GRANTS[featName];
+  if(!g) return null;
+  const e=casterEntries().find(x=>x.cls===g.ownerClass);
+  const maxL=e?classMaxSpellLevel(e):1;
+  return { spells:g.n, maxLevel:maxL, lists:g.lists, includeCantrips:!!g.includeCantrips, abilityNote:g.abilityNote||"" };
+}
+
 /* ---------------- Option features (Metamagic, Invocations, ...) ---------------- */
 function optOwnerLevel(def){
   const cl=classLevels();
@@ -5715,6 +5834,8 @@ function pendingChoicesFor(cls, newClassLevel){
         const avail=S.skills.filter(sk=>!S.expertise.includes(sk)).length;
         if(avail>0) ch.push({kind:"expertise", cls, n:Math.min(2,avail)});
       }
+      if(/bonus proficienc/i.test(f.name)) ch.push({kind:"featskills", n:3, from:null, fromSlot:null, feat:f.name});
+      if(FEATURE_SPELL_GRANTS[f.name]) ch.push({kind:"featspells", fromSlot:"feature:"+f.name, feat:f.name});
     }
   }
   // option features (Metamagic, Invocations, maneuvers, ...) whose allowance grows this level
@@ -5880,6 +6001,9 @@ function resetTemp(){
 /* ---------------- Root render ---------------- */
 function render(){
   const app=$("#app");
+  // the level-up overlay is rebuilt on every render; keep its scroll position
+  const ovOld=document.querySelector("#overlay");
+  const ovScroll=ovOld&&!ovOld.classList.contains("hidden")?ovOld.scrollTop:0;
   const tabs = S.created
     ? [["sheet","Character"],["origin","Origin"],["analysis","Analysis"],["vault","Vault"],["glossary","Glossary"]]
     : [["start","Welcome"],["create","Create"],["vault","Vault"],["glossary","Glossary"]];
@@ -5905,8 +6029,20 @@ function render(){
     <div id="spellmodal" class="hidden"></div>
     <div id="tipmodal" class="hidden"></div>
     <div id="confirmmodal" class="hidden"></div>
-    <div id="hovertip" class="hidden"></div>`;
+    <div id="hovertip" class="hidden"></div>
+    ${T.legendForged?renderCelebration():""}`;
+  const ovNew=document.querySelector("#overlay");
+  if(ovNew&&ovScroll) ovNew.scrollTop=ovScroll;
   saveState();
+}
+function renderCelebration(){
+  return `<div id="celebrate" data-act="dismisscelebrate" role="dialog" aria-label="Legend forged">
+    <div class="scrollbanner">
+      <div class="lf-eyebrow">Level 20</div>
+      <div class="lf-title">Legend Forged</div>
+      <div class="lf-sub">The tale of ${esc(S.name)} is complete</div>
+    </div>
+  </div>`;
 }
 function renderStart(){
   const hasVault=loadVault().length>0;
@@ -6309,6 +6445,7 @@ function renderOriginSummary(){
     <button class="btn danger" data-act="askreset">Burn this page &amp; start anew</button>
     <button class="btn" data-act="export">Copy build summary</button>
     <button class="btn" data-act="sharelink">Copy build link</button>
+    <button class="btn ghost" data-act="stash" ${loadVault().length>=VAULT_MAX?"disabled title='Vault full'":""}>Add to Vault</button>
   </div>`;
 }
 
@@ -6348,7 +6485,7 @@ function renderSheetMain(){
     <div class="scard"><div class="eyebrow">Feats &amp; Styles</div>${featsBlock()}</div>
     <div class="scard"><div class="eyebrow">Features by Level</div>${featuresBlock()}</div>
     <div class="scard"><div class="eyebrow">Proficiencies &amp; Training</div>${profsBlock()}
-      <div style="margin-top:10px"><button class="btn ghost" data-act="export">Copy summary</button> <button class="btn ghost" data-act="sharelink">Copy build link</button></div></div>
+      <div style="margin-top:10px"><button class="btn ghost" data-act="export">Copy summary</button> <button class="btn ghost" data-act="sharelink">Copy build link</button> <button class="btn ghost" data-act="stash" ${loadVault().length>=VAULT_MAX?"disabled title='Vault full'":""}>Add to Vault</button></div></div>
   </div>`;
 }
 function abilitySheetBlock(){
@@ -6384,10 +6521,48 @@ function actionsBlock(){
   ${bonus.length?bonus.map(f=>featTipLine(f)).join(""):`<div class="hint">None yet from class features</div>`}
   <div class="eyebrow" style="margin-top:8px">Reactions</div>
   <div class="featline"><span class="hint">Opportunity Attack (everyone)</span></div>
-  ${reac.map(f=>featTipLine(f)).join("")}`;
+  ${reac.map(f=>featTipLine(f)).join("")}
+  ${(()=>{ // resource pools with computed uses (Rage, Channel Divinity, Focus Points, ...)
+    const seen=new Set([...bonus,...reac].map(f=>f.name));
+    const rows=[];
+    for(const f of feats){
+      if(seen.has(f.name)||rows.some(r=>r.name===f.name)) continue;
+      const u=resourceUsesText(f.name);
+      if(u) rows.push({...f,u});
+    }
+    return rows.length?`<div class="eyebrow" style="margin-top:8px">Resource pools</div>`+
+      rows.map(f=>`<div class="kv"><span class="fname" data-act="tipfeat" data-a="${esc(f.name)}" data-b="${esc(f.desc+" Uses: "+f.u.n+(f.u.pool?" points":"")+" ("+f.u.recharge+").")}">${esc(f.name)}</span><b>${f.u.n}${f.u.pool?" pts":"×"}</b></div>`).join(""):"";
+  })()}`;
+}
+function resourceUsesText(name){
+  const R=(window.RESOURCE_USES||{})[name]; if(!R) return null;
+  let n=null;
+  if(R.byClass){ // same-named feature owned by multiple classes (Channel Divinity): sum acquired
+    let total=0;
+    for(const cls in R.byClass){
+      const lv=classLevels()[cls]||0; if(!lv) continue;
+      const bl=R.byClass[cls].byLevel||R.byClass[cls]; let m=null;
+      for(const k in bl){ if(+k<=lv) m=bl[k]; }
+      if(m) total+=m;
+    }
+    n=total||null;
+  }
+  else if(R.byLevel){ const lv=classLevels()[R.owner]||0; for(const k in R.byLevel){ if(+k<=lv) n=R.byLevel[k]; } }
+  else if(typeof R.formula==="number") n=R.formula;
+  else switch(R.formula){
+    case "CHA_MIN1": n=Math.max(1,mod("CHA")); break;
+    case "WIS_MIN1": n=Math.max(1,mod("WIS")); break;
+    case "INT_MIN1": n=Math.max(1,mod("INT")); break;
+    case "PB": n=profBonus(); break;
+    case "CLASS_LEVEL": n=classLevels()[R.owner]||0; break;
+    case "LEVEL_X5": n=5*(classLevels()[R.owner]||0); break;
+  }
+  if(n==null||n<=0) return null;
+  return {n, pool:!!R.pool, recharge:R.recharge||""};
 }
 function featTipLine(f){
-  return `<div class="featline"><span class="fname" data-act="tipfeat" data-a="${esc(f.name)}" data-b="${esc(f.desc)}">${esc(f.name)}</span> <span class="flvl">${esc(String(f.cls||""))} ${f.lvl||""}</span></div>`;
+  const u=resourceUsesText(f.name);
+  return `<div class="featline"><span class="fname" data-act="tipfeat" data-a="${esc(f.name)}" data-b="${esc(f.desc)}${u?esc(" Uses: "+u.n+(u.pool?" points":"")+" ("+u.recharge+").")+"":""}">${esc(f.name)}</span> <span class="flvl">${esc(String(f.cls||""))} ${f.lvl||""}</span>${u?`<b style="float:right">${u.n}${u.pool?" pts":"×"}</b>`:""}</div>`;
 }
 function sortedSpellNames(names){
   return [...names].sort((a,b)=>{
@@ -6738,8 +6913,16 @@ function talentsBlock(){
     const def=(window.FEAT_OPTIONS||{})[f.name];
     if(def) featOpts.push({feat:f, def, chosen:(S.featChoices[f.slot]||{}).option||[]});
   }
-  if(!feats.length&&!featOpts.length) return null;
+  const wildMagic=S.subclasses["Sorcerer"]==="Wild Magic Sorcery"&&(window.WILD_SURGE_TABLE||[]).length;
+  if(!feats.length&&!featOpts.length&&!wildMagic) return null;
   let html="";
+  if(wildMagic){
+    html+=`<div class="kv"><span><b>Wild Magic Surge</b></span>
+      <button class="btn" style="padding:2px 10px;font-size:12px" data-act="surge">🎲 Surge the Weave</button></div>
+    <div class="hint" style="font-size:11.5px">An original d20 homage table; at a real table, roll the PHB's official d100.</div>
+    ${T.lastSurge?`<div class="vignette" style="margin-top:6px"><div class="vhead">d20: ${T.lastSurge.n}</div>${esc(T.lastSurge.t)}</div>`:""}
+    <hr class="orn" style="margin:8px 0">`;
+  }
   for(const e of feats){
     html+=`<div class="kv"><span><b>${esc(e.key)}</b> <span class="hint">(${esc(e.def.owner)})</span></span>
       <span>${e.auto?`<span class="hint" style="font-size:12px">all known, used in the moment</span>`:`<span class="counts">${e.chosen.length} / ${e.allowed}</span> <button class="btn" style="padding:2px 10px;font-size:12px" data-act="openopts" data-a="${esc(e.key)}">Manage</button>`}</span></div>
@@ -6781,44 +6964,54 @@ function innateMagicEntries(){
     const names=[...(eff.spells||[]), ...(picked.cantrips||[]), ...(picked.spells||[])];
     out.push({source:fl.name, ability:eff.spellPick?(eff.spellPick.abilityNote||""):"", spells:names, pick:eff.spellPick||null, key:fl.key, note:eff.note||""});
   }
+  // subclass features that teach spells (e.g. Lore Bard's Magical Discoveries)
+  for(const fname in FEATURE_SPELL_GRANTS){
+    if(!acquiredFeatures().some(f=>f.name===fname)) continue;
+    const key="feature:"+fname;
+    const pick=pickConfigFor(fname);
+    const picked=S.featChoices[key]||{};
+    out.push({source:fname, ability:pick&&pick.abilityNote||"", spells:[...(picked.cantrips||[]),...(picked.spells||[])], pick, key, note:""});
+  }
   return out;
 }
 function featPickPools(pick){
-  const inList=sp=> pick.list? sp.classes.includes(pick.list) : pick.schools? pick.schools.includes(sp.school) : true;
-  const byName=(a,b)=>a.name.localeCompare(b.name);
+  const inList=sp=> pick.lists? sp.classes.some(c=>pick.lists.includes(c))
+    : pick.list? sp.classes.includes(pick.list)
+    : pick.schools? pick.schools.includes(sp.school) : true;
+  const byName=(a,b)=>(a.level-b.level)||a.name.localeCompare(b.name);
+  const minLvl=pick.includeCantrips?0:1;
   return {
     cantrips: pick.cantrips? SPELL_DATA.filter(sp=>sp.level===0&&inList(sp)).sort(byName):[],
-    spells: pick.spells? SPELL_DATA.filter(sp=>sp.level>=1&&sp.level<=(pick.maxLevel||1)&&inList(sp)).sort(byName):[]
+    spells: pick.spells? SPELL_DATA.filter(sp=>sp.level>=minLvl&&sp.level<=(pick.maxLevel||1)&&inList(sp)).sort(byName):[]
   };
 }
 function featPickBlock(key, featName){
-  const eff=(window.FEAT_EFFECTS||{})[featName]; if(!eff||!eff.spellPick) return "";
-  const pick=eff.spellPick;
+  const pick=pickConfigFor(featName); if(!pick) return "";
   const pools=featPickPools(pick);
   const fc=S.featChoices[key]=S.featChoices[key]||{};
   fc.cantrips=fc.cantrips||[]; fc.spells=fc.spells||[];
   let html="";
   if(pick.cantrips) html+=`<div class="eyebrow" style="margin-top:8px">Cantrips (${fc.cantrips.length} / ${pick.cantrips})</div>
     <div class="chiprow">${pools.cantrips.map(sp=>`<button class="chip ${fc.cantrips.includes(sp.name)?"sel":""}" data-act="featpicksp" data-a="${esc(key)}" data-b="${esc(sp.name)}" data-c="cantrips|${pick.cantrips}" data-tipt="${esc(sp.name)}" data-tipb="${esc(sp.desc)}">${esc(sp.name)}</button>`).join("")}</div>`;
-  if(pick.spells) html+=`<div class="eyebrow" style="margin-top:8px">Level ${pick.maxLevel||1} spell${pick.spells>1?"s":""} (${fc.spells.length} / ${pick.spells})</div>
+  if(pick.spells) html+=`<div class="eyebrow" style="margin-top:8px">${pick.includeCantrips?"Cantrips or spells":"Spells"} up to level ${pick.maxLevel||1} (${fc.spells.length} / ${pick.spells})</div>
     <div class="chiprow">${pools.spells.map(sp=>`<button class="chip ${fc.spells.includes(sp.name)?"sel":""}" data-act="featpicksp" data-a="${esc(key)}" data-b="${esc(sp.name)}" data-c="spells|${pick.spells}" data-tipt="${esc(sp.name)}" data-tipb="${esc(sp.desc)}">${esc(sp.name)}</button>`).join("")}</div>`;
   if(pick.abilityNote) html+=`<p class="hint" style="margin-top:6px">Spellcasting ability: ${esc(pick.abilityNote)}.</p>`;
   return html;
 }
 function featPickComplete(key, featName){
-  const eff=(window.FEAT_EFFECTS||{})[featName]; if(!eff||!eff.spellPick) return true;
+  const pick=pickConfigFor(featName); if(!pick) return true;
   const fc=S.featChoices[key]||{};
-  return (fc.cantrips||[]).length===(eff.spellPick.cantrips||0)&&(fc.spells||[]).length===(eff.spellPick.spells||0);
+  return (fc.cantrips||[]).length===(pick.cantrips||0)&&(fc.spells||[]).length===(pick.spells||0);
 }
 function featPickMissing(key, featName){
-  const eff=(window.FEAT_EFFECTS||{})[featName]; if(!eff||!eff.spellPick) return null;
+  const pick=pickConfigFor(featName); if(!pick) return null;
   const fc=S.featChoices[key]||{};
-  const mc=(eff.spellPick.cantrips||0)-(fc.cantrips||[]).length;
-  const ms=(eff.spellPick.spells||0)-(fc.spells||[]).length;
+  const mc=(pick.cantrips||0)-(fc.cantrips||[]).length;
+  const ms=(pick.spells||0)-(fc.spells||[]).length;
   if(mc<=0&&ms<=0) return null;
   const bits=[];
   if(mc>0) bits.push(mc+" cantrip"+(mc>1?"s":""));
-  if(ms>0) bits.push(ms+" level-"+(eff.spellPick.maxLevel||1)+" spell"+(ms>1?"s":""));
+  if(ms>0) bits.push(ms+" spell"+(ms>1?"s":""));
   return bits.join(" and ");
 }
 function openFeatPick(key, featName){
@@ -7109,7 +7302,7 @@ function renderGlossary(){
     .sort((a,b)=>a.term.localeCompare(b.term,undefined,{numeric:true}));
   return `<div class="panel">
     <h2>Glossary of the Table</h2>
-    <p class="lede">The rules vocabulary of the 2024 game: ${data.length} terms, searchable.</p>
+    <p class="lede">The rules vocabulary of the 2024 game.</p>
     <div class="spellpick-controls">
       <input type="text" placeholder="Search terms…" value="${esc(T.glossQ)}" data-act-input="glossq">
       <select data-act-change="glosscat">
@@ -7184,6 +7377,7 @@ function forgeCharacter(){
 function gainXP(){
   const L=totalLevel();
   if(L>=20) return;
+  T.hpBefore=maxHP();
   T.levelSnap=JSON.stringify({...S, prevSnap:null});
   const newLevel=L+1;
   S.xp=XP_THRESHOLDS[newLevel-1];
@@ -7218,14 +7412,32 @@ function finishLevel(){
   const last=S.log[S.log.length-1];
   if(last&&p.cls) last.gains=`${p.cls} → level ${p.classLevel}`+(S.subclasses[p.cls]&&p.classLevel===CLASS_DATA[p.cls].subclassLevel?` (${S.subclasses[p.cls]})`:"");
   if(p.fromXP&&T.levelSnap) S.prevSnap=T.levelSnap;   // one-step undo point
+  let forged=false;
   if(totalLevel()===20&&!S.archivedAt20){
     const r=stashToVault(S,"Maxed at 20");
     if(r.ok) S.archivedAt20=true;
   }
+  if(totalLevel()===20&&!S.celebrated20){ S.celebrated20=true; T.legendForged=true; forged=true; }
   S.pending=null;
   T.levelSnap=null;
   T.asiFeat={}; T.asiA={}; T.asiB={}; T.featAb={}; T.expTmp=[]; T.styleTmp={};
   render();
+  // signature motion: HP counts up to its new value on the sheet
+  const hpEl=document.querySelector(".sheethead .stat .sv");
+  if(hpEl&&T.hpBefore!=null) animateCount(hpEl, T.hpBefore, maxHP(), 700);
+  T.hpBefore=null;
+  if(forged) setTimeout(()=>{ if(T.legendForged){ T.legendForged=false; render(); } }, 5000);
+}
+function animateCount(el, from, to, ms){
+  if(!el||from===to) return;
+  try{ if(matchMedia("(prefers-reduced-motion: reduce)").matches){ el.textContent=to; return; } }catch(e){}
+  const t0=performance.now();
+  const step=t=>{
+    const p=Math.min(1,(t-t0)/ms);
+    el.textContent=Math.round(from+(to-from)*(1-Math.pow(1-p,3)));
+    if(p<1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
 }
 function recomputePendingChoices(){
   const p=S.pending;
@@ -7335,9 +7547,9 @@ function surpriseMe(){
 function showSurpriseSummary(){
   const m=$("#tipmodal");
   m.classList.remove("hidden");
-  m.innerHTML=`<div class="modalwrap"><div class="sheet narrow" role="dialog" aria-label="Your randomized character">
+  m.innerHTML=`<div class="modalwrap reveal-wrap"><div class="sheet narrow reveal-sheet" role="dialog" aria-label="Your randomized character">
     <div class="eyebrow">The dice have spoken</div>
-    <h2>${esc(S.name)}</h2>
+    <h2 class="reveal-name">${esc(S.name)}</h2>
     <div class="kv"><span>Species</span><b>${esc(S.species)}${S.speciesChoice?" ("+esc(S.speciesChoice)+")":""}</b></div>
     <div class="kv"><span>Background</span><b>${esc(S.background)}</b></div>
     <div class="kv"><span>Class</span><b>${esc(S.firstClass)}</b></div>
@@ -7466,6 +7678,8 @@ document.addEventListener("click",ev=>{
       break; }
     case "featpick": openFeatPick(a, b); break;
     case "openopts": openOptionsModal(a); break;
+    case "surge": { const tb=window.WILD_SURGE_TABLE||[]; if(tb.length){ const n=1+Math.floor(Math.random()*tb.length); T.lastSurge={n, t:tb[n-1]}; render(); } break; }
+    case "dismisscelebrate": T.legendForged=false; render(); break;
     case "opttoggle": {
       const key=a, total=+b, idx=+el.dataset.c, name=el.dataset.d;
       const arr=optionState(key);
