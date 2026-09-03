@@ -184,15 +184,17 @@ label.fld{display:block; font-size:12px; text-transform:uppercase; letter-spacin
 .sheethead .charname{font-family:var(--font-display); font-size:24px; font-weight:700}
 .sheethead .charline{color:var(--ink-dim); font-size:14px}
 .statgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:8px 0}
-.sheethead .statgrid{grid-template-columns:repeat(6,1fr)}
-@media(max-width:760px){.sheethead .statgrid{grid-template-columns:repeat(3,1fr)}}
+.sheethead .statgrid{grid-template-columns:repeat(7,1fr)}
+@media(max-width:760px){.sheethead .statgrid{grid-template-columns:repeat(4,1fr)}}
 .stat{
   background:var(--bg2); border:1px solid var(--line-soft); border-radius:10px; text-align:center; padding:10px 4px;
-  display:flex; flex-direction:column-reverse; gap:2px;
+  display:flex; flex-direction:column-reverse; justify-content:flex-end; gap:2px; min-height:74px;
 }
+.stat .sv.sv-long{font-size:15px; line-height:1.25; padding-top:4px}
 .stat[data-tipt]{cursor:help}
 .stat .sv{font-family:var(--font-display); font-size:24px; font-weight:700; font-variant-numeric:tabular-nums}
-.sheethead .statgrid .sv{font-size:26px}
+.sheethead .statgrid .sv{font-size:26px; line-height:1.1}
+.sheethead .statgrid .sv.sv-long{font-size:15px}
 .stat .sl{font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted)}
 .xpbar{height:4px; background:var(--line-soft); border-radius:99px; overflow:hidden; margin:8px 0 2px}
 .xpbar i{
@@ -207,6 +209,13 @@ label.fld{display:block; font-size:12px; text-transform:uppercase; letter-spacin
   padding:14px 16px 16px; margin:0 0 16px; box-shadow:var(--shadow);
 }
 .scard > .eyebrow:first-child{margin-top:0}
+.scard .eyebrow{margin:16px 0 6px}
+.scard > .eyebrow:first-child + .eyebrow{margin-top:8px}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.atkrow{padding:5px 0}
+.atkrow .atkval{font-family:var(--font-display);font-weight:600;font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink)}
+.atkrow .atkmeta{display:block;font-size:11.5px;color:var(--muted);margin-top:1px}
+.scard .featline{padding:4px 0}
 .kv{display:flex; justify-content:space-between; gap:10px; font-size:14px; padding:2px 0}
 .kv b{font-family:var(--font-display); font-variant-numeric:tabular-nums; white-space:nowrap}
 .featline{padding:3px 0; font-size:14px}
@@ -299,6 +308,30 @@ label.fld{display:block; font-size:12px; text-transform:uppercase; letter-spacin
 .glossentry .gdef{font-size:14px; color:var(--ink-dim)}
 
 .footer-note{text-align:center; color:var(--muted); font-size:12.5px; margin-top:30px; letter-spacing:.05em}
+
+/* ============ Gear & spoils ============ */
+.gearrow{display:grid;grid-template-columns:minmax(0,1fr) 168px;gap:10px;align-items:center;padding:5px 0}
+.gearrow select{width:100%;min-width:0;font-size:12.5px;padding:5px 8px}
+@media(max-width:420px){.gearrow{grid-template-columns:1fr}}
+.rar{display:inline-flex;align-items:center;font-family:var(--font-display);font-size:9.5px;line-height:1;letter-spacing:.1em;text-indent:.1em;text-transform:uppercase;padding:4px 7px 3px;border-radius:999px;border:1px solid var(--line);color:var(--muted);vertical-align:middle;margin-left:4px}
+.rar-uncommon{border-color:var(--emerald);color:var(--emerald)}
+.rar-rare{border-color:var(--azure);color:var(--azure)}
+.rar-very-rare{border-color:var(--gold);color:var(--gold)}
+.rar-legendary{border-color:var(--garnet);color:var(--garnet)}
+.pgcells{font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* ============ Road map strip ============ */
+.roadmap{margin:8px 0 2px}
+.rm-row{display:flex;align-items:center;gap:3px;margin:3px 0}
+.rm-cls{font-family:var(--font-display);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);flex:none;white-space:nowrap;margin-right:8px;min-width:64px}
+.rm{flex:1;height:7px;border-radius:2px;background:var(--line-soft);border:1px solid transparent;cursor:help;min-width:0}
+.rm.feat{background:var(--line)}
+.rm.sub{background:var(--azure)} .rm.asi{background:var(--gold-deep)} .rm.attack{background:var(--garnet)} .rm.boon{background:var(--emerald)} .rm.cap{background:var(--gold)}
+.rm:not(.done):not(.now){opacity:.35}
+.rm.now{opacity:1;box-shadow:0 0 0 2px var(--panel),0 0 0 3.5px var(--gold);height:9px}
+.rm-key{display:flex;gap:14px;flex-wrap:wrap;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:10px 0 2px}
+.rm-key span{display:inline-flex;align-items:center;gap:6px}
+.rm-key i{display:block;width:12px;height:7px;flex:none;opacity:1;cursor:default;border-radius:2px}
 
 /* ============ Legend Forged (level 20 moment) ============ */
 #celebrate{
@@ -4895,10 +4928,10 @@ window.BACKSTORY_DATA = {
     "Bound to a holy quest",
     "Fleeing a debt that cannot be repaid",
     "Haunted by the one battle they lost",
-    "Searching for a parent who vanished at sea",
-    "Keeper of a secret that could topple a throne",
-    "Exiled for a crime they did not commit",
-    "Chosen by a prophecy they refuse to believe",
+    "Searching for a vanished parent",
+    "Keeper of a throne-toppling secret",
+    "Exiled for a crime they didn't commit",
+    "Chosen by a prophecy they don't believe",
     "Hunting the monster that burned their village",
     "Living on borrowed time, and knows it"
   ],
@@ -4924,31 +4957,31 @@ window.BACKSTORY_DATA = {
     ],
     "Dragonborn": [
       "You hatched into a world that expected you to already understand your own strength.",
-      "Your scales caught firelight in ways that made strangers pause mid-sentence.",
+      "Your scales caught firelight in ways that made strangers stop mid-sentence and stare.",
       "Elders spoke of an ancestor whose breath could scour a battlefield clean, and they measured you against that memory.",
-      "You learned early that pride and duty were, in your family, the same word."
+      "Your family taught you that duty came first and your own pride came second, and you learned that early."
     ],
     "Dwarf": [
       "You were raised beneath stone that your people had shaped for generations before your birth.",
       "The rhythm of hammer on rock was as familiar to you as your own heartbeat.",
-      "Your family measured worth in what lasted, not in what shone.",
+      "Your family valued a well-made axe or table over a shiny bauble, and judged people the same way.",
       "You left the mountain, when you finally did, carrying its stubbornness with you."
     ],
     "Elf": [
       "You grew up counting seasons the way others counted days, in no particular hurry to arrive anywhere.",
       "The old songs of your people ran longer than most families' whole histories, and you learned every verse before you learned to fight.",
-      "Something fey and unhurried lived at the edge of your senses.",
-      "Time, you came to understand, was a river you could wade into and out of at will."
+      "A fey presence lingered at the tree line near your home, patient and never in a hurry.",
+      "You could recall a hundred years as easily as yesterday, and days rarely felt like they were running out."
     ],
     "Gnome": [
       "You were the child who took apart the clock to see what made it argue with itself.",
       "Your community prized a clever question over a quiet obedience, and you asked more than your share of both.",
       "Even as a child, you found wonder in the mechanism behind ordinary things.",
-      "Curiosity, more than caution, decided most of your early choices."
+      "You followed your curiosity into places caution should have stopped you, again and again as a child."
     ],
     "Goliath": [
       "You were tested against the mountain before you were tested against anyone else, in trials your clan considered simple courtesy.",
-      "Your strength was never treated as remarkable at home, only expected.",
+      "Your strength was never treated as remarkable at home, only as something expected of everyone.",
       "The peaks you grew up beneath taught you that endurance mattered more than speed.",
       "Your clan marked your worth in scars and in stories told around a shared fire."
     ],
@@ -4956,7 +4989,7 @@ window.BACKSTORY_DATA = {
       "You grew up in a home where a good meal and a closed door counted as real safety.",
       "Your people trusted luck the way others trusted steel, and more often than not, luck obliged.",
       "You learned to move quietly through a world built for people twice your size.",
-      "Comfort was never something you apologized for wanting."
+      "You never apologized for wanting a warm meal, a soft bed, and a locked door at night."
     ],
     "Human": [
       "You were raised in a world that never quite agreed on what you should become, so you kept your options open.",
@@ -4997,11 +5030,11 @@ window.BACKSTORY_DATA = {
     "Criminal": [
       "You spent your youth learning the back alleys better than the front streets, because the back alleys were where the real lessons happened.",
       "Trust, you learned, was a currency spent carefully and rarely repaid in full.",
-      "You grew quick with your hands and quicker with an excuse."
+      "You grew quick with your hands and even quicker with an excuse when someone caught you."
     ],
     "Entertainer": [
       "You spent your youth chasing applause across taverns, market squares, and the occasional noble hall that let you in the servants' door.",
-      "Every failed show taught you more than the successful ones did.",
+      "Every show that failed taught you more than the ones that packed the tavern ever did.",
       "You learned to read a crowd's mood before it turned against you."
     ],
     "Farmer": [
@@ -5016,7 +5049,7 @@ window.BACKSTORY_DATA = {
     ],
     "Guide": [
       "You spent your youth learning trails that had no names on any map, only landmarks passed down by word of mouth.",
-      "The wilderness taught you humility faster than any person could.",
+      "The wilderness taught you humility faster than any teacher or elder back home ever could.",
       "You came to trust your own read of a sky or a scent over anyone else's certainty."
     ],
     "Hermit": [
@@ -5042,7 +5075,7 @@ window.BACKSTORY_DATA = {
     "Sailor": [
       "You spent your youth learning the moods of open water and the moods of a crew, which were not so different from each other.",
       "Hard ports and harder captains taught you to hold your own without starting a fight you could not finish.",
-      "You came to trust the horizon more than most solid ground."
+      "You came to trust the open horizon more than you trusted most solid ground back on land."
     ],
     "Scribe": [
       "You spent your youth hunched over other people's words, learning that precision could be its own kind of art.",
@@ -5063,21 +5096,21 @@ window.BACKSTORY_DATA = {
 
   turns: [
     "Then the fire came, and nothing after it looked quite the same.",
-    "Then a stranger's dying words changed the shape of your future.",
+    "Then a stranger's dying words in your arms changed the shape of everything you planned to do next.",
     "Then you found the letter that was never meant for your eyes.",
     "Then the town that raised you turned its back on you in a single night.",
     "Then something ancient noticed you, and it has not stopped noticing since.",
-    "Then a debt came due that you never remembered owing.",
-    "Then you buried someone the world insisted you forget.",
-    "Then a door opened that should have stayed shut.",
+    "Then a debt came due that you never remembered owing, and the collector knew exactly where to find you.",
+    "Then you buried someone the world insisted you forget, and you have refused to do it since.",
+    "Then a door opened that should have stayed shut, and what walked out of it changed your path.",
     "Then war came looking for people like you, and found you first.",
-    "Then a promise you made lightly turned out to matter enormously.",
-    "Then everything you were sure of failed you at once.",
-    "Then a chance meeting on the road rewrote your plans entirely.",
+    "Then a promise you made lightly, half joking, turned out to matter more than anything you had ever meant.",
+    "Then everything you were sure of failed you at once, on a single bad night you still remember clearly.",
+    "Then a chance meeting on the road, with someone you never expected, rewrote your plans entirely.",
     "Then you were accused of something you did, or something close enough.",
     "Then the people who trained you decided you had learned too much.",
     "Then a single night of bad luck cost you everything you had built.",
-    "Then you woke up somewhere you had no memory of reaching.",
+    "Then you woke up somewhere you had no memory of reaching, with no clear idea how you got there.",
     "Then an old rival resurfaced with a grudge you thought had died.",
     "Then a vision, or a nightmare, or something in between, set you walking.",
     "Then you did the one thing your upbringing swore you never would.",
@@ -5106,7 +5139,7 @@ window.BACKSTORY_DATA = {
       "Nature speaks to you in ways you are still learning to translate for everyone else."
     ],
     "Fighter": [
-      "Now you meet every threat with discipline sharpened by relentless repetition.",
+      "Now you meet every threat with discipline sharpened by relentless repetition, drilled into you long before this fight.",
       "You trust your training more than luck, because luck has failed you before and training rarely does.",
       "Every fight is another lesson you intend to survive long enough to apply."
     ],
@@ -5117,7 +5150,7 @@ window.BACKSTORY_DATA = {
     ],
     "Paladin": [
       "Now you hold yourself to an oath that does not bend simply because the world is inconvenient.",
-      "You measure your worth by promises kept, even the costly ones.",
+      "You measure your worth by the promises you keep, even the ones that cost you plenty.",
       "Others look to you for certainty, and you have decided to be worth looking to."
     ],
     "Ranger": [
@@ -5128,7 +5161,7 @@ window.BACKSTORY_DATA = {
     "Rogue": [
       "Now you move through the world assuming every locked door has a reason to be opened.",
       "You trust your own instincts over anyone else's authority, especially when that authority is armed.",
-      "Risk does not frighten you nearly as much as boredom does."
+      "Risk does not frighten you nearly as much as boredom does, and you would rather pick a lock than wait around."
     ],
     "Sorcerer": [
       "Now power moves through you whether you fully understand it or not.",
@@ -5137,76 +5170,65 @@ window.BACKSTORY_DATA = {
     ],
     "Warlock": [
       "Now you carry a bargain that grants you more than it should ever have cost.",
-      "You wonder, some nights, exactly what you agreed to give up.",
+      "You wonder, on quiet nights, exactly what you agreed to give up when you struck that bargain.",
       "Power like yours does not come free, and you have made an uneasy peace with that arithmetic."
     ],
     "Wizard": [
       "Now you chase understanding the way other people chase fortune or glory.",
       "Every spell you master is a question you finally answered, with three more waiting behind it.",
-      "Knowledge, to you, is the only wealth that never runs out."
+      "Knowledge, to you, is the only wealth that never runs out, no matter how many books you empty."
     ]
   },
 
   twists: {
-    "Path of the Berserker": "Your anger has begun to answer back.",
-    "Path of the Wild Heart": "Something feral and loyal runs alongside your rage.",
-    "Path of the World Tree": "Roots you cannot see seem to answer when you call.",
-    "Path of the Zealot": "Your god rides with you into every fight, whether you asked or not.",
-
-    "College of Dance": "Your feet remember rhythms your mind has not caught up to.",
-    "College of Glamour": "Your charm carries an edge people rarely see coming.",
-    "College of Lore": "Every secret you learn seems to want telling.",
-    "College of Valor": "Your songs have started sounding like war before you notice.",
-
-    "Life Domain": "Healing others costs you something you have stopped mentioning.",
-    "Light Domain": "You burn brighter in the dark than you ever meant to.",
-    "Trickery Domain": "Your god finds your lies more useful than your prayers.",
-    "War Domain": "Prayer and violence have started to feel like the same act.",
-
-    "Circle of the Land": "The land you swore to remembers you back.",
-    "Circle of the Moon": "The shapes you take linger a little longer each time.",
-    "Circle of the Sea": "The tide answers to something in you now.",
-    "Circle of the Stars": "The sky feels less distant than it used to.",
-
-    "Battle Master": "You read a fight the way other people read a book.",
-    "Champion": "Your body has become the only argument you need.",
-    "Eldritch Knight": "A little magic has crept into muscles that used to work alone.",
-    "Psi Warrior": "Something unseen moves your weapon before your hand does.",
-
-    "Warrior of Mercy": "Your hands can heal or harm, and lately the line between them feels thin.",
-    "Warrior of Shadow": "You feel more at home in the dark than you ever admit.",
-    "Warrior of the Elements": "Something elemental answers when your temper does.",
-    "Warrior of the Open Hand": "Every strike you land teaches you something new about balance.",
-
-    "Oath of Devotion": "Your ideals have started demanding more than you expected to give.",
-    "Oath of Glory": "Every trial feels like a story you are determined to earn.",
-    "Oath of the Ancients": "Something old and green watches over your oath.",
-    "Oath of Vengeance": "The name of the one who wronged you has not left your mind since.",
-
-    "Beast Master": "Your companion trusts you more than most people ever have.",
-    "Fey Wanderer": "Something fey lingers in your smile now, whether you invited it or not.",
-    "Gloom Stalker": "The dark feels less like a threat and more like home ground.",
-    "Hunter": "You have started noticing exactly how a creature falls before it does.",
-
-    "Arcane Trickster": "Magic has started sneaking into tricks that used to rely on nerve alone.",
-    "Assassin": "You have gotten uncomfortably good at knowing exactly where to strike.",
-    "Soulknife": "A blade made of nothing but thought answers when you call it.",
-    "Thief": "Locks, doors, and other people's belongings have stopped meaning much to you.",
-
-    "Aberrant Sorcery": "Something not quite human is learning to speak through you.",
-    "Clockwork Sorcery": "Order itself seems to bend a little in your favor.",
-    "Draconic Sorcery": "Your blood remembers a dragon you never met.",
-    "Wild Magic Sorcery": "Your magic has opinions of its own, most of them unpredictable.",
-
-    "Archfey Patron": "Your patron's games have started feeling less like games.",
-    "Celestial Patron": "Something warm and watchful answers when you ask for help.",
-    "Fiend Patron": "Your patron's price feels a little steeper every time you ask for more.",
-    "Great Old One Patron": "Something vast and distant has learned your name, and you wish it had not.",
-
-    "Abjurer": "A quiet shield seems to hum around you even when you are not casting.",
-    "Diviner": "You keep half-remembering things that have not happened yet.",
-    "Evoker": "Your spells have started landing with more precision than you practiced for.",
-    "Illusionist": "You are no longer entirely certain which version of a room is real."
+    "Path of the Berserker": "Your Rage now lets you land a second strike in the same breath as the first, though it leaves you drained after.",
+    "Path of the Wild Heart": "An animal spirit, bear or eagle or wolf, fights beside you now, and its instincts have sharpened your own.",
+    "Path of the World Tree": "Roots rise from the ground where you stand now, mending your allies' wounds and holding your enemies fast in place.",
+    "Path of the Zealot": "Your god's fury flows through your rage now, and you shrug off wounds that would put anyone else on the ground.",
+    "College of Dance": "You fight now the way you perform, moving through a battle on light feet and striking with your bare hands.",
+    "College of Glamour": "Your performances now hold a room so completely that you can calm an angry crowd or send them into a rage.",
+    "College of Lore": "You keep collecting spells outside your usual training now, and a cutting remark from you can throw an enemy off balance.",
+    "College of Valor": "Your songs now steady your allies mid-battle, letting them hit harder or shrug off a blow they should not have survived.",
+    "Life Domain": "Your healing magic now mends deeper wounds than it used to, and you push past your own limits to keep others standing.",
+    "Light Domain": "You can call down a flash of sunlight to blind your enemies now, and it burns brightest when you defend someone else.",
+    "Trickery Domain": "You can conjure an illusory double of yourself in battle now, and your god rewards every clever lie you tell in its name.",
+    "War Domain": "You fight with a weapon blessed by your god now, striking twice as fast in a fight and rallying allies with a shout.",
+    "Circle of the Land": "The land you swore your oath to now feeds you extra spells and lets you recover faster whenever you stop to rest.",
+    "Circle of the Moon": "You can turn into a beast mid-fight now, trading your own body for claws and fangs strong enough to match a bear.",
+    "Circle of the Sea": "The sea answers your call now, letting you breathe underwater and drag enemies down with a current only you can summon.",
+    "Circle of the Stars": "You can call a constellation to life around you now, taking the shape of an archer, a chalice, or a dragon.",
+    "Battle Master": "You read a fight the way other people read a book now, and you can call out maneuvers that turn a fight in your favor.",
+    "Champion": "Your body has become a weapon on its own now, landing critical hits far more often than your training alone would explain.",
+    "Eldritch Knight": "A little spellcasting has crept into your swordplay now, and your bonded weapon returns to your hand the instant you call it.",
+    "Psi Warrior": "A psionic force now moves your weapon and shoves your enemies for you, and you can throw yourself across a battlefield without moving your feet.",
+    "Warrior of Mercy": "Your hands can heal a friend or hurt an enemy with the same touch now, and you decide which one every single time.",
+    "Warrior of Shadow": "You can step into darkness and out of it somewhere else entirely now, and you see clearly in a room with no light at all.",
+    "Warrior of the Elements": "You can call fire, water, or stone into your strikes now, and your temper decides which element answers first.",
+    "Warrior of the Open Hand": "Every strike you land can now knock an enemy flat, push them back, or stop them from moving at all, your choice.",
+    "Oath of Devotion": "You can call your weapon sacred mid-battle now, striking harder against your enemies and standing firm against any attempt to frighten you.",
+    "Oath of Glory": "Your body now recovers from a hard fall or a hard climb faster than it should, and your strikes carry a little of your god's glory.",
+    "Oath of the Ancients": "You can call vines and roots to grapple your enemies now, and your presence alone can turn a hostile stranger calm.",
+    "Oath of Vengeance": "You can mark one enemy for death mid-battle now, hitting them harder and chasing them down even if they try to flee.",
+    "Beast Master": "Your animal companion fights at your side now, striking when you strike and trusting you more than most people ever have.",
+    "Fey Wanderer": "You can vanish and reappear a short distance away mid-fight now, and a look from you can calm or unsettle anyone nearby.",
+    "Gloom Stalker": "You strike first and strike hardest in the opening moments of a fight now, and you see clearly through darkness that would blind anyone else.",
+    "Hunter": "You have learned to read exactly how a creature moves and falls before it does now, and you strike accordingly, every single time.",
+    "Arcane Trickster": "Spells have crept into tricks that used to rely on nerve alone now, and you can lift a purse from across a crowded room.",
+    "Assassin": "You have gotten uncomfortably good at knowing exactly where to strike now, and a surprised enemy rarely survives your first hit.",
+    "Soulknife": "You can shape a blade out of pure thought now, and it appears in your hand the instant you decide you need one.",
+    "Thief": "Your hands move fast enough now to pick a lock or a pocket mid-fight, and you climb like the wall owes you nothing.",
+    "Aberrant Sorcery": "You can speak directly into another mind now without a word passing your lips, and your spells carry a strange, unplaceable weight.",
+    "Clockwork Sorcery": "You can reach into a moment and undo a bad roll of the dice now, bending luck back toward order in your favor.",
+    "Draconic Sorcery": "Your skin has grown tougher since a dragon's blood woke in yours, and fire, cold, or lightning barely mark you now.",
+    "Wild Magic Sorcery": "Your magic surges unpredictably now, and every so often a spell you cast does something wilder than you intended.",
+    "Archfey Patron": "Your patron's games have started costing you something real now, and you can vanish into the space between one step and the next.",
+    "Celestial Patron": "You can call down a burst of healing light mid-battle now, and it mends your allies as easily as it burns your enemies.",
+    "Fiend Patron": "Your patron rewards every kill with a jolt of borrowed strength now, and the price for asking for more climbs a little each time.",
+    "Great Old One Patron": "You can speak mind to mind with anyone nearby now, and something vast and distant answers back more often than you would like.",
+    "Abjurer": "A shield of your own magic now absorbs blows meant for you, even in the middle of a fight when you are not casting.",
+    "Diviner": "You can glimpse a handful of outcomes before they happen now, and you spend those glimpses to turn a bad roll into a good one.",
+    "Evoker": "You can shape your spells to spare your allies caught in the blast now, hitting only the enemies you mean to hit.",
+    "Illusionist": "You can make an illusion so real that people question the room around them now, and you can hide inside your own tricks."
   }
 };
 // Option Features, D&D 2024 Player's Handbook. Original summaries; mechanics per 2024 rules.
@@ -5551,6 +5573,2395 @@ window.WILD_SURGE_TABLE = [
   "Your next spoken sentence echoes back at you from a random direction within 30 feet, in a voice not quite your own.",
   "Grass and small flowers sprout in a 5-foot radius around you, withering away after 1 minute."
 ];
+// Weapons and armor, D&D 2024 Player's Handbook / SRD 5.2.1.
+// Verified against the 2024 SRD weapons and armor tables (5e24srd.com, cross-checked with the
+// Roll20 2024 compendium and D&D Beyond's weapon mastery guide). Every entry below appears on the
+// official 2024 table, so all carry srd:true.
+//
+// props vocabulary (exact spellings): "finesse", "light", "heavy", "reach", "two-handed",
+// "versatile:NdM", "thrown:short/long", "ammunition:short/long", "loading".
+// mastery: one of Cleave, Graze, Nick, Push, Sap, Slow, Topple, Vex.
+
+window.WEAPON_DATA = [
+  // -- Simple Melee --
+  { name: "Club", cat: "simple", kind: "melee", dmg: "1d4", type: "bludgeoning",
+    props: ["light"], mastery: "Slow", srd: true },
+  { name: "Dagger", cat: "simple", kind: "melee", dmg: "1d4", type: "piercing",
+    props: ["finesse", "light", "thrown:20/60"], mastery: "Nick", srd: true },
+  { name: "Greatclub", cat: "simple", kind: "melee", dmg: "1d8", type: "bludgeoning",
+    props: ["two-handed"], mastery: "Push", srd: true },
+  { name: "Handaxe", cat: "simple", kind: "melee", dmg: "1d6", type: "slashing",
+    props: ["light", "thrown:20/60"], mastery: "Vex", srd: true },
+  { name: "Javelin", cat: "simple", kind: "melee", dmg: "1d6", type: "piercing",
+    props: ["thrown:30/120"], mastery: "Slow", srd: true },
+  { name: "Light Hammer", cat: "simple", kind: "melee", dmg: "1d4", type: "bludgeoning",
+    props: ["light", "thrown:20/60"], mastery: "Nick", srd: true },
+  { name: "Mace", cat: "simple", kind: "melee", dmg: "1d6", type: "bludgeoning",
+    props: [], mastery: "Sap", srd: true },
+  { name: "Quarterstaff", cat: "simple", kind: "melee", dmg: "1d6", type: "bludgeoning",
+    props: ["versatile:1d8"], mastery: "Topple", srd: true },
+  { name: "Sickle", cat: "simple", kind: "melee", dmg: "1d4", type: "slashing",
+    props: ["light"], mastery: "Nick", srd: true },
+  { name: "Spear", cat: "simple", kind: "melee", dmg: "1d6", type: "piercing",
+    props: ["thrown:20/60", "versatile:1d8"], mastery: "Sap", srd: true },
+
+  // -- Simple Ranged --
+  { name: "Dart", cat: "simple", kind: "ranged", dmg: "1d4", type: "piercing",
+    props: ["finesse", "thrown:20/60"], mastery: "Vex", srd: true },
+  { name: "Light Crossbow", cat: "simple", kind: "ranged", dmg: "1d8", type: "piercing",
+    props: ["ammunition:80/320", "loading", "two-handed"], mastery: "Slow", srd: true },
+  { name: "Shortbow", cat: "simple", kind: "ranged", dmg: "1d6", type: "piercing",
+    props: ["ammunition:80/320", "two-handed"], mastery: "Vex", srd: true },
+  { name: "Sling", cat: "simple", kind: "ranged", dmg: "1d4", type: "bludgeoning",
+    props: ["ammunition:30/120"], mastery: "Slow", srd: true },
+
+  // -- Martial Melee --
+  { name: "Battleaxe", cat: "martial", kind: "melee", dmg: "1d8", type: "slashing",
+    props: ["versatile:1d10"], mastery: "Topple", srd: true },
+  { name: "Flail", cat: "martial", kind: "melee", dmg: "1d8", type: "bludgeoning",
+    props: [], mastery: "Sap", srd: true },
+  { name: "Glaive", cat: "martial", kind: "melee", dmg: "1d10", type: "slashing",
+    props: ["heavy", "reach", "two-handed"], mastery: "Graze", srd: true },
+  { name: "Greataxe", cat: "martial", kind: "melee", dmg: "1d12", type: "slashing",
+    props: ["heavy", "two-handed"], mastery: "Cleave", srd: true },
+  { name: "Greatsword", cat: "martial", kind: "melee", dmg: "2d6", type: "slashing",
+    props: ["heavy", "two-handed"], mastery: "Graze", srd: true },
+  { name: "Halberd", cat: "martial", kind: "melee", dmg: "1d10", type: "slashing",
+    props: ["heavy", "reach", "two-handed"], mastery: "Cleave", srd: true },
+  { name: "Lance", cat: "martial", kind: "melee", dmg: "1d10", type: "piercing",
+    props: ["heavy", "reach", "two-handed"], mastery: "Topple", srd: true },
+  { name: "Longsword", cat: "martial", kind: "melee", dmg: "1d8", type: "slashing",
+    props: ["versatile:1d10"], mastery: "Sap", srd: true },
+  { name: "Maul", cat: "martial", kind: "melee", dmg: "2d6", type: "bludgeoning",
+    props: ["heavy", "two-handed"], mastery: "Topple", srd: true },
+  { name: "Morningstar", cat: "martial", kind: "melee", dmg: "1d8", type: "piercing",
+    props: [], mastery: "Sap", srd: true },
+  { name: "Pike", cat: "martial", kind: "melee", dmg: "1d10", type: "piercing",
+    props: ["heavy", "reach", "two-handed"], mastery: "Push", srd: true },
+  { name: "Rapier", cat: "martial", kind: "melee", dmg: "1d8", type: "piercing",
+    props: ["finesse"], mastery: "Vex", srd: true },
+  { name: "Scimitar", cat: "martial", kind: "melee", dmg: "1d6", type: "slashing",
+    props: ["finesse", "light"], mastery: "Nick", srd: true },
+  { name: "Shortsword", cat: "martial", kind: "melee", dmg: "1d6", type: "piercing",
+    props: ["finesse", "light"], mastery: "Vex", srd: true },
+  { name: "Trident", cat: "martial", kind: "melee", dmg: "1d8", type: "piercing",
+    props: ["thrown:20/60", "versatile:1d10"], mastery: "Topple", srd: true },
+  { name: "Warhammer", cat: "martial", kind: "melee", dmg: "1d8", type: "bludgeoning",
+    props: ["versatile:1d10"], mastery: "Push", srd: true },
+  { name: "War Pick", cat: "martial", kind: "melee", dmg: "1d8", type: "piercing",
+    props: ["versatile:1d10"], mastery: "Sap", srd: true },
+  { name: "Whip", cat: "martial", kind: "melee", dmg: "1d4", type: "slashing",
+    props: ["finesse", "reach"], mastery: "Slow", srd: true },
+
+  // -- Martial Ranged --
+  { name: "Blowgun", cat: "martial", kind: "ranged", dmg: "1", type: "piercing",
+    props: ["ammunition:25/100", "loading"], mastery: "Vex", srd: true },
+  { name: "Hand Crossbow", cat: "martial", kind: "ranged", dmg: "1d6", type: "piercing",
+    props: ["ammunition:30/120", "light", "loading"], mastery: "Vex", srd: true },
+  { name: "Heavy Crossbow", cat: "martial", kind: "ranged", dmg: "1d10", type: "piercing",
+    props: ["ammunition:100/400", "heavy", "loading", "two-handed"], mastery: "Push", srd: true },
+  { name: "Longbow", cat: "martial", kind: "ranged", dmg: "1d8", type: "piercing",
+    props: ["ammunition:150/600", "heavy", "two-handed"], mastery: "Slow", srd: true },
+  { name: "Musket", cat: "martial", kind: "ranged", dmg: "1d12", type: "piercing",
+    props: ["ammunition:40/120", "loading", "two-handed"], mastery: "Slow", srd: true },
+  { name: "Pistol", cat: "martial", kind: "ranged", dmg: "1d10", type: "piercing",
+    props: ["ammunition:30/90", "loading"], mastery: "Vex", srd: true },
+];
+
+// cat: "light" | "medium" | "heavy" | "shield". dexMax: null = full DEX, 2 = capped, 0 = none.
+// For the shield, ac is the bonus (+2).
+window.ARMOR_DATA = [
+  // -- Light --
+  { name: "Padded Armor", cat: "light", ac: 11, dexMax: null, strReq: 0, stealthDis: true, srd: true },
+  { name: "Leather Armor", cat: "light", ac: 11, dexMax: null, strReq: 0, stealthDis: false, srd: true },
+  { name: "Studded Leather Armor", cat: "light", ac: 12, dexMax: null, strReq: 0, stealthDis: false, srd: true },
+
+  // -- Medium --
+  { name: "Hide Armor", cat: "medium", ac: 12, dexMax: 2, strReq: 0, stealthDis: false, srd: true },
+  { name: "Chain Shirt", cat: "medium", ac: 13, dexMax: 2, strReq: 0, stealthDis: false, srd: true },
+  { name: "Scale Mail", cat: "medium", ac: 14, dexMax: 2, strReq: 0, stealthDis: true, srd: true },
+  { name: "Breastplate", cat: "medium", ac: 14, dexMax: 2, strReq: 0, stealthDis: false, srd: true },
+  { name: "Half Plate Armor", cat: "medium", ac: 15, dexMax: 2, strReq: 0, stealthDis: true, srd: true },
+
+  // -- Heavy --
+  { name: "Ring Mail", cat: "heavy", ac: 14, dexMax: 0, strReq: 0, stealthDis: true, srd: true },
+  { name: "Chain Mail", cat: "heavy", ac: 16, dexMax: 0, strReq: 13, stealthDis: true, srd: true },
+  { name: "Splint Armor", cat: "heavy", ac: 17, dexMax: 0, strReq: 15, stealthDis: true, srd: true },
+  { name: "Plate Armor", cat: "heavy", ac: 18, dexMax: 0, strReq: 15, stealthDis: true, srd: true },
+
+  // -- Shield --
+  { name: "Shield", cat: "shield", ac: 2, dexMax: null, strReq: 0, stealthDis: false, srd: true },
+];
+// Magic items dataset (Proving Ground phase 1).
+// window.MAGIC_ITEMS: +1/+2/+3 instances of every weapon "classics" base and every armor/shield
+// base (see docs/Equipment_Schema.md), plus SRD 5.2.1 named classics verified against the SRD
+// (CC BY 4.0) magic items list. window.TROPHIES: one original item per vignette title (32 exact
+// titles from docs/Vignettes_Draft_v2.md), rarity keyed to the vignette's level band.
+//
+// effect keys: bonus (attack+damage for weapons, AC for armor/shields), extraDmg ("NdM type"),
+// acBonus, saveBonus, hpMax, speed, resist (["fire",...]), adv (short text), atkAbility ("CHA" etc,
+// only if the item changes the attack ability), note (anything else, one line).
+// ONE additional key beyond the contract is used here: spellAtk (number) -- a bonus to spell attack
+// rolls, used only by Wand of the War Mage, Staff of Power, Robe of the Archmagi, and Staff of the
+// Magi, all of which grant this in the SRD but have no other key to carry it.
+//
+// srd:true items are verified present in SRD 5.2.1. Rod of the Pact Keeper was dropped: it is a
+// PHB-only Warlock item, not present in the SRD 5.2.1 magic items list, and no reasonable original
+// reskin was worth inventing for a Warlock-specific rod when the SRD list already covers the
+// caster-utility niche (Wand of the War Mage, Staff of Power/the Magi, Pearl of Power-style items).
+window.MAGIC_ITEMS = [
+  {
+    "name": "+1 Longsword",
+    "base": "Longsword",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "A Longsword faintly warm to the touch; it strikes truer and hits harder than a plain longsword."
+  },
+  {
+    "name": "+2 Longsword",
+    "base": "Longsword",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "A Longsword etched with fine silver runes; it strikes truer and hits harder than a plain longsword."
+  },
+  {
+    "name": "+3 Longsword",
+    "base": "Longsword",
+    "rarity": "very rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "A Longsword humming with contained power; it strikes truer and hits harder than a plain longsword."
+  },
+  {
+    "name": "+1 Greatsword",
+    "base": "Greatsword",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "A Greatsword faintly warm to the touch; it strikes truer and hits harder than a plain greatsword."
+  },
+  {
+    "name": "+2 Greatsword",
+    "base": "Greatsword",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "A Greatsword etched with fine silver runes; it strikes truer and hits harder than a plain greatsword."
+  },
+  {
+    "name": "+3 Greatsword",
+    "base": "Greatsword",
+    "rarity": "very rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "A Greatsword humming with contained power; it strikes truer and hits harder than a plain greatsword."
+  },
+  {
+    "name": "+1 Greataxe",
+    "base": "Greataxe",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "A Greataxe faintly warm to the touch; it strikes truer and hits harder than a plain greataxe."
+  },
+  {
+    "name": "+2 Greataxe",
+    "base": "Greataxe",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "A Greataxe etched with fine silver runes; it strikes truer and hits harder than a plain greataxe."
+  },
+  {
+    "name": "+3 Greataxe",
+    "base": "Greataxe",
+    "rarity": "very rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "A Greataxe humming with contained power; it strikes truer and hits harder than a plain greataxe."
+  },
+  {
+    "name": "+1 Rapier",
+    "base": "Rapier",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "A Rapier faintly warm to the touch; it strikes truer and hits harder than a plain rapier."
+  },
+  {
+    "name": "+2 Rapier",
+    "base": "Rapier",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "A Rapier etched with fine silver runes; it strikes truer and hits harder than a plain rapier."
+  },
+  {
+    "name": "+3 Rapier",
+    "base": "Rapier",
+    "rarity": "very rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "A Rapier humming with contained power; it strikes truer and hits harder than a plain rapier."
+  },
+  {
+    "name": "+1 Shortsword",
+    "base": "Shortsword",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "A Shortsword faintly warm to the touch; it strikes truer and hits harder than a plain shortsword."
+  },
+  {
+    "name": "+2 Shortsword",
+    "base": "Shortsword",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "A Shortsword etched with fine silver runes; it strikes truer and hits harder than a plain shortsword."
+  },
+  {
+    "name": "+3 Shortsword",
+    "base": "Shortsword",
+    "rarity": "very rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "A Shortsword humming with contained power; it strikes truer and hits harder than a plain shortsword."
+  },
+  {
+    "name": "+1 Scimitar",
+    "base": "Scimitar",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "A Scimitar faintly warm to the touch; it strikes truer and hits harder than a plain scimitar."
+  },
+  {
+    "name": "+2 Scimitar",
+    "base": "Scimitar",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "A Scimitar etched with fine silver runes; it strikes truer and hits harder than a plain scimitar."
+  },
+  {
+    "name": "+3 Scimitar",
+    "base": "Scimitar",
+    "rarity": "very rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "A Scimitar humming with contained power; it strikes truer and hits harder than a plain scimitar."
+  },
+  {
+    "name": "+1 Dagger",
+    "base": "Dagger",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "A Dagger faintly warm to the touch; it strikes truer and hits harder than a plain dagger."
+  },
+  {
+    "name": "+2 Dagger",
+    "base": "Dagger",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "A Dagger etched with fine silver runes; it strikes truer and hits harder than a plain dagger."
+  },
+  {
+    "name": "+3 Dagger",
+    "base": "Dagger",
+    "rarity": "very rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "A Dagger humming with contained power; it strikes truer and hits harder than a plain dagger."
+  },
+  {
+    "name": "+1 Handaxe",
+    "base": "Handaxe",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "A Handaxe faintly warm to the touch; it strikes truer and hits harder than a plain handaxe."
+  },
+  {
+    "name": "+2 Handaxe",
+    "base": "Handaxe",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "A Handaxe etched with fine silver runes; it strikes truer and hits harder than a plain handaxe."
+  },
+  {
+    "name": "+3 Handaxe",
+    "base": "Handaxe",
+    "rarity": "very rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "A Handaxe humming with contained power; it strikes truer and hits harder than a plain handaxe."
+  },
+  {
+    "name": "+1 Warhammer",
+    "base": "Warhammer",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "A Warhammer faintly warm to the touch; it strikes truer and hits harder than a plain warhammer."
+  },
+  {
+    "name": "+2 Warhammer",
+    "base": "Warhammer",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "A Warhammer etched with fine silver runes; it strikes truer and hits harder than a plain warhammer."
+  },
+  {
+    "name": "+3 Warhammer",
+    "base": "Warhammer",
+    "rarity": "very rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "A Warhammer humming with contained power; it strikes truer and hits harder than a plain warhammer."
+  },
+  {
+    "name": "+1 Maul",
+    "base": "Maul",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "A Maul faintly warm to the touch; it strikes truer and hits harder than a plain maul."
+  },
+  {
+    "name": "+2 Maul",
+    "base": "Maul",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "A Maul etched with fine silver runes; it strikes truer and hits harder than a plain maul."
+  },
+  {
+    "name": "+3 Maul",
+    "base": "Maul",
+    "rarity": "very rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "A Maul humming with contained power; it strikes truer and hits harder than a plain maul."
+  },
+  {
+    "name": "+1 Glaive",
+    "base": "Glaive",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "A Glaive faintly warm to the touch; it strikes truer and hits harder than a plain glaive."
+  },
+  {
+    "name": "+2 Glaive",
+    "base": "Glaive",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "A Glaive etched with fine silver runes; it strikes truer and hits harder than a plain glaive."
+  },
+  {
+    "name": "+3 Glaive",
+    "base": "Glaive",
+    "rarity": "very rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "A Glaive humming with contained power; it strikes truer and hits harder than a plain glaive."
+  },
+  {
+    "name": "+1 Halberd",
+    "base": "Halberd",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "A Halberd faintly warm to the touch; it strikes truer and hits harder than a plain halberd."
+  },
+  {
+    "name": "+2 Halberd",
+    "base": "Halberd",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "A Halberd etched with fine silver runes; it strikes truer and hits harder than a plain halberd."
+  },
+  {
+    "name": "+3 Halberd",
+    "base": "Halberd",
+    "rarity": "very rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "A Halberd humming with contained power; it strikes truer and hits harder than a plain halberd."
+  },
+  {
+    "name": "+1 Spear",
+    "base": "Spear",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "A Spear faintly warm to the touch; it strikes truer and hits harder than a plain spear."
+  },
+  {
+    "name": "+2 Spear",
+    "base": "Spear",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "A Spear etched with fine silver runes; it strikes truer and hits harder than a plain spear."
+  },
+  {
+    "name": "+3 Spear",
+    "base": "Spear",
+    "rarity": "very rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "A Spear humming with contained power; it strikes truer and hits harder than a plain spear."
+  },
+  {
+    "name": "+1 Quarterstaff",
+    "base": "Quarterstaff",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "A Quarterstaff faintly warm to the touch; it strikes truer and hits harder than a plain quarterstaff."
+  },
+  {
+    "name": "+2 Quarterstaff",
+    "base": "Quarterstaff",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "A Quarterstaff etched with fine silver runes; it strikes truer and hits harder than a plain quarterstaff."
+  },
+  {
+    "name": "+3 Quarterstaff",
+    "base": "Quarterstaff",
+    "rarity": "very rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "A Quarterstaff humming with contained power; it strikes truer and hits harder than a plain quarterstaff."
+  },
+  {
+    "name": "+1 Longbow",
+    "base": "Longbow",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "A Longbow faintly warm to the touch; it fires truer and hits harder than a plain longbow."
+  },
+  {
+    "name": "+2 Longbow",
+    "base": "Longbow",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "A Longbow etched with fine silver runes; it fires truer and hits harder than a plain longbow."
+  },
+  {
+    "name": "+3 Longbow",
+    "base": "Longbow",
+    "rarity": "very rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "A Longbow humming with contained power; it fires truer and hits harder than a plain longbow."
+  },
+  {
+    "name": "+1 Shortbow",
+    "base": "Shortbow",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "A Shortbow faintly warm to the touch; it fires truer and hits harder than a plain shortbow."
+  },
+  {
+    "name": "+2 Shortbow",
+    "base": "Shortbow",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "A Shortbow etched with fine silver runes; it fires truer and hits harder than a plain shortbow."
+  },
+  {
+    "name": "+3 Shortbow",
+    "base": "Shortbow",
+    "rarity": "very rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "A Shortbow humming with contained power; it fires truer and hits harder than a plain shortbow."
+  },
+  {
+    "name": "+1 Light Crossbow",
+    "base": "Light Crossbow",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "A Light Crossbow faintly warm to the touch; it fires truer and hits harder than a plain light crossbow."
+  },
+  {
+    "name": "+2 Light Crossbow",
+    "base": "Light Crossbow",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "A Light Crossbow etched with fine silver runes; it fires truer and hits harder than a plain light crossbow."
+  },
+  {
+    "name": "+3 Light Crossbow",
+    "base": "Light Crossbow",
+    "rarity": "very rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "A Light Crossbow humming with contained power; it fires truer and hits harder than a plain light crossbow."
+  },
+  {
+    "name": "+1 Hand Crossbow",
+    "base": "Hand Crossbow",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "A Hand Crossbow faintly warm to the touch; it fires truer and hits harder than a plain hand crossbow."
+  },
+  {
+    "name": "+2 Hand Crossbow",
+    "base": "Hand Crossbow",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "A Hand Crossbow etched with fine silver runes; it fires truer and hits harder than a plain hand crossbow."
+  },
+  {
+    "name": "+3 Hand Crossbow",
+    "base": "Hand Crossbow",
+    "rarity": "very rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "A Hand Crossbow humming with contained power; it fires truer and hits harder than a plain hand crossbow."
+  },
+  {
+    "name": "+1 Heavy Crossbow",
+    "base": "Heavy Crossbow",
+    "rarity": "uncommon",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "A Heavy Crossbow faintly warm to the touch; it fires truer and hits harder than a plain heavy crossbow."
+  },
+  {
+    "name": "+2 Heavy Crossbow",
+    "base": "Heavy Crossbow",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "A Heavy Crossbow etched with fine silver runes; it fires truer and hits harder than a plain heavy crossbow."
+  },
+  {
+    "name": "+3 Heavy Crossbow",
+    "base": "Heavy Crossbow",
+    "rarity": "very rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "A Heavy Crossbow humming with contained power; it fires truer and hits harder than a plain heavy crossbow."
+  },
+  {
+    "name": "+1 Padded Armor",
+    "base": "Padded Armor",
+    "rarity": "rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "Padded Armor, lightly warded; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+2 Padded Armor",
+    "base": "Padded Armor",
+    "rarity": "very rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "Padded Armor, etched with protective sigils; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+3 Padded Armor",
+    "base": "Padded Armor",
+    "rarity": "legendary",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "Padded Armor, wrapped in a legendary ward; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+1 Leather Armor",
+    "base": "Leather Armor",
+    "rarity": "rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "Leather Armor, lightly warded; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+2 Leather Armor",
+    "base": "Leather Armor",
+    "rarity": "very rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "Leather Armor, etched with protective sigils; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+3 Leather Armor",
+    "base": "Leather Armor",
+    "rarity": "legendary",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "Leather Armor, wrapped in a legendary ward; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+1 Studded Leather Armor",
+    "base": "Studded Leather Armor",
+    "rarity": "rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "Studded Leather Armor, lightly warded; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+2 Studded Leather Armor",
+    "base": "Studded Leather Armor",
+    "rarity": "very rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "Studded Leather Armor, etched with protective sigils; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+3 Studded Leather Armor",
+    "base": "Studded Leather Armor",
+    "rarity": "legendary",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "Studded Leather Armor, wrapped in a legendary ward; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+1 Hide Armor",
+    "base": "Hide Armor",
+    "rarity": "rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "Hide Armor, lightly warded; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+2 Hide Armor",
+    "base": "Hide Armor",
+    "rarity": "very rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "Hide Armor, etched with protective sigils; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+3 Hide Armor",
+    "base": "Hide Armor",
+    "rarity": "legendary",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "Hide Armor, wrapped in a legendary ward; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+1 Chain Shirt",
+    "base": "Chain Shirt",
+    "rarity": "rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "Chain Shirt, lightly warded; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+2 Chain Shirt",
+    "base": "Chain Shirt",
+    "rarity": "very rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "Chain Shirt, etched with protective sigils; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+3 Chain Shirt",
+    "base": "Chain Shirt",
+    "rarity": "legendary",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "Chain Shirt, wrapped in a legendary ward; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+1 Scale Mail",
+    "base": "Scale Mail",
+    "rarity": "rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "Scale Mail, lightly warded; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+2 Scale Mail",
+    "base": "Scale Mail",
+    "rarity": "very rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "Scale Mail, etched with protective sigils; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+3 Scale Mail",
+    "base": "Scale Mail",
+    "rarity": "legendary",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "Scale Mail, wrapped in a legendary ward; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+1 Breastplate",
+    "base": "Breastplate",
+    "rarity": "rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "Breastplate, lightly warded; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+2 Breastplate",
+    "base": "Breastplate",
+    "rarity": "very rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "Breastplate, etched with protective sigils; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+3 Breastplate",
+    "base": "Breastplate",
+    "rarity": "legendary",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "Breastplate, wrapped in a legendary ward; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+1 Half Plate Armor",
+    "base": "Half Plate Armor",
+    "rarity": "rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "Half Plate Armor, lightly warded; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+2 Half Plate Armor",
+    "base": "Half Plate Armor",
+    "rarity": "very rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "Half Plate Armor, etched with protective sigils; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+3 Half Plate Armor",
+    "base": "Half Plate Armor",
+    "rarity": "legendary",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "Half Plate Armor, wrapped in a legendary ward; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+1 Ring Mail",
+    "base": "Ring Mail",
+    "rarity": "rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "Ring Mail, lightly warded; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+2 Ring Mail",
+    "base": "Ring Mail",
+    "rarity": "very rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "Ring Mail, etched with protective sigils; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+3 Ring Mail",
+    "base": "Ring Mail",
+    "rarity": "legendary",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "Ring Mail, wrapped in a legendary ward; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+1 Chain Mail",
+    "base": "Chain Mail",
+    "rarity": "rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "Chain Mail, lightly warded; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+2 Chain Mail",
+    "base": "Chain Mail",
+    "rarity": "very rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "Chain Mail, etched with protective sigils; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+3 Chain Mail",
+    "base": "Chain Mail",
+    "rarity": "legendary",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "Chain Mail, wrapped in a legendary ward; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+1 Splint Armor",
+    "base": "Splint Armor",
+    "rarity": "rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "Splint Armor, lightly warded; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+2 Splint Armor",
+    "base": "Splint Armor",
+    "rarity": "very rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "Splint Armor, etched with protective sigils; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+3 Splint Armor",
+    "base": "Splint Armor",
+    "rarity": "legendary",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "Splint Armor, wrapped in a legendary ward; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+1 Plate Armor",
+    "base": "Plate Armor",
+    "rarity": "rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "Plate Armor, lightly warded; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+2 Plate Armor",
+    "base": "Plate Armor",
+    "rarity": "very rare",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "Plate Armor, etched with protective sigils; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+3 Plate Armor",
+    "base": "Plate Armor",
+    "rarity": "legendary",
+    "slot": "armor",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "Plate Armor, wrapped in a legendary ward; it turns aside more than its craftsmanship alone explains."
+  },
+  {
+    "name": "+1 Shield",
+    "base": "Shield",
+    "rarity": "uncommon",
+    "slot": "shield",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1
+    },
+    "desc": "A Shield banded in warm metal, turning aside more than a plain shield its size."
+  },
+  {
+    "name": "+2 Shield",
+    "base": "Shield",
+    "rarity": "rare",
+    "slot": "shield",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 2
+    },
+    "desc": "A Shield etched with a ward, turning aside more than a plain shield its size."
+  },
+  {
+    "name": "+3 Shield",
+    "base": "Shield",
+    "rarity": "very rare",
+    "slot": "shield",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "A Shield humming with old magic, turning aside more than a plain shield its size."
+  },
+  {
+    "name": "Flame Tongue Longsword",
+    "base": "Longsword",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "extraDmg": "2d6 fire"
+    },
+    "desc": "A Longsword that bursts into shedding flame on a bonus action command word, dealing extra fire damage while ablaze."
+  },
+  {
+    "name": "Flame Tongue Greatsword",
+    "base": "Greatsword",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "extraDmg": "2d6 fire"
+    },
+    "desc": "A Greatsword that bursts into shedding flame on a bonus action command word, dealing extra fire damage while ablaze."
+  },
+  {
+    "name": "Flame Tongue Rapier",
+    "base": "Rapier",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "extraDmg": "2d6 fire"
+    },
+    "desc": "A Rapier that bursts into shedding flame on a bonus action command word, dealing extra fire damage while ablaze."
+  },
+  {
+    "name": "Frost Brand Longsword",
+    "base": "Longsword",
+    "rarity": "very rare",
+    "slot": "weapon",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "extraDmg": "1d6 cold",
+      "resist": [
+        "fire"
+      ]
+    },
+    "desc": "A Longsword that deals extra cold damage on a hit and grants resistance to fire while held; in freezing cold it sheds light."
+  },
+  {
+    "name": "Vicious Dagger",
+    "base": "Dagger",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "extraDmg": "2d6 piercing"
+    },
+    "desc": "A Dagger that bites far deeper than its size suggests, dealing a burst of extra damage on every hit."
+  },
+  {
+    "name": "Dragon Slayer Longsword",
+    "base": "Longsword",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "bonus": 1,
+      "extraDmg": "3d6 slashing",
+      "note": "The extra damage applies only against dragons."
+    },
+    "desc": "A Longsword forged for one purpose: the extra damage it deals only bites when the target is a dragon."
+  },
+  {
+    "name": "Sun Blade",
+    "base": "Longsword",
+    "rarity": "rare",
+    "slot": "weapon",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "bonus": 2,
+      "note": "Finesse weapon; deals radiant damage instead of slashing. Undead take an extra 1d8 radiant damage on a hit."
+    },
+    "desc": "A plain hilt that springs a blade of pure radiance to life on command, burning undead far worse than steel does."
+  },
+  {
+    "name": "Oathbow",
+    "base": "Longbow",
+    "rarity": "very rare",
+    "slot": "weapon",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "note": "On a hit you may declare the target your sworn enemy: you gain advantage against it, it loses cover, and hits deal an extra 3d6 piercing damage. While the enemy lives, attacks with other weapons have disadvantage."
+    },
+    "desc": "A Longbow that whispers in Elvish when nocked; the arrow it looses at a sworn enemy rarely misses and always draws blood."
+  },
+  {
+    "name": "Vorpal Sword (Greatsword)",
+    "base": "Greatsword",
+    "rarity": "legendary",
+    "slot": "weapon",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "bonus": 3,
+      "note": "Ignores resistance to slashing damage."
+    },
+    "desc": "A Greatsword of legendary make that shrugs off any resistance to its slashing edge."
+  },
+  {
+    "name": "Vorpal Sword (Scimitar)",
+    "base": "Scimitar",
+    "rarity": "legendary",
+    "slot": "weapon",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "bonus": 3,
+      "note": "Ignores resistance to slashing damage."
+    },
+    "desc": "A Scimitar of legendary make that shrugs off any resistance to its slashing edge."
+  },
+  {
+    "name": "Holy Avenger",
+    "base": "Longsword",
+    "rarity": "legendary",
+    "slot": "weapon",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "bonus": 3,
+      "extraDmg": "2d10 radiant",
+      "note": "Extra damage applies only against fiends and undead. Attunement requires a Paladin."
+    },
+    "desc": "A Paladin's blade blessed beyond ordinary steel; it burns fiends and the undead with radiant fire on every hit."
+  },
+  {
+    "name": "Defender (Quarterstaff)",
+    "base": "Quarterstaff",
+    "rarity": "legendary",
+    "slot": "weapon",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "bonus": 3
+    },
+    "desc": "A Quarterstaff of legendary make, balanced perfectly for a fighter who trusts nothing but their own hands and this staff."
+  },
+  {
+    "name": "Cloak of Protection",
+    "rarity": "uncommon",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "acBonus": 1,
+      "saveBonus": 1
+    },
+    "desc": "A plain traveling cloak, warded so it turns aside blows and ill fortune alike while worn."
+  },
+  {
+    "name": "Ring of Protection",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "acBonus": 1,
+      "saveBonus": 1
+    },
+    "desc": "A simple band of metal that hums with a ward, turning aside blows and ill fortune alike while worn."
+  },
+  {
+    "name": "Bracers of Defense",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "acBonus": 2,
+      "note": "Only while wearing no armor and no shield."
+    },
+    "desc": "A pair of vambraces that guard an unarmored fighter as well as steel plate, so long as no armor or shield gets in the way."
+  },
+  {
+    "name": "Amulet of Health",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "note": "Constitution becomes 19 while worn (no effect if already 19 or higher)."
+    },
+    "desc": "A stone medallion that fills out a thin frame with the vitality of a much hardier constitution."
+  },
+  {
+    "name": "Gauntlets of Ogre Power",
+    "rarity": "uncommon",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "note": "Strength becomes 19 while worn (no effect if already 19 or higher)."
+    },
+    "desc": "A pair of heavy iron gauntlets that lend the wearer's grip the raw strength of an ogre."
+  },
+  {
+    "name": "Belt of Giant Strength (Hill)",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "note": "Strength becomes 21 while worn (no effect if already higher)."
+    },
+    "desc": "A wide leather belt sized for a hill giant, cinched down; it lends the wearer a hill giant's raw strength."
+  },
+  {
+    "name": "Belt of Giant Strength (Frost or Stone)",
+    "rarity": "very rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "note": "Strength becomes 23 while worn (no effect if already higher)."
+    },
+    "desc": "A wide leather belt sized for a frost or stone giant, cinched down; it lends the wearer that giant's raw strength."
+  },
+  {
+    "name": "Belt of Giant Strength (Fire)",
+    "rarity": "very rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "note": "Strength becomes 25 while worn (no effect if already higher)."
+    },
+    "desc": "A wide leather belt sized for a fire giant, cinched down; it lends the wearer a fire giant's raw strength."
+  },
+  {
+    "name": "Belt of Giant Strength (Cloud)",
+    "rarity": "legendary",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "note": "Strength becomes 27 while worn (no effect if already higher)."
+    },
+    "desc": "A wide leather belt sized for a cloud giant, cinched down; it lends the wearer a cloud giant's raw strength."
+  },
+  {
+    "name": "Belt of Giant Strength (Storm)",
+    "rarity": "legendary",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "note": "Strength becomes 29 while worn (no effect if already higher)."
+    },
+    "desc": "A wide leather belt sized for a storm giant, cinched down; it lends the wearer a storm giant's raw strength."
+  },
+  {
+    "name": "Headband of Intellect",
+    "rarity": "uncommon",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "note": "Intelligence becomes 19 while worn (no effect if already 19 or higher)."
+    },
+    "desc": "A simple cloth headband that sharpens the wearer's mind to a keen, near-scholarly edge."
+  },
+  {
+    "name": "Boots of Speed",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "note": "Bonus action to click the heels together: doubles your Speed and gives attackers disadvantage on opportunity attacks against you, up to 10 minutes a day."
+    },
+    "desc": "A pair of boots that, when the heels are clicked together, carry the wearer at nearly twice their normal pace."
+  },
+  {
+    "name": "Winged Boots",
+    "rarity": "uncommon",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "note": "4 charges (regain 1d4 daily at dawn); spend 1 to gain a Fly Speed of 30 feet for 1 hour."
+    },
+    "desc": "A pair of boots fitted with small feathered wings that unfold to carry the wearer aloft for an hour at a time."
+  },
+  {
+    "name": "Cloak of Displacement",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "note": "Attackers have disadvantage on attack rolls against you until you take damage, which suppresses the effect until the start of your next turn."
+    },
+    "desc": "A cloak that bends light around the wearer, projecting their image a step away from where they actually stand."
+  },
+  {
+    "name": "Ring of Spell Storing",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "note": "Stores up to 5 levels of spells cast into it by any creature; the wearer can cast a stored spell using the original caster's save DC, attack bonus, and slot level."
+    },
+    "desc": "A ring set with a dark stone that holds another spellcaster's magic in reserve, ready for the wearer to unleash later."
+  },
+  {
+    "name": "Wand of the War Mage +1",
+    "rarity": "uncommon",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "spellAtk": 1
+    },
+    "desc": "A slim wand that steadies a spellcaster's aim, adding its enchantment to every spell attack roll."
+  },
+  {
+    "name": "Wand of the War Mage +2",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "spellAtk": 2
+    },
+    "desc": "A slim wand that steadies a spellcaster's aim, adding its enchantment to every spell attack roll."
+  },
+  {
+    "name": "Wand of the War Mage +3",
+    "rarity": "very rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "spellAtk": 3
+    },
+    "desc": "A slim wand that steadies a spellcaster's aim, adding its enchantment to every spell attack roll."
+  },
+  {
+    "name": "Staff of Power",
+    "rarity": "very rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "spellAtk": 2,
+      "acBonus": 2,
+      "saveBonus": 2,
+      "note": "Also a magic Quarterstaff with a +2 bonus to attack and damage rolls. 20 charges power spells such as magic missile, cone of cold, and fireball."
+    },
+    "desc": "A heavy staff that doubles as a formidable quarterstaff and a font of raw magic, sharpening its wielder's every defense."
+  },
+  {
+    "name": "Robe of the Archmagi",
+    "rarity": "legendary",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "spellAtk": 2,
+      "adv": "saving throws against spells and other magical effects",
+      "note": "Base Armor Class becomes 15 + Dexterity modifier while unarmored."
+    },
+    "desc": "An exquisite runed robe worn by history's greatest spellcasters, guarding its wearer as well as any armor while sharpening their magic."
+  },
+  {
+    "name": "Ioun Stone of Protection",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "acBonus": 1
+    },
+    "desc": "A dusty-rose prism that orbits the wearer's head, deflecting attacks that would otherwise land."
+  },
+  {
+    "name": "Ring of Resistance (Fire)",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "resist": [
+        "fire"
+      ]
+    },
+    "desc": "A ring set with a warm red gemstone that dulls the bite of flame for as long as it is worn."
+  },
+  {
+    "name": "Ring of Free Action",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "note": "Difficult terrain costs no extra movement; magic can't reduce your Speed or impose the paralyzed or restrained condition on you."
+    },
+    "desc": "A plain ring that keeps the wearer's limbs loose and free, whatever mire, magic, or manacle tries to hold them."
+  },
+  {
+    "name": "Ring of Evasion",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "note": "3 charges (regain 1d3 daily at dawn); when you fail a Dexterity saving throw, spend 1 charge to succeed instead."
+    },
+    "desc": "A ring that, at the last instant, seems to pull its wearer half a step clear of harm they should not have escaped."
+  },
+  {
+    "name": "Ring of Regeneration",
+    "rarity": "very rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "note": "Regain 1d6 hit points every 10 minutes while you have at least 1 hit point; lost body parts regrow after 1d6+1 days."
+    },
+    "desc": "A ring of dull iron that knits its wearer's wounds shut steadily, hour after hour, so long as they draw breath."
+  },
+  {
+    "name": "Necklace of Prayer Beads",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "note": "1d4+2 magic beads, each usable once for an effect such as blessing, curing, smiting, or protection (GM determines which beads are present). Attunement requires a Cleric, Druid, or Paladin."
+    },
+    "desc": "A string of plain prayer beads mixed with a few enchanted ones, each good for a single answered prayer before it goes dark."
+  },
+  {
+    "name": "Wand of Magic Missiles",
+    "rarity": "uncommon",
+    "slot": "wonder",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "note": "7 charges (regains 1d6+1 daily at dawn); expend 1-3 charges to cast Magic Missile at 1st-3rd level."
+    },
+    "desc": "A slender wand that spits unerring darts of force with a word, drawing down its charges one spell at a time."
+  },
+  {
+    "name": "Gloves of Missile Snaring",
+    "rarity": "uncommon",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "note": "Reaction: reduce damage from a ranged or thrown weapon hit by 1d10 plus your Dexterity modifier; if reduced to 0 you catch the projectile."
+    },
+    "desc": "A pair of supple gloves that let their wearer pluck an arrow or thrown blade out of the air before it can do its worst."
+  },
+  {
+    "name": "Boots of Elvenkind",
+    "rarity": "uncommon",
+    "slot": "wonder",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "adv": "Dexterity (Stealth) checks",
+      "note": "Your steps make no sound, regardless of the surface."
+    },
+    "desc": "A pair of soft boots, elf-made, that leave no sound behind on any surface."
+  },
+  {
+    "name": "Slippers of Spider Climbing",
+    "rarity": "uncommon",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "note": "Grants a Climb Speed equal to your Speed, including on ceilings, with your hands free. Doesn't work on slippery surfaces such as ice or oil."
+    },
+    "desc": "A pair of light shoes that grip stone and timber alike, letting the wearer walk up walls and across ceilings."
+  },
+  {
+    "name": "Ring of Three Wishes",
+    "rarity": "legendary",
+    "slot": "wonder",
+    "attune": false,
+    "srd": true,
+    "effect": {
+      "note": "3 charges; expend 1 to cast wish. Becomes nonmagical when the last charge is used."
+    },
+    "desc": "A plain-looking ring holding three wishes, each one spent forever once it is used."
+  },
+  {
+    "name": "Staff of the Magi",
+    "rarity": "legendary",
+    "slot": "wonder",
+    "attune": true,
+    "srd": true,
+    "effect": {
+      "spellAtk": 2,
+      "note": "Also a magic Quarterstaff with a +2 bonus to attack and damage rolls. 50 charges power spells cast from it. Attunement requires a Sorcerer, Warlock, or Wizard."
+    },
+    "desc": "The staff every apprentice dreams of finding: a font of raw magic that also swings as true as any weapon."
+  }
+];
+
+window.TROPHIES = {
+  "The Rat Cellar": {
+    "name": "Mimic-Shell Bracer",
+    "rarity": "uncommon",
+    "slot": "wonder",
+    "attune": false,
+    "srd": false,
+    "effect": {
+      "acBonus": 1
+    },
+    "desc": "A curved plate cut from the flour-barrel mimic's own shell, strapped to the forearm with cellar twine. It deflects a blow the way the barrel once deflected suspicion."
+  },
+  "Toll of the Bridge Goblins": {
+    "name": "Goblin-Toll Boots",
+    "rarity": "uncommon",
+    "slot": "wonder",
+    "attune": false,
+    "srd": false,
+    "effect": {
+      "speed": 5
+    },
+    "desc": "The boot the Bandit King's goblins tried to eat instead of ten gold, resoled and reinforced after the fight. It adds a spring to your step that wasn't there before."
+  },
+  "The Hungry Barrow": {
+    "name": "Standing-Stone Shard",
+    "rarity": "uncommon",
+    "slot": "wonder",
+    "attune": false,
+    "srd": false,
+    "effect": {
+      "resist": [
+        "necrotic"
+      ]
+    },
+    "desc": "A fist-sized chip knocked from one of the barrow's standing stones during the fight, cool to the touch even in summer. Carrying it dulls the chill of a zombie's grip."
+  },
+  "Wolves on the King's Road": {
+    "name": "Alpha's Fang Clasp",
+    "rarity": "uncommon",
+    "slot": "wonder",
+    "attune": false,
+    "srd": false,
+    "effect": {
+      "adv": "Wisdom (Perception) checks in darkness or fog"
+    },
+    "desc": "A wolf's canine tooth, pulled from the pack's alpha and set into a cloak clasp by the caravan's tinker. Wearing it, you notice movement at the treeline before anyone else does."
+  },
+  "The Cult Below the Chapel": {
+    "name": "Brazier-Ash Vial",
+    "rarity": "uncommon",
+    "slot": "wonder",
+    "attune": false,
+    "srd": false,
+    "effect": {
+      "resist": [
+        "fire"
+      ]
+    },
+    "desc": "A small vial of ash swept from the cultists' overturned brazier, sealed the night the imp went home. It takes the worst sting out of flame."
+  },
+  "The Bandit King's Wager": {
+    "name": "The Wagered Crown",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": false,
+    "effect": {
+      "saveBonus": 1
+    },
+    "desc": "The Bandit King's own crown, tarnished tin dressed up as gold, won twice over in one night. He swore it brought him luck at cards, and some of that luck seems to have stayed with it."
+  },
+  "Night of the Ankheg": {
+    "name": "Ankheg Mandible",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": false,
+    "srd": false,
+    "effect": {
+      "resist": [
+        "acid"
+      ]
+    },
+    "desc": "A single mandible torn from the largest ankheg in the tunnel, still sharp enough to cut leather. Worn at your belt, it seems to dull the sting of acid."
+  },
+  "The Ghoul Warrens": {
+    "name": "Warren-Ash Locket",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": false,
+    "srd": false,
+    "effect": {
+      "adv": "saving throws against being paralyzed"
+    },
+    "desc": "A locket of fused ash and bone, pulled from the warren after the fire finally burned itself out. It seems to remember what the ghouls' paralyzing touch felt like, and helps you shrug it off."
+  },
+  "The Owlbear's Grudge": {
+    "name": "Owlbear Talon Hook",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": false,
+    "srd": false,
+    "effect": {
+      "adv": "Strength (Athletics) checks to climb or grapple"
+    },
+    "desc": "A single talon from the owlbear that chased you through half the forest, filed down and lashed to a leather grip. It closes around handholds the way the owlbear once closed around its prey."
+  },
+  "The Green Knight's Test": {
+    "name": "Verdigris Vambrace",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": false,
+    "srd": false,
+    "effect": {
+      "acBonus": 1
+    },
+    "desc": "A single vambrace from the Green Knight's own verdigris armor, given freely after the duel at the ford. It has held its edge through countless bouts since his."
+  },
+  "Trolls Under the Ferry Bridge": {
+    "name": "Ferryman's Torch-Iron",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": false,
+    "srd": false,
+    "effect": {
+      "extraDmg": "1d4 fire"
+    },
+    "desc": "An iron torch-head recovered from under the ferry pilings, still warm to the touch long after the flame goes out. Pressed against a wound, it does the trolls' own trick in reverse."
+  },
+  "The Wight of Cairn Hollow": {
+    "name": "Cairn Hollow's Silver Crown",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": false,
+    "effect": {
+      "resist": [
+        "necrotic"
+      ],
+      "saveBonus": 1
+    },
+    "desc": "The wight's own crown of tarnished silver, pulled from the hollow after its hold on the dead broke. Wearing it dulls the chill of undeath and steadies your nerve against it."
+  },
+  "You Have Vanquished a Beholder": {
+    "name": "Sliver of the Central Eye",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": false,
+    "effect": {
+      "resist": [
+        "force"
+      ]
+    },
+    "desc": "A curved sliver of chitin cut from the beholder's great central eye before it could fire again. It leaves a faint violet afterimage and dulls the worst of a disintegration beam."
+  },
+  "The Medusa's Garden": {
+    "name": "Shard of the Medusa's Mirror",
+    "rarity": "rare",
+    "slot": "wonder",
+    "attune": false,
+    "srd": false,
+    "effect": {
+      "adv": "saving throws against being petrified"
+    },
+    "desc": "A curved shard of mirrored glass, the same one you used to fight her without meeting her eyes. Looking through it steadies you against a creature's petrifying gaze."
+  },
+  "The Mind of the Hive": {
+    "name": "Hive Node Fragment",
+    "rarity": "very rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": false,
+    "effect": {
+      "resist": [
+        "psychic"
+      ]
+    },
+    "desc": "A pulsing gray node pulled from the wreckage after you brought the gallery down on the elder brain's chamber. It still hums faintly, and the hum seems to blunt the edge of psychic assault."
+  },
+  "The Giant's Bargain": {
+    "name": "Hill Giant's Tribute Ring",
+    "rarity": "very rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": false,
+    "effect": {
+      "adv": "Strength checks and Strength saving throws"
+    },
+    "desc": "A ring hammered from the hill giant chieftain's own tribute-hoard, sized down by the cloud giant's smiths as part of the bargain. It carries some of the giant's raw strength."
+  },
+  "The Drowned Temple": {
+    "name": "Chain-Link of the Bound Elemental",
+    "rarity": "very rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": false,
+    "effect": {
+      "speed": 10,
+      "note": "You gain a Swim Speed equal to your Speed and can breathe water."
+    },
+    "desc": "A single link cut from the chains that bound the water elemental for three centuries beneath the temple. It remembers the water it was chained in, and shares that ease with you now."
+  },
+  "The Chimera of the Pass": {
+    "name": "Chimera-Scale Cloak",
+    "rarity": "very rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": false,
+    "effect": {
+      "resist": [
+        "fire"
+      ],
+      "acBonus": 1
+    },
+    "desc": "A cloak stitched from the chimera's dragon-head scales, taken after the fight that reopened the pass. It turns aside both blades and the last of the creature's fire breath."
+  },
+  "The Vampire of Greyveil Manor": {
+    "name": "Greyveil Signet Ring",
+    "rarity": "very rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": false,
+    "effect": {
+      "resist": [
+        "necrotic"
+      ],
+      "adv": "saving throws against being charmed"
+    },
+    "desc": "The signet ring pulled from the lord of Greyveil's hand at dawn, after ninety years of guests who never left. It seems to remember his hunger, and grants some resistance to it in return."
+  },
+  "The Young Dragon's Hoard": {
+    "name": "Scale of the Young Red",
+    "rarity": "very rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": false,
+    "effect": {
+      "resist": [
+        "fire"
+      ],
+      "acBonus": 1
+    },
+    "desc": "A single scale from the young red dragon that tried to tax the town in fire. Worn on a cord, it turns aside flame nearly as well as it once did for the dragon."
+  },
+  "The Githyanki Raid": {
+    "name": "Astral Rift Shard",
+    "rarity": "very rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": false,
+    "effect": {
+      "resist": [
+        "psychic"
+      ],
+      "note": "Once per long rest, teleport up to 30 feet to an unoccupied space you can see."
+    },
+    "desc": "A sliver of silvery metal, torn from a githyanki blade and still faintly warm from the Astral tide. Holding it tight, you can borrow a fragment of the passage it once cut through the sky."
+  },
+  "The Frost Titan's War-Horn": {
+    "name": "Splinter of the War-Horn",
+    "rarity": "very rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": false,
+    "effect": {
+      "resist": [
+        "cold"
+      ],
+      "hpMax": 10
+    },
+    "desc": "A curved splinter of horn, broken off when you silenced the frost giant jarl's war-horn for good. It keeps the worst of winter's cold from reaching you, and thickens your hide against everything else."
+  },
+  "The Beholder Hive-Tyrant": {
+    "name": "Hive-Tyrant's Eyestalk Ring",
+    "rarity": "very rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": false,
+    "effect": {
+      "resist": [
+        "force"
+      ],
+      "adv": "saving throws against being frightened"
+    },
+    "desc": "A ring cut from one of the hive-tyrant's spent eyestalks, cooled after the lair came down around it. It steadies your nerve the way staring down a dozen eyes once had to."
+  },
+  "The Lich's Examination": {
+    "name": "Fragment of Vorosthal's Phylactery",
+    "rarity": "very rare",
+    "slot": "wonder",
+    "attune": true,
+    "srd": false,
+    "effect": {
+      "resist": [
+        "necrotic"
+      ],
+      "saveBonus": 1
+    },
+    "desc": "A shard of the lich Vorosthal's shattered phylactery, kept as a paperweight and a promise. It hums faintly against necrotic cold and steadies your resolve against anything that studies you the way Vorosthal did."
+  },
+  "The Kraken's Tithe": {
+    "name": "Kraken's Eye",
+    "rarity": "legendary",
+    "slot": "wonder",
+    "attune": true,
+    "srd": false,
+    "effect": {
+      "resist": [
+        "cold"
+      ],
+      "speed": 10,
+      "note": "You gain a Swim Speed equal to your Speed and can breathe water."
+    },
+    "desc": "A dinner-plate-sized eye, cut from the kraken after you drove your weapon home. Around your neck it grants the sea's own ease with the depths."
+  },
+  "The Adult Dragon's Due": {
+    "name": "Ember of the Treasury Fire",
+    "rarity": "legendary",
+    "slot": "wonder",
+    "attune": true,
+    "srd": false,
+    "effect": {
+      "resist": [
+        "fire"
+      ],
+      "acBonus": 1
+    },
+    "desc": "A cinder-blackened ember, pulled from the treasury fire the dragon set to make its point about the crown. Carrying it close keeps flame from taking hold on you as easily as it did the treasury."
+  },
+  "The Death Knight's Vigil": {
+    "name": "Cairn-Rest Pommel",
+    "rarity": "legendary",
+    "slot": "wonder",
+    "attune": true,
+    "srd": false,
+    "effect": {
+      "hpMax": 20,
+      "resist": [
+        "necrotic"
+      ]
+    },
+    "desc": "The pommel-stone from the death knight's sword, now laid to rest across his cairn after four hundred years of vigil. It carries some of the resolve that kept him standing so long."
+  },
+  "The Demon Prince's Vanguard": {
+    "name": "Scorched Rift-Glass",
+    "rarity": "legendary",
+    "slot": "wonder",
+    "attune": true,
+    "srd": false,
+    "effect": {
+      "resist": [
+        "fire"
+      ],
+      "saveBonus": 2
+    },
+    "desc": "A ring of fused glass, cut from the scorch-circle the rift left in the ground where you held the line. It carries some of the will it took to keep that ground."
+  },
+  "The Empyrean's Wager": {
+    "name": "Champion's Wager Token",
+    "rarity": "legendary",
+    "slot": "wonder",
+    "attune": true,
+    "srd": false,
+    "effect": {
+      "adv": "death saving throws",
+      "hpMax": 15
+    },
+    "desc": "A coin-sized token, handed to every champion who stepped into the empyrean's arena, kept after you were the one still standing. It seems to carry some of the luck that got you through every bout."
+  },
+  "The Ancient Wyrm of the World-Spine": {
+    "name": "World-Spine Hoard-Shard",
+    "rarity": "legendary",
+    "slot": "wonder",
+    "attune": true,
+    "srd": false,
+    "effect": {
+      "saveBonus": 2,
+      "hpMax": 20
+    },
+    "desc": "A single scale-sized shard from the ancient wyrm's hoard, fused to glass by a day and a night of battle above the World-Spine. It has kept some of the wyrm's endurance."
+  },
+  "The Tarrasque Wakes": {
+    "name": "Tarrasque Carapace Fragment",
+    "rarity": "legendary",
+    "slot": "wonder",
+    "attune": true,
+    "srd": false,
+    "effect": {
+      "hpMax": 30,
+      "acBonus": 1
+    },
+    "desc": "A fist-sized plate broken from the Tarrasque's carapace during the battle that ended it. Nothing has cut this deep into you since, and carrying the fragment seems to carry a little of that toughness forward."
+  },
+  "A God's Attention": {
+    "name": "The Unfading Mark",
+    "rarity": "legendary",
+    "slot": "wonder",
+    "attune": true,
+    "srd": false,
+    "effect": {
+      "saveBonus": 2,
+      "adv": "saving throws against being frightened"
+    },
+    "desc": "A pale mark on your skin, left when a god paused to look at you directly and never quite faded after. It steadies you the way that silence once did."
+  }
+};
+// Starting equipment kits, D&D 2024 Player's Handbook style (Option A / Option B loadouts).
+// Every armor/weapon name below is an exact key in data_equipment.js (WEAPON_DATA / ARMOR_DATA),
+// and every kit respects the class's armor/weapon proficiencies in data_classes_1/2/3.js.
+//
+// NOTE: window.SPOILS is intentionally NOT defined here — it is written by a separate file/agent.
+
+window.STARTING_KITS = {
+  "Barbarian": [
+    { name: "Reckless Raider", armor: null, offhand: null, weapon: "Greataxe", ranged: "Javelin",
+      blurb: "No armor, no fear: swing an oversized axe and let Unarmored Defense do the rest." },
+    { name: "Twin Blades", armor: "Hide Armor", offhand: "Handaxe", weapon: "Handaxe", ranged: "Javelin",
+      blurb: "Hide armor and a matched pair of handaxes for a Barbarian who throws as much as they swing." },
+    { name: "Shielded Berserker", armor: null, offhand: "Shield", weapon: "Battleaxe", ranged: "Javelin",
+      blurb: "A shield in one hand and an axe in the other, still bare-chested underneath." },
+  ],
+
+  "Bard": [
+    { name: "Traveling Minstrel", armor: "Leather Armor", offhand: null, weapon: "Dagger", ranged: "Shortbow",
+      blurb: "A quick dagger and a bow for a Bard who'd rather charm a room than fight in one." },
+    { name: "Court Performer", armor: "Studded Leather Armor", offhand: null, weapon: "Quarterstaff", ranged: "Sling",
+      blurb: "A staff and a sling, kept mostly for looking dignified while the spells do the work." },
+    { name: "Back-Alley Songsmith", armor: "Leather Armor", offhand: "Dagger", weapon: "Dagger", ranged: "Light Crossbow",
+      blurb: "Twin daggers close at hand for a Bard who's played more taverns than theaters." },
+  ],
+
+  "Cleric": [
+    { name: "Armored Healer", armor: "Chain Shirt", offhand: "Shield", weapon: "Mace", ranged: "Sling",
+      blurb: "A chain shirt and shield up front, healing from the middle of the fight." },
+    { name: "Battle Priest", armor: "Scale Mail", offhand: "Shield", weapon: "Spear", ranged: "Javelin",
+      blurb: "Scale mail, a shield, and a spear for a Cleric who stands at the front line." },
+    { name: "Quiet Devotion", armor: "Leather Armor", offhand: null, weapon: "Mace", ranged: "Sling",
+      blurb: "Light armor and a simple mace for a Cleric who trusts prayer over plate." },
+  ],
+
+  "Druid": [
+    { name: "Circle Guardian", armor: "Leather Armor", offhand: "Shield", weapon: "Quarterstaff", ranged: "Sling",
+      blurb: "Leather and a shield, staff in hand, ready to shift shape when steel fails." },
+    { name: "Wild Skirmisher", armor: "Padded Armor", offhand: null, weapon: "Spear", ranged: "Javelin",
+      blurb: "Padded armor and a spear, keeping distance until Wild Shape closes it." },
+    { name: "Hedge Witch", armor: "Leather Armor", offhand: null, weapon: "Dagger", ranged: "Sling",
+      blurb: "A dagger and a sling, carried more out of habit than expectation of using them." },
+  ],
+
+  "Fighter": [
+    { name: "Armored Knight", armor: "Chain Mail", offhand: "Shield", weapon: "Longsword", ranged: "Light Crossbow",
+      blurb: "Heavy armor and a shield: the classic front line." },
+    { name: "Skirmisher", armor: "Studded Leather Armor", offhand: null, weapon: "Rapier", ranged: "Longbow",
+      blurb: "Light armor and a rapier, favoring mobility over a wall of steel." },
+    { name: "Great Weapon", armor: "Chain Mail", offhand: null, weapon: "Greatsword", ranged: "Javelin",
+      blurb: "Heavy armor and a two-handed blade built to end fights fast." },
+  ],
+
+  "Monk": [
+    { name: "Open Hand", armor: null, offhand: null, weapon: "Quarterstaff", ranged: "Dart",
+      blurb: "No armor, a quarterstaff, and darts for a Monk who trusts fists and feet most of all." },
+    { name: "Shadow Blade", armor: null, offhand: null, weapon: "Shortsword", ranged: "Dart",
+      blurb: "A shortsword sized for Monk training, quick and light in the hand." },
+    { name: "Spear Dancer", armor: null, offhand: null, weapon: "Spear", ranged: "Dart",
+      blurb: "A simple spear for reach, kept light enough to still fight unarmored." },
+  ],
+
+  "Paladin": [
+    { name: "Sworn Defender", armor: "Chain Mail", offhand: "Shield", weapon: "Longsword", ranged: "Javelin",
+      blurb: "Heavy armor and a shield, sworn to hold the line for those behind it." },
+    { name: "Zealous Blade", armor: "Chain Mail", offhand: null, weapon: "Greatsword", ranged: "Javelin",
+      blurb: "Heavy armor and a two-handed greatsword for a Paladin who leads with the charge." },
+    { name: "Wandering Templar", armor: "Half Plate Armor", offhand: "Shield", weapon: "Warhammer", ranged: "Javelin",
+      blurb: "Half plate and a shield, light enough for a Paladin who travels more than they garrison." },
+  ],
+
+  "Ranger": [
+    { name: "Beast Stalker", armor: "Studded Leather Armor", offhand: null, weapon: "Shortsword", ranged: "Longbow",
+      blurb: "Studded leather and a longbow, tracking prey from a distance." },
+    { name: "Dual-Blade Warden", armor: "Leather Armor", offhand: "Shortsword", weapon: "Shortsword", ranged: "Longbow",
+      blurb: "Two shortswords for close work and a longbow for everything else." },
+    { name: "Hide Tracker", armor: "Hide Armor", offhand: "Shield", weapon: "Spear", ranged: "Shortbow",
+      blurb: "Hide armor and a shield for a Ranger who doesn't mind a stand-up fight." },
+  ],
+
+  "Rogue": [
+    { name: "Blade in the Dark", armor: "Leather Armor", offhand: "Shortsword", weapon: "Shortsword", ranged: "Shortbow",
+      blurb: "Twin shortswords and a bow for a Rogue who strikes from every angle." },
+    { name: "Duelist", armor: "Leather Armor", offhand: "Dagger", weapon: "Rapier", ranged: "Hand Crossbow",
+      blurb: "A rapier for finesse and a hidden hand crossbow for when talking fails." },
+    { name: "Cutpurse", armor: "Leather Armor", offhand: "Dagger", weapon: "Dagger", ranged: "Sling",
+      blurb: "A pair of daggers and a sling, packed light for a fast exit." },
+  ],
+
+  "Sorcerer": [
+    { name: "Spark of Blood", armor: null, offhand: null, weapon: "Quarterstaff", ranged: "Light Crossbow",
+      blurb: "No armor and a simple staff, since a Sorcerer's real weapon is the spell." },
+    { name: "Wild Magic Wanderer", armor: null, offhand: null, weapon: "Dagger", ranged: "Sling",
+      blurb: "A dagger for emergencies and a sling for a Sorcerer who'd rather not get close." },
+  ],
+
+  "Warlock": [
+    { name: "Pact Blade", armor: "Leather Armor", offhand: null, weapon: "Quarterstaff", ranged: "Light Crossbow",
+      blurb: "Light armor and a light crossbow backing up eldritch blast." },
+    { name: "Hexbound", armor: "Leather Armor", offhand: "Dagger", weapon: "Dagger", ranged: "Sling",
+      blurb: "A pair of daggers close at hand while patron magic does the heavy lifting." },
+    { name: "Fiend's Pact", armor: "Studded Leather Armor", offhand: null, weapon: "Mace", ranged: "Light Crossbow",
+      blurb: "Sturdier armor and a mace for a Warlock who expects the fight to get physical." },
+  ],
+
+  "Wizard": [
+    { name: "Battle Scholar", armor: null, offhand: null, weapon: "Quarterstaff", ranged: "Light Crossbow",
+      blurb: "No armor, a quarterstaff for emergencies, and a spellbook that does the real work." },
+    { name: "Blade and Book", armor: null, offhand: null, weapon: "Dagger", ranged: "Sling",
+      blurb: "A dagger tucked in a sleeve, a sling for range, and spells for everything else." },
+  ],
+};
+// Spoils dataset (Proving Ground phase 1). window.SPOILS: for each archetype and level,
+// three level-up offers. The first offer is the "obvious upgrade" (a +N weapon/armor matching
+// the archetype's likely gear, or a caster focus item); the engine swaps a +N weapon's base to
+// the player's actual weapon if it differs. The second offer is a defensive or utility item from
+// MAGIC_ITEMS. The third is the literal string "<trophy>", which the engine replaces with the
+// current vignette's trophy from window.TROPHIES. Every non-trophy name here is an exact
+// window.MAGIC_ITEMS name (see data/data_magic_items.js) -- verified by data/qa_magic_check.js.
+//
+// Rarity by level: 5 -> uncommon, 11 -> rare, 17 -> very rare, 20 -> legendary. Where no
+// legendary +N weapon exists for an archetype, the strongest fitting legendary (or, for ranged,
+// very rare) item is used instead -- see the comment on each archetype's level-20 entry.
+window.SPOILS = {
+  "heavy-melee": {
+    5: ["+1 Greatsword", "Cloak of Protection", "<trophy>"],
+    11: ["+2 Greatsword", "Ring of Protection", "<trophy>"],
+    17: ["+3 Greatsword", "Belt of Giant Strength (Frost or Stone)", "<trophy>"],
+      // No legendary +N weapon exists; Vorpal Sword (legendary, SRD) is the strongest fitting
+      // upgrade for a STR greatsword-user. Belt of Giant Strength (Storm) stands in for a
+      // legendary defensive wonder, since raw Strength is the best legendary utility fit for a
+      // front-line brute.
+    20: ["Vorpal Sword (Greatsword)", "Belt of Giant Strength (Storm)", "<trophy>"]
+  },
+  "finesse-melee": {
+    5: ["+1 Rapier", "Boots of Elvenkind", "<trophy>"],
+    11: ["+2 Rapier", "Ring of Evasion", "<trophy>"],
+    17: ["+3 Rapier", "Cloak of Displacement", "<trophy>"],
+      // SRD has no legendary Rapier; Vorpal Sword's Scimitar instance is the strongest fitting
+      // legendary weapon for a DEX finesse fighter (the engine swaps the base to the player's
+      // actual weapon per the schema note).
+    20: ["Vorpal Sword (Scimitar)", "Ring of Free Action", "<trophy>"]
+  },
+  "ranged": {
+    5: ["+1 Longbow", "Gloves of Missile Snaring", "<trophy>"],
+    11: ["+2 Longbow", "Ring of Resistance (Fire)", "<trophy>"],
+    17: ["+3 Longbow", "Ring of Regeneration", "<trophy>"],
+      // No legendary bow exists anywhere in the SRD 5.2.1 magic items list; +3 Longbow (very
+      // rare) is the strongest fitting weapon upgrade available for this archetype at level 20.
+    20: ["+3 Longbow", "Ring of Three Wishes", "<trophy>"]
+  },
+  "full-caster": {
+    5: ["Wand of Magic Missiles", "Cloak of Protection", "<trophy>"],
+    11: ["Wand of the War Mage +2", "Ring of Spell Storing", "<trophy>"],
+    17: ["Staff of Power", "Ring of Regeneration", "<trophy>"],
+    20: ["Staff of the Magi", "Robe of the Archmagi", "<trophy>"]
+  },
+  "half-caster": {
+    5: ["+1 Longsword", "Cloak of Protection", "<trophy>"],
+    11: ["+2 Longsword", "Necklace of Prayer Beads", "<trophy>"],
+    17: ["+3 Longsword", "Ring of Regeneration", "<trophy>"],
+      // Holy Avenger is the SRD's Paladin-specific legendary weapon -- the obvious upgrade for
+      // this archetype at level 20 (the engine swaps its base to the player's actual weapon).
+    20: ["Holy Avenger", "Ring of Three Wishes", "<trophy>"]
+  },
+  "unarmed": {
+    5: ["+1 Quarterstaff", "Slippers of Spider Climbing", "<trophy>"],
+    11: ["+2 Quarterstaff", "Boots of Speed", "<trophy>"],
+    17: ["+3 Quarterstaff", "Ring of Free Action", "<trophy>"],
+      // No legendary Monk weapon exists in the SRD; Defender (Any Melee Weapon, no class
+      // restriction) instantiated on a Quarterstaff is the strongest fitting legendary weapon
+      // for this archetype at level 20.
+    20: ["Defender (Quarterstaff)", "Ring of Three Wishes", "<trophy>"]
+  }
+};
 const CLASS_DATA=window.CLASS_DATA, SUBCLASS_DATA=window.SUBCLASS_DATA, SPELL_DATA=window.SPELL_DATA;
 const SPECIES_DATA=window.SPECIES_DATA, BACKGROUND_DATA=window.BACKGROUND_DATA, FEAT_DATA=window.FEAT_DATA;
 const SPELL_TAGS=window.SPELL_TAGS, GLOSSARY_DATA=window.GLOSSARY_DATA;
@@ -5595,13 +8006,18 @@ function freshState(){
     expertise:[],
     savePicks:[],           // extra saving-throw proficiencies from feats (e.g. Resilient)
     featChoices:{},         // feat slot -> {skills:[], expertise:[], save:ab, cantrips:[], spells:[]}
-    prevSnap:null,          // snapshot of state before the last sealed level (one-step undo)
+    prevSnap:null,          // snapshot of state before the last sealed level (top of undoStack)
+    undoStack:[],           // up to UNDO_MAX sealed-level snapshots, oldest first
     spells:{},              // class -> {cantrips:[], prepared:[], arcanum:{}}
     options:{},             // option-feature key -> [chosen option names] (Metamagic, Invocations, ...)
     flavor:{alignment:null, hook:null, backstory:"", notes:""},
     archivedAt20:false,     // set once the level-20 auto-archive has fired
     celebrated20:false,     // set once the Legend Forged moment has played
     humanBonusFeat:null,
+    kit:null,               // starting kit name
+    gear:{armor:null,offhand:null,weapon:null,ranged:null,wonders:[]},
+    owned:[],               // magic items won as spoils
+    spoils:{},              // character level -> spoil chosen (5, 11, 17, 20)
     xp:0, log:[],           // log: {level, title, text, gains}
     ui:{tab:"start", wizStep:0, sheetOpen:{}},
     pending:null            // level-up in progress: {klass, choices:[...]}
@@ -5688,6 +8104,7 @@ function maxHP(){
   });
   if(hasFeat("Tough")) hp += 2*totalLevel();
   S.feats.forEach(f=>{ const e=(window.FEAT_EFFECTS||{})[f.name]; if(e&&e.hpMax) hp += e.hpMax; });
+  if(typeof gearHPBonus==="function") hp += gearHPBonus();
   // Draconic Sorcery: +3 HP then +1 per sorcerer level after 3rd (net: +sorcLevel, since 3 at L3 then +1/level)
   if(S.subclasses["Sorcerer"]==="Draconic Sorcery"){
     const sl=classLevels()["Sorcerer"]||0; if(sl>=3) hp += sl;
@@ -5917,6 +8334,8 @@ function pendingChoicesFor(cls, newClassLevel){
     const prev=optAllowedAt(def,newClassLevel-1), now=optAllowedAt(def,newClassLevel);
     if(now>prev) ch.push({kind:"options", key, total:now});
   }
+  // spoils of the adventure at tier boundaries (character level, not class level)
+  if(window.SPOILS&&SPOIL_LEVELS.includes(totalLevel())) ch.push({kind:"spoils", level:totalLevel()});
   // spell management reminder if this class (or its subclass) casts
   const entry=casterEntriesForClassAt(cls, newClassLevel);
   if(entry) ch.push({kind:"spells", cls, optional:true});
@@ -5937,40 +8356,94 @@ function applyLevel(cls){
   S.pending={cls, classLevel:newCl, choices:pendingChoicesFor(cls,newCl), done:{}};
 }
 
+/* ---------------- Road map (1-20 milestones per class) ---------------- */
+function roadmapFor(cls){
+  const cd=CLASS_DATA[cls]; const out=[];
+  for(let l=1;l<=20;l++){
+    const fs=cd.features[l]||[]; const names=fs.map(f=>f.name);
+    let k="";
+    if(l===cd.subclassLevel) k="sub";
+    else if(fs.some(f=>f.epicBoon)) k="boon";
+    else if(l===20) k="cap";
+    else if(fs.some(f=>/extra attack/i.test(f.name))) k="attack";
+    else if(fs.some(f=>f.asi)) k="asi";
+    else if(names.length&&!names.every(n=>/subclass feature/i.test(n))) k="feat";
+    out.push({l,k,names});
+  }
+  return out;
+}
+/* ---------------- Suggested spell loadout ---------------- */
+const TAG_W={damage:3,control:3,healing:3,buff:2,defense:2,aoe:1.5,debuff:1.5,summon:1,utility:1,mobility:1,detection:.5,social:.5};
+function suggestLoadout(cls){
+  const e=casterEntries().find(x=>x.cls===cls); if(!e) return;
+  const ss=spellState(cls);
+  const cN=e.caster.cantrips[e.classLevel-1]||0, pN=e.caster.prepared[e.classLevel-1]||0;
+  const T_=window.SPELL_TAGS||{};
+  const dieAvg=sp=>{ const m=sp.desc.match(/(\d+)d(\d+)/); return m?(+m[1]*(+m[2]+1)/2):0; };
+  const score=sp=>{ const t=T_[sp.name]||[]; return sp.level*1.6+(TAG_W[t[0]]||0)+(t[1]?(TAG_W[t[1]]||0)*.4:0)+(t[0]==="damage"?dieAvg(sp)/3:0); };
+  const primary=sp=>(T_[sp.name]||["utility"])[0];
+  if(cN>ss.cantrips.length){
+    const pool=spellsForList(e.caster.list,0,0).filter(sp=>!ss.cantrips.includes(sp.name));
+    const dmg=pool.filter(sp=>primary(sp)==="damage").sort((a,b)=>score(b)-score(a));
+    const rest=pool.filter(sp=>primary(sp)!=="damage").sort((a,b)=>score(b)-score(a));
+    const order=[...(dmg.length?[dmg[0]]:[]), ...rest, ...dmg.slice(1)];
+    for(const sp of order){ if(ss.cantrips.length>=cN) break; ss.cantrips.push(sp.name); }
+  }
+  if(pN>ss.prepared.length){
+    const maxL=e.caster.kind==="pact"?e.caster.pactSlotLevel[e.classLevel-1]:classMaxSpellLevel(e);
+    const free=alwaysPrepared(cls);
+    const pool=spellsForList(e.caster.list,maxL,1).filter(sp=>!ss.prepared.includes(sp.name)&&!free.includes(sp.name)).sort((a,b)=>score(b)-score(a));
+    const cap=Math.max(2,Math.ceil(pN*0.4)); const used={};
+    const want=["healing","control","damage","defense","buff"];
+    for(const w of want){ const sp=pool.find(x=>primary(x)===w&&!ss.prepared.includes(x.name)); if(sp&&ss.prepared.length<pN){ ss.prepared.push(sp.name); used[w]=(used[w]||0)+1; } }
+    for(const sp of pool){ if(ss.prepared.length>=pN) break; const t=primary(sp); if(ss.prepared.includes(sp.name)||(used[t]||0)>=cap) continue; ss.prepared.push(sp.name); used[t]=(used[t]||0)+1; }
+  }
+}
+/* ---------------- Auto-place ability scores ---------------- */
+function autoPlaceScores(){
+  const cls=S.firstClass; if(!cls) return;
+  const prim=CLASS_DATA[cls].primary;
+  const order=[...prim,"CON","DEX","WIS","STR","INT","CHA"].filter((a,i,arr)=>arr.indexOf(a)===i);
+  ABILITIES.forEach(a=>{ if(!order.includes(a)) order.push(a); });
+  if(S.method==="pointbuy"){ STANDARD_ARRAY.forEach((v,i)=>{ S.base[order[i]]=v; }); }
+  else if(S.method==="array"){ S.arrayAssign={}; STANDARD_ARRAY.forEach((v,i)=>{ S.arrayAssign[order[i]]=v; }); }
+  else { const idx=T.rollPools.map((v,i)=>i).sort((x,y)=>T.rollPools[y]-T.rollPools[x]); S.rollAssign={}; idx.forEach((ri,i)=>{ S.rollAssign[order[i]]=ri; }); }
+}
+
 /* ---------------- Vignettes ---------------- */
 const VIGNETTES = [
-  {min:2,max:4,t:"The Rat Cellar",x:"The miller swore the cellar held 'big rats.' The rats held a nest of giant centipedes and a very territorial mimic shaped like a flour barrel. You emerge sticky, victorious, and owed a favor. Your experience as an adventurer grows."},
-  {min:2,max:4,t:"Toll of the Bridge Goblins",x:"A goblin gang demanded a toll of 'ten gold or one shoe.' Negotiations collapsed when their boss ate the shoe. In the scrap that followed you learned more about footwork than any drill-yard could teach."},
-  {min:2,max:4,t:"The Hungry Barrow",x:"Pale hands clawed from the barrow-earth at dusk: zombies, slow but tireless. You held the line until sunrise gilded the standing stones. The village bell rang your name; your legend takes its first breath."},
-  {min:2,max:4,t:"Wolves on the King's Road",x:"Winter drove the pack down from the hills, eyes like struck flint in the treeline. You kept the caravan alive through a long, howling night, and the merchants' gratitude weighs pleasantly in your pack."},
-  {min:2,max:4,t:"The Cult Below the Chapel",x:"Beneath a respectable little chapel: robes, chanting, one extremely put-out summoned imp. You scattered the cultists before their circle closed. The imp left a bad smell and a good story."},
-  {min:3,max:6,t:"The Bandit King's Wager",x:"The self-styled Bandit King bet his crown he could not be bested. He was wrong twice: once at swords, once at cards. His crew now speaks your name in taverns with equal parts fear and admiration."},
-  {min:3,max:6,t:"Night of the Ankheg",x:"The farmland was collapsing into acid-scarred tunnels. You went down into the churning dark and came back up with an ankheg's mandible as a trophy. The harvest, and your reputation, is saved."},
-  {min:4,max:7,t:"The Ghoul Warrens",x:"Below the potter's field, a warren of ghouls had grown fat and bold. You fought paralysis and panic in equal measure and burned the warren clean. You walk taller now; the dark walks softer around you."},
-  {min:4,max:8,t:"The Owlbear's Grudge",x:"Nothing in your training covered an owlbear with a grudge and a memory for faces. After a running battle through half a forest, it now grudgingly respects you. So does everyone who watched."},
-  {min:5,max:8,t:"The Green Knight's Test",x:"A wandering knight in verdigris armor challenged all comers at the ford. Your duel lasted from noon bell to dusk. When it ended, the knight bowed and named you a peer of the road. Your experience deepens like a river."},
-  {min:5,max:9,t:"Trolls Under the Ferry Bridge",x:"Two trolls had learned that ferries carry payrolls. You taught them that fire is a better teacher. The ferry line renamed a boat after you, which is either an honor or a liability."},
-  {min:5,max:9,t:"The Wight of Cairn Hollow",x:"The barrow-wight wore a crown of tarnished silver and commanded the dead of three battlefields. You broke its blade and its claim in the same stroke. The hollow is quiet now; you are not. The songs have started."},
-  {min:6,max:10,t:"You Have Vanquished a Beholder",x:"You have met a mighty challenge and vanquished a beholder: its central eye dimmed, its paranoid tyranny over the undercity ended. You dream, briefly, in disintegration beams. Your experience as an adventurer grows immensely."},
-  {min:6,max:10,t:"The Medusa's Garden",x:"A sculpture garden of the unlucky, and at its heart, a sculptor with serpents for hair. You fought by mirror-glance and instinct, and led three de-petrified adventurers back into the sun. They owe you their second lives."},
-  {min:6,max:11,t:"The Mind of the Hive",x:"Something in the salt mine was thinking with a hundred bodies. You found the elder brain's chamber, survived what it showed you, and collapsed the gallery on its dreams. Some nights you still hear the hum. You are stronger than it."},
-  {min:7,max:11,t:"The Giant's Bargain",x:"A hill giant chieftain claimed the valley's herds; a cloud giant claimed the hill giant. You out-fought one and out-talked the other, and the valley pays tribute to no one. Giant-slayer, they call you now, only half in jest."},
-  {min:7,max:12,t:"The Drowned Temple",x:"Beneath the lake, a temple to something older than the lake. Sahuagin priests, a chained water elemental, and a bargain three centuries overdue. You cut every chain you found. The lake is just a lake now."},
-  {min:8,max:12,t:"The Chimera of the Pass",x:"Three heads, three grudges, one very defensible mountain pass. The caravan road is open again, and cartographers have already renamed the pass after you. You signed one of the maps."},
-  {min:9,max:13,t:"The Vampire of Greyveil Manor",x:"The lord of Greyveil had not aged in ninety years, and his guests had a habit of staying forever. You ended his hospitality at dawn, stake in hand, curtains thrown wide. The manor's shadows have finally stopped moving."},
-  {min:9,max:14,t:"The Young Dragon's Hoard",x:"A young red dragon had opinions about taxation and expressed them in fire. The negotiation went poorly; the battle went better. You kept a single scale, and the town kept its name off the list of places that used to exist."},
-  {min:10,max:14,t:"The Githyanki Raid",x:"Silver swords out of a torn sky: a githyanki war-band riding the Astral tide. You held the breach until the planar rift guttered shut. Somewhere beyond the veil, a lich-queen has written down your name."},
-  {min:11,max:15,t:"The Frost Titan's War-Horn",x:"When the horn sounded, the glacier walked. You climbed the moving ice, silenced the horn, and dropped the frost giant jarl into his own crevasse. Spring came late that year, but it came."},
-  {min:11,max:16,t:"The Beholder Hive-Tyrant",x:"One beholder is a catastrophe; a hive of dreamed-alive spawn is a dynasty. You collapsed the tyrant's lair with its own disintegration scars. Reality in that district has finally stopped second-guessing itself."},
-  {min:12,max:16,t:"The Lich's Examination",x:"The lich Vorosthal considered you an interesting variable. It has since revised its equations. You hold a fragment of its shattered phylactery as a paperweight and a promise: some homework never stays finished."},
-  {min:12,max:17,t:"The Kraken's Tithe",x:"Nine coastal towns paid the tithe; the tenth hired you. The harbor still talks about the day the sea stood up, and about the adventurer who made it sit back down. Sailors now spill a drink for you in every port."},
-  {min:13,max:17,t:"The Adult Dragon's Due",x:"Ancient pacts said the dragon was owed a crown. You renegotiated on the wing, in the smoke, above a burning treasury. The crown stays; the dragon does not. Kings now answer your letters promptly."},
-  {min:14,max:18,t:"The Death Knight's Vigil",x:"He had guarded the broken gate for four hundred years, waiting for a worthy end. You gave him one. His sword lies at rest across his cairn, and the gate beyond is yours to open. Your legend has outgrown the maps."},
-  {min:15,max:19,t:"The Demon Prince's Vanguard",x:"A rift to the Abyss, and through it, a balor at the head of a howling vanguard. You held the wound in the world shut with will, steel, and spell. The scorch-marks form a perfect circle around where you stood."},
-  {min:16,max:19,t:"The Empyrean's Wager",x:"A child of the gods, bored and beautiful and cruel, wagered a city on a contest of champions. You were the city's answer. The gods watched. The gods took notes."},
-  {min:17,max:20,t:"The Ancient Wyrm of the World-Spine",x:"Its wingbeats rewrote the weather; its hoard had its own economy. The battle above the World-Spine lasted a day and a night, and the mountains keep the scars. Bards will argue the details for a century. You know the truth."},
-  {min:18,max:20,t:"The Tarrasque Wakes",x:"The earth shrugged, and history's appetite climbed out of it. Armies broke; you did not. When the Tarrasque fell at last, the crater became a lake, and the lake became a place of pilgrimage. Your experience has become the stuff of scripture."},
-  {min:19,max:20,t:"A God's Attention",x:"At the summit of your legend, a deity paused its eternity to look at you directly. Whatever passed between you, you walked away from it, perhaps the rarest feat of all. There is little left in any world that can test you."}
+  {min:2,max:4,t:"The Rat Cellar",x:"The miller said the cellar held big rats. Instead you found a nest of giant centipedes and a flour barrel that turned out to be a mimic. You cut through the centipedes and wrestled the mimic still until it gave up the fight. You climbed out coated in ichor, and the miller owes you a favor now."},
+  {min:2,max:4,t:"Toll of the Bridge Goblins",x:"A goblin gang blocked the bridge and demanded ten gold or one shoe. When you handed over the shoe, the boss ate it on the spot and negotiations ended there. You waded into the gang and fought them off the bridge one by one. You crossed the bridge with your gold still in your purse, one shoe lighter and a new respect for goblin appetites."},
+  {min:2,max:4,t:"The Hungry Barrow",x:"At dusk, pale hands clawed up out of the barrow-earth: a rise of zombies, slow but tireless. The village needed the line held until sunrise gilded the standing stones, or the dead would reach the houses. You planted your feet and cut down wave after wave through the night. When the bell rang at dawn, it rang your name."},
+  {min:2,max:4,t:"Wolves on the King's Road",x:"Winter drove a wolf pack down from the hills, eyes catching the torchlight like struck flint at the treeline. You walked the caravan's flank through a long, howling night, driving off three separate charges. By dawn the wagons were still rolling and every merchant was breathing. Their gratitude rides in your pack now, heavier than usual."},
+  {min:2,max:4,t:"The Cult Below the Chapel",x:"Beneath a respectable little chapel, robed cultists chanted around a summoning circle and a very put-out imp. You kicked over their brazier and broke the circle before it could close. The cultists scattered into the tunnels, and the imp popped back to its own plane in a cloud of sulfur. You left with a bad smell in your cloak and a good story to tell."},
+  {min:3,max:6,t:"The Bandit King's Wager",x:"The self-styled Bandit King wagered his crown that no one could beat him twice in one night. You beat him at swords first, then beat him again at cards before he could recover. His crew watched both losses and started calling you by name. Now that name gets said in taverns with equal parts fear and respect."},
+  {min:3,max:6,t:"Night of the Ankheg",x:"Acid-scarred tunnels were swallowing the farmland field by field, and the farmers blamed ankhegs burrowing beneath the wheat. You climbed down into the churning dark after them, tracking the tunnels by smell and sound. You killed the largest one in a narrow chamber and dragged its mandible out as proof. The harvest held, and so did your reputation."},
+  {min:4,max:7,t:"The Ghoul Warrens",x:"Below the potter's field, a warren of ghouls had grown fat and bold enough to raid the town at night. Their touch could freeze a limb solid, but you fought through the tunnels nest by nest. You put the warren to the torch and watched the smoke rise past dawn. You walk taller now, and towns nearby already know your name."},
+  {min:4,max:8,t:"The Owlbear's Grudge",x:"Nothing in your training covered an owlbear that held a grudge and remembered faces. This one had crossed paths with you before, and it came looking for a rematch through half the forest. You dodged its charges and countered until it finally backed down, breathing hard. It walked off grudgingly respecting you, and everyone who watched the chase respects you too."},
+  {min:5,max:8,t:"The Green Knight's Test",x:"A wandering knight in verdigris armor was challenging every traveler at the ford to single combat. You took the challenge at noon and traded blows with him until the light went orange at dusk. Neither of you landed a killing stroke, but you wore him down enough that he finally lowered his blade. He named you a peer of the road, and travelers at that ford still ask which way you went."},
+  {min:5,max:9,t:"Trolls Under the Ferry Bridge",x:"Two trolls had figured out that the ferries running under their bridge carried the town's payroll. You lured them out from under the pilings and finished the fight with torches when your blades alone couldn't stop them from healing. The ferry line kept running, payroll intact, and the trolls didn't come back. The ferry company named a boat after you, and now you get free crossings for life."},
+  {min:5,max:9,t:"The Wight of Cairn Hollow",x:"The wight ruling Cairn Hollow wore a crown of tarnished silver and commanded the risen dead of three old battlefields. If it wasn't stopped, that army would march on the valley below. You broke its blade first and its hold over the dead second, both in the same fight. Cairn Hollow is quiet now, but the songs about that night have already started."},
+  {min:6,max:10,t:"You Have Vanquished a Beholder",x:"A beholder had ruled the undercity through fear, watching every tunnel through its many eyes for the slightest defiance. You fought your way past its lesser eye-rays and put a blade through the great central eye before it could aim its disintegration beam. The tyranny over the undercity ended the moment that eye went dark. You still dream about the beam some nights, but you're the one still standing."},
+  {min:6,max:10,t:"The Medusa's Garden",x:"A garden of stone statues turned out to be a medusa's collection of everyone who had looked at her directly. You fought her by mirror-glance and instinct alone, never once meeting her eyes. After she fell, you found the restoration ritual in her hoard and freed three adventurers from stone. They walked back into the sun owing you their second lives."},
+  {min:6,max:11,t:"The Mind of the Hive",x:"Something in the salt mine was thinking with a hundred bodies at once, and thralls kept dragging in new workers. You fought down through the mine to the elder brain's chamber and survived the visions it threw at your mind. You planted charges and brought the gallery down on top of it. Some nights you still hear a faint hum, but you're the one who walked away."},
+  {min:7,max:11,t:"The Giant's Bargain",x:"A hill giant chieftain had been claiming the valley's herds as tribute, and a cloud giant above the clouds was claiming the hill giant's loyalty in turn. You beat the hill giant in single combat at the valley's edge, then climbed to the cloud giant's court and talked him out of the arrangement entirely. The valley pays tribute to no one now. People call you Giant-slayer, and most of them mean it."},
+  {min:7,max:12,t:"The Drowned Temple",x:"Beneath the lake stood a temple to something older than the lake itself, guarded by sahuagin priests and a water elemental bound in chains for three centuries. You cut through the priests first and freed the elemental to settle the score itself. Every chain you found, you cut, and the temple's hold on the lake broke with the last one. The lake is just a lake now."},
+  {min:8,max:12,t:"The Chimera of the Pass",x:"A chimera with three heads and three separate grudges had turned the mountain pass into a dead end for every caravan. You baited the lion head first, then the goat head, and finished the dragon head before it could breathe fire twice. The pass is open to trade again, and cartographers have already started renaming it after you. You signed one of the new maps yourself."},
+  {min:9,max:13,t:"The Vampire of Greyveil Manor",x:"The lord of Greyveil Manor hadn't aged a day in ninety years, and his dinner guests had a habit of never leaving. You tracked him to his coffin before dawn and threw the curtains wide to pin him in the light. You finished it with a stake through the heart while he was still too weak to fight back. The manor's shadows have finally stopped moving on their own."},
+  {min:9,max:14,t:"The Young Dragon's Hoard",x:"A young red dragon had decided the nearby town owed it tribute, and it burned the tax collector's office down to make the point. You tried reasoning with it first and got a wall of fire back. In the fight that followed you drove your blade between its scales and brought it down before it could torch the town itself. You kept a single scale as a trophy, and the town is still standing."},
+  {min:10,max:14,t:"The Githyanki Raid",x:"A githyanki war-band rode the Astral tide through a tear in the sky, silver swords first, straight at the town below. You planted yourself in the breach and held the line while mages worked to close the rift. You cut down riders faster than the tide could bring them until the rift finally guttered shut. Somewhere beyond the veil, a lich-queen has written your name down."},
+  {min:11,max:15,t:"The Frost Titan's War-Horn",x:"When the frost giant jarl sounded his war-horn, the glacier itself began to move, grinding toward the valley below. You climbed the moving ice as it crushed everything in its path and fought your way to the horn. You silenced the horn for good and dropped the jarl into a crevasse of his own making. Spring came late that year, but it came."},
+  {min:11,max:16,t:"The Beholder Hive-Tyrant",x:"One beholder is dangerous enough, but this hive-tyrant had spawned a dozen more from its own dreams, and the district under its lair had learned to expect anything. You cut through the spawn one by one and cornered the tyrant in its own scarred chamber. You turned its disintegration rays back on the chamber walls and brought the whole lair down. The district is quiet now, and things there finally stay the way they look."},
+  {min:12,max:16,t:"The Lich's Examination",x:"The lich Vorosthal had been testing adventurers for centuries and marked you down as an interesting variable worth watching. You tracked its phylactery to a hidden vault and shattered it before it could finish its notes on you. The lich itself crumbled to dust the moment the phylactery broke. You kept a fragment of the phylactery as a paperweight, in case it ever tries to finish its homework."},
+  {min:12,max:17,t:"The Kraken's Tithe",x:"Nine coastal towns had been paying a kraken's tithe in ships and sailors, but the tenth town hired you instead. You rowed out past the breakers and fought the kraken as it rose, wave after wave crashing over the boat. You drove your weapon into its eye and it sank back into the deep for good. Sailors in every port still spill a drink for you before they sail."},
+  {min:13,max:17,t:"The Adult Dragon's Due",x:"An ancient pact said the crown itself was owed to the dragon, and it came to collect in person, burning the treasury to make its point. You met it in the air above the flames and fought the whole exchange out on the wing. When the smoke cleared, the crown stayed on its cushion and the dragon did not. Kings across the region answer your letters promptly now."},
+  {min:14,max:18,t:"The Death Knight's Vigil",x:"The death knight had guarded the broken gate for four hundred years, waiting for someone strong enough to finally end his watch. You fought him at the threshold, blade for blade, until he could no longer stand. You gave him the death he'd been waiting for and laid his sword to rest across his cairn. The gate beyond is yours to open now, and no map covers what's on the other side."},
+  {min:15,max:19,t:"The Demon Prince's Vanguard",x:"A rift to the Abyss tore open, and a balor led a howling vanguard of demons straight through it into the world. You stood at the rift's edge and held the line with steel and spell while allies worked to close the tear. You cut the balor down inches from the threshold, and the rift sealed behind it. The scorch marks still form a perfect circle around where you stood."},
+  {min:16,max:19,t:"The Empyrean's Wager",x:"An empyrean, a bored and beautiful child of the gods, wagered an entire city on a contest of champions. You stepped into the arena as the city's answer, one fighter against whatever the empyrean sent next. You beat every champion put in front of you and were still standing when the last one fell. The gods were watching, and by the end they were taking notes."},
+  {min:17,max:20,t:"The Ancient Wyrm of the World-Spine",x:"The ancient wyrm's wingbeats alone could change the weather for a hundred miles, and its hoard was large enough to fund a small kingdom. You climbed the World-Spine to meet it and fought across the peaks for a day and a night without stopping. Neither of you gave ground until the wyrm finally fell into its own hoard. The mountains still carry the scars, and only you know exactly what happened up there."},
+  {min:18,max:20,t:"The Tarrasque Wakes",x:"The fate of the realm hung in the balance. A Tarrasque, destruction itself given flesh, rose from the deep earth and marched on the heartland, and no army could slow it. With an unlikely band of heroes you met it head-on, and after a day and a night of battle you brought the beast down. The realm stands because you did. Your legend is forged."},
+  {min:19,max:20,t:"A God's Attention",x:"At the height of your legend, a god paused its own eternity to look at you directly. You held your ground and looked back without flinching, and whatever passed between you passed in silence. You walked away from it still standing, which nothing else in any world has ever managed. Your legend is forged."}
 ];
 function pickVignette(newLevel){
   const pool=VIGNETTES.filter(v=>newLevel>=v.min && newLevel<=v.max && !S.log.some(l=>l.title===v.t));
@@ -5981,6 +8454,7 @@ function pickVignette(newLevel){
 
 /* ---------------- Vault (save slots) & share links ---------------- */
 const VAULT_MAX=5;
+const UNDO_MAX=5;
 function loadVault(){
   try{ const v=JSON.parse(localStorage.getItem("legend-forge-vault")||"[]"); return Array.isArray(v)?v:[]; }catch(e){ return []; }
 }
@@ -5988,7 +8462,7 @@ function saveVault(v){ try{ localStorage.setItem("legend-forge-vault", JSON.stri
 function slimState(st){
   // strip bulk that can be rebuilt: undo snapshot, UI state, vignette prose (rehydrated by title)
   const o=JSON.parse(JSON.stringify(st));
-  o.prevSnap=null; o.ui=undefined;
+  o.prevSnap=null; o.undoStack=[]; o.ui=undefined;
   o.log=(o.log||[]).map(l=>({level:l.level, title:l.title, gains:l.gains}));
   return o;
 }
@@ -5998,7 +8472,7 @@ function rehydrateState(o){
   st.log=(st.log||[]).map(l=>{
     if(l.text) return l;
     const v=VIGNETTES.find(x=>x.t===l.title);
-    return {...l, text:v?v.x:(l.title==="The First Page"?"Every legend begins with a name and a road.":"")};
+    return {...l, text:v?v.x:(l.title==="The First Page"?"Every legend starts with a name and a first step on the road.":"")};
   });
   st.pending=null;
   return st;
@@ -6051,6 +8525,318 @@ function loadState(){
     if(raw){ const o=JSON.parse(raw); if(o && o.base){ S=Object.assign(freshState(),o); S.pending=null; return true; } }
   }catch(e){}
   return false;
+}
+/* ================= Legend Forge: gear & proving ground ================= */
+// Data: WEAPON_DATA / ARMOR_DATA (data_equipment.js), MAGIC_ITEMS / TROPHIES (data_magic_items.js),
+// STARTING_KITS (data_kits_spoils.js), SPOILS (data_spoils.js). Contract: docs/Equipment_Schema.md.
+
+const GEAR_SLOTS=["armor","offhand","weapon","ranged"];
+const SPOIL_LEVELS=[5,11,17,20];
+function gearState(){
+  S.gear=S.gear||{armor:null,offhand:null,weapon:null,ranged:null,wonders:[]};
+  S.gear.wonders=S.gear.wonders||[]; S.owned=S.owned||[]; S.spoils=S.spoils||{};
+  return S.gear;
+}
+const WD=()=>window.WEAPON_DATA||[], AD=()=>window.ARMOR_DATA||[], MID=()=>window.MAGIC_ITEMS||[], TRD=()=>window.TROPHIES||{};
+function weaponRec(n){ return WD().find(w=>w.name===n)||null; }
+function armorRec(n){ return AD().find(a=>a.name===n)||null; }
+function magicRec(n){ return MID().find(m=>m.name===n)||Object.values(TRD()).find(t=>t.name===n)||null; }
+// any gear name -> {name, rec:(weapon|armor record|null), magic:(magic record|null), kind, rarity}
+function gearItem(n){
+  if(!n) return null;
+  const m=magicRec(n);
+  if(m){
+    const base=m.base?(weaponRec(m.base)||armorRec(m.base)):null;
+    const kind=m.slot==="wonder"?"wonder":(m.slot==="shield"||(base&&base.cat==="shield"))?"shield":(base&&base.dmg)?"weapon":"armor";
+    return {name:n, rec:base, magic:m, kind, rarity:m.rarity||"uncommon"};
+  }
+  const w=weaponRec(n); if(w) return {name:n, rec:w, magic:null, kind:"weapon", rarity:"mundane"};
+  const a=armorRec(n); if(a) return {name:n, rec:a, magic:null, kind:a.cat==="shield"?"shield":"armor", rarity:"mundane"};
+  return {name:n, rec:null, magic:null, kind:"wonder", rarity:"unknown"};
+}
+function gearEffect(it){ return (it&&it.magic&&it.magic.effect)||{}; }
+function hasProp(rec,p){ return !!(rec&&rec.props&&rec.props.some(x=>x===p||x.startsWith(p+":"))); }
+function propArg(rec,p){ const x=rec&&rec.props&&rec.props.find(x=>x.startsWith(p+":")); return x?x.split(":")[1]:null; }
+function itemSummary(it){
+  if(!it) return "";
+  const e=gearEffect(it); const bits=[];
+  if(it.rec&&it.rec.dmg) bits.push(`${it.rec.dmg} ${it.rec.type}${it.rec.mastery?" · "+it.rec.mastery:""}`);
+  if(it.rec&&it.rec.ac!=null&&!it.rec.dmg) bits.push(it.kind==="shield"?`+${it.rec.ac} AC`:`AC ${it.rec.ac}${it.rec.dexMax==null?" + DEX":it.rec.dexMax?" + DEX (max "+it.rec.dexMax+")":""}`);
+  if(e.bonus) bits.push(`+${e.bonus} magic`);
+  if(e.extraDmg) bits.push(`+${e.extraDmg}`);
+  if(e.acBonus) bits.push(`+${e.acBonus} AC`);
+  if(e.saveBonus) bits.push(`+${e.saveBonus} saves`);
+  if(e.hpMax) bits.push(`+${e.hpMax} HP`);
+  if(e.speed) bits.push(`+${e.speed} ft speed`);
+  if(e.spellAtk) bits.push(`+${e.spellAtk} spell attacks`);
+  if(e.resist) bits.push("resist "+e.resist.join("/"));
+  if(e.adv) bits.push(e.adv);
+  return bits.join(" · ");
+}
+
+/* ---------------- Proficiency & training ---------------- */
+function armorTraining(){
+  const set=new Set();
+  const add=txt=>{ if(!txt) return; if(/light/i.test(txt)) set.add("light"); if(/medium/i.test(txt)) set.add("medium"); if(/heavy/i.test(txt)) set.add("heavy"); if(/shield/i.test(txt)) set.add("shield"); };
+  classOrder().forEach((c,i)=>{ const cd=CLASS_DATA[c]; add(i===0?cd.armor:cd.multiclassGrants); });
+  if(hasFeat("Lightly Armored")){ set.add("light"); set.add("shield"); }
+  if(hasFeat("Moderately Armored")){ set.add("medium"); set.add("shield"); }
+  if(hasFeat("Heavily Armored")) set.add("heavy");
+  if((S.options["Divine Order"]||[]).includes("Protector")) set.add("heavy");
+  if((S.options["Primal Order"]||[]).includes("Warden")) set.add("medium");
+  if(hasFeature("Martial Training")){ set.add("medium"); set.add("shield"); }
+  return set;
+}
+function armorProficient(rec){
+  if(!rec) return true;
+  return armorTraining().has(rec.cat);
+}
+function weaponProficient(rec){
+  if(!rec) return true;
+  if(rec.cat==="simple") return true;
+  const light=hasProp(rec,"light"), fin=hasProp(rec,"finesse");
+  const ok=txt=>{ if(!txt) return false;
+    if(/Simple and Martial weapons/i.test(txt)||/(^|, )Martial weapons(,|$)/.test(txt)) return true;
+    if(/Martial weapons with the Finesse or Light/i.test(txt)) return fin||light;
+    if(/Martial weapons with the Light/i.test(txt)) return light;
+    return false; };
+  const order=classOrder();
+  for(let i=0;i<order.length;i++){ const cd=CLASS_DATA[order[i]]; if(ok(i===0?cd.weapons:cd.multiclassGrants)) return true; }
+  if(hasFeat("Martial Weapon Training")||hasFeature("Martial Training")) return true;
+  if((S.options["Divine Order"]||[]).includes("Protector")||(S.options["Primal Order"]||[]).includes("Warden")) return true;
+  return false;
+}
+
+/* ---------------- Armor Class ---------------- */
+function armorClassBreakdown(){
+  const g=gearState(); const dex=mod("DEX");
+  const arm=gearItem(g.armor), off=gearItem(g.offhand);
+  const shield=off&&off.kind==="shield"?off:null;
+  const parts=[]; let ac;
+  if(arm&&arm.rec){
+    const cap=arm.rec.dexMax;
+    const d=cap==null?dex:Math.min(dex, cap+(cap===2&&hasFeat("Medium Armor Master")?1:0));
+    const b=gearEffect(arm).bonus||0;
+    ac=arm.rec.ac+d+b; parts.push(`${arm.name}: ${arm.rec.ac}${d?" + DEX "+d:""}${b?" +"+b:""}`);
+    if(!armorProficient(arm.rec)) parts.push("not proficient: Disadvantage on attacks, checks and saves using STR or DEX");
+  } else {
+    const opts=[{v:10+dex,l:"10 + DEX"}];
+    if(classLevels()["Barbarian"]) opts.push({v:10+dex+mod("CON"),l:"Unarmored Defense (10 + DEX + CON)"});
+    if(classLevels()["Monk"]&&!shield) opts.push({v:10+dex+mod("WIS"),l:"Unarmored Defense (10 + DEX + WIS)"});
+    if(S.subclasses["Sorcerer"]==="Draconic Sorcery") opts.push({v:10+dex+mod("CHA"),l:"Draconic Resilience (10 + DEX + CHA)"});
+    if(S.subclasses["Bard"]==="College of Dance"&&!shield) opts.push({v:10+dex+mod("CHA"),l:"Dazzling Footwork (10 + DEX + CHA)"});
+    const best=opts.sort((a,b)=>b.v-a.v)[0]; ac=best.v; parts.push(best.l+" = "+best.v);
+  }
+  if(shield){ const b=(shield.rec?shield.rec.ac:2)+(gearEffect(shield).bonus||0); ac+=b; parts.push(`${shield.name} +${b}`); }
+  if(arm&&S.fightingStyles.includes("Defense")){ ac+=1; parts.push("Defense style +1"); }
+  for(const n of g.wonders){
+    const it=gearItem(n); const b=gearEffect(it).acBonus||0; if(!b) continue;
+    if(/Bracers of Defense/i.test(n)&&(arm||shield)) continue;
+    ac+=b; parts.push(`${n} +${b}`);
+  }
+  return {ac, parts};
+}
+function armorClass(){ return armorClassBreakdown().ac; }
+function gearHPBonus(){ let t=0; for(const n of gearState().wonders){ t+=gearEffect(gearItem(n)).hpMax||0; } return t; }
+function gearSaveBonus(){ let t=0; for(const n of gearState().wonders){ t+=gearEffect(gearItem(n)).saveBonus||0; } return t; }
+
+/* ---------------- Attacks ---------------- */
+function avgDice(str){
+  let t=0; const s=String(str);
+  for(const m of s.matchAll(/(\d+)d(\d+)/g)) t+=+m[1]*(+m[2]+1)/2;
+  const flat=s.replace(/\d+d\d+/g,"").match(/[+-]\s*\d+/g); if(flat) flat.forEach(f=>t+=parseInt(f.replace(/\s/g,""),10));
+  return t;
+}
+function rageBonus(){ const l=classLevels()["Barbarian"]||0; return l>=16?4:l>=9?3:l?2:0; }
+function martialArtsDie(){ const l=classLevels()["Monk"]||0; return l>=17?"1d12":l>=11?"1d10":l>=5?"1d8":"1d6"; }
+function gwfBonus(die){ let t=0; for(const m of String(die).matchAll(/(\d+)d(\d+)/g)) t+=+m[1]*3/+m[2]; return Math.round(t*10)/10; }
+function sneakDice(){ const l=classLevels()["Rogue"]||0; return l?Math.ceil(l/2)+"d6":null; }
+function attackProfile(slot, name){
+  const g=gearState(); const PB=profBonus();
+  const monkL=classLevels()["Monk"]||0, barbL=classLevels()["Barbarian"]||0, palL=classLevels()["Paladin"]||0;
+  let rec, it=null, e={};
+  if(name==="__unarmed"){ rec={name:"Unarmed Strike", cat:"simple", kind:"melee", dmg:monkL?martialArtsDie():"1", type:"bludgeoning", props:[], mastery:""}; }
+  else { it=gearItem(name); if(!it||it.kind!=="weapon"||!it.rec) return null; rec=it.rec; e=gearEffect(it); }
+  const ranged=rec.kind==="ranged", fin=hasProp(rec,"finesse"), thrown=hasProp(rec,"thrown"), light=hasProp(rec,"light"), heavy=hasProp(rec,"heavy"), twoH=hasProp(rec,"two-handed");
+  const offIsWeapon=slot==="weapon"&&g.offhand&&(gearItem(g.offhand)||{}).kind==="weapon";
+  const twoHandedFree=slot==="weapon"&&!g.offhand;
+  const monkWeapon=monkL&&!ranged&&(name==="__unarmed"||((rec.cat==="simple"||light)&&!heavy&&!twoH));
+  let abil=ranged?"DEX":(fin&&mod("DEX")>mod("STR"))?"DEX":"STR";
+  if(monkWeapon&&mod("DEX")>mod(abil)) abil="DEX";
+  if(name==="__unarmed"&&!monkL) abil="STR";
+  if(e.atkAbility) abil=e.atkAbility;
+  const prof=name==="__unarmed"?true:weaponProficient(rec);
+  let atk=mod(abil)+(prof?PB:0)+(e.bonus||0);
+  if(ranged&&S.fightingStyles.includes("Archery")) atk+=2;
+  let die=rec.dmg;
+  if(hasProp(rec,"versatile")&&twoHandedFree) die=propArg(rec,"versatile");
+  if(monkWeapon&&avgDice(martialArtsDie())>avgDice(die)) die=martialArtsDie();
+  if(name==="__unarmed"&&!monkL){ die=S.fightingStyles.includes("Unarmed Fighting")?(g.weapon||g.offhand?"1d6":"1d8"):hasFeat("Tavern Brawler")?"1d4":"1"; }
+  let flat=mod(abil)+(e.bonus||0);
+  if(slot==="offhand"&&!S.fightingStyles.includes("Two-Weapon Fighting")&&!hasProp(rec,"nick")) flat-=mod(abil);
+  const riders=[], once=[];
+  if(e.extraDmg) riders.push({dice:e.extraDmg, label:it.name});
+  if(barbL&&!ranged&&abil==="STR") riders.push({flat:rageBonus(), label:"Rage"});
+  if(!ranged&&palL>=11) riders.push({dice:"1d8", label:"Radiant Strikes"});
+  if(slot==="weapon"&&!ranged&&!twoH&&!offIsWeapon&&S.fightingStyles.includes("Dueling")) riders.push({flat:2, label:"Dueling"});
+  if(S.fightingStyles.includes("Great Weapon Fighting")&&(twoH||(hasProp(rec,"versatile")&&twoHandedFree))) riders.push({flat:gwfBonus(die), label:"Great Weapon Fighting"});
+  if(S.fightingStyles.includes("Thrown Weapon Fighting")&&thrown) riders.push({flat:2, label:"Thrown Weapon Fighting"});
+  if(hasFeat("Great Weapon Master")&&heavy&&!ranged) riders.push({flat:PB, label:"Great Weapon Master"});
+  if(hasFeature("Favored Enemy")) riders.push({dice:(classLevels()["Ranger"]>=20?"1d10":"1d6"), label:"Hunter's Mark"});
+  const sd=sneakDice(); if(sd&&(fin||ranged)) once.push({dice:sd, label:"Sneak Attack"});
+  if((S.options["Blessed Strikes"]||[]).includes("Divine Strike")&&!ranged) once.push({dice:(classLevels()["Cleric"]>=14?"2d8":"1d8"), label:"Divine Strike"});
+  if((S.options["Elemental Fury"]||[]).includes("Primal Strike")) once.push({dice:(classLevels()["Druid"]>=15?"2d8":"1d8"), label:"Primal Strike"});
+  if(S.subclasses["Barbarian"]==="Path of the Zealot"&&!ranged) once.push({dice:"1d6+"+Math.floor(barbL/2), label:"Divine Fury"});
+  return {slot, name:rec.name===name||name==="__unarmed"?rec.name:name, rec, magic:it&&it.magic, abil, prof, atk, die, flat, riders, once, ranged, light, heavy, mastery:rec.mastery||"", type:rec.type, unarmed:name==="__unarmed"};
+}
+function attackProfiles(){
+  const g=gearState(); const out=[];
+  for(const slot of ["weapon","ranged","offhand"]){ const p=attackProfile(slot,g[slot]); if(p) out.push(p); }
+  if(classLevels()["Monk"]||!out.length) out.push(attackProfile("unarmed","__unarmed"));
+  return out;
+}
+function attacksPerAction(){
+  const fighterL=classLevels()["Fighter"]||0;
+  const extra=acquiredFeatures().some(f=>/extra attack/i.test(f.name))||(S.options["Eldritch Invocations"]||[]).includes("Thirsting Blade");
+  return fighterL>=20?4:fighterL>=11?3:extra?2:1;
+}
+function critChance(){ const ch=S.subclasses["Fighter"]==="Champion"?(classLevels()["Fighter"]>=15?3:2):1; return ch/20; }
+function hitChance(atk, ac){ return Math.min(.95, Math.max(.05, (21-(ac-atk))/20)); }
+function dprFor(p, ac){
+  const crit=critChance(); const hit=Math.max(hitChance(p.atk,ac),crit);
+  const dice=avgDice(p.die);
+  const rDice=p.riders.reduce((t,r)=>t+(r.dice?avgDice(r.dice):0),0), rFlat=p.riders.reduce((t,r)=>t+(r.flat||0),0);
+  const perHit=dice+p.flat+rDice+rFlat, critExtra=dice+rDice;
+  return {hit, perAttack:hit*perHit+crit*critExtra, once:p.once.reduce((t,o)=>t+avgDice(o.dice),0)};
+}
+function formatDmg(p){
+  const flat=p.flat+p.riders.reduce((t,r)=>t+(r.flat||0),0);
+  const dice=[p.die, ...p.riders.filter(r=>r.dice).map(r=>r.dice)].join(" + ");
+  return `${dice}${flat?(flat>0?" + ":" − ")+Math.abs(flat):""}`;
+}
+/* ---------------- Proving ground numbers ---------------- */
+const PG_AC=[13,16,19], PG_ATK=[5,8,11], PG_SAVE=[2,4,6];
+function bestCantrip(){
+  const L=totalLevel(); const tiers=1+(L>=5)+(L>=11)+(L>=17); let best=null;
+  for(const e of casterEntries()){
+    const ss=spellState(e.cls);
+    for(const n of ss.cantrips){
+      const sp=spellByName(n); if(!sp||!((window.SPELL_TAGS||{})[n]||[]).includes("damage")) continue;
+      const m=sp.desc.match(/(\d+)d(\d+)/); if(!m) continue;
+      const attackRoll=/spell attack/i.test(sp.desc);
+      const beams=n==="Eldritch Blast"?tiers:1, dice=n==="Eldritch Blast"?1:tiers;
+      let flat=0;
+      if(n==="Eldritch Blast"&&(S.options["Eldritch Invocations"]||[]).includes("Agonizing Blast")) flat+=mod("CHA");
+      if((S.options["Blessed Strikes"]||[]).includes("Potent Spellcasting")&&e.cls==="Cleric") flat+=mod("WIS");
+      if((S.options["Elemental Fury"]||[]).includes("Potent Spellcasting")&&e.cls==="Druid") flat+=mod("WIS");
+      const per=dice*(+m[2]+1)/2+flat;
+      const spellAtk=gearState().wonders.reduce((t,w)=>t+(gearEffect(gearItem(w)).spellAtk||0),0);
+      const c={name:n, cls:e.cls, attackRoll, beams, per, atk:profBonus()+mod(e.caster.ability)+spellAtk, dc:8+profBonus()+mod(e.caster.ability)+spellAtk, half:/half/i.test(sp.desc)};
+      if(!best||c.per*c.beams>best.per*best.beams) best=c;
+    }
+  }
+  return best;
+}
+function provingGround(){
+  const ps=attackProfiles(); const n=attacksPerAction();
+  const main=ps.find(p=>p.slot==="weapon")||ps.find(p=>p.slot==="ranged")||ps.find(p=>p.slot==="unarmed");
+  const off=ps.find(p=>p.slot==="offhand"); const rng=ps.find(p=>p.slot==="ranged"&&p!==main);
+  const monkL=classLevels()["Monk"]||0;
+  const rows=[];
+  const mk=(label, fn)=>rows.push({label, cells:PG_AC.map(fn)});
+  if(main){
+    const bonusAtk=(off&&off.light&&main.light)?off:(monkL?ps.find(p=>p.slot==="unarmed"):null);
+    const lbl=`${main.name} × ${n}${bonusAtk?" + "+(bonusAtk.slot==="unarmed"?"unarmed (bonus action)":"off-hand"):""}`;
+    mk(lbl, ac=>{ const d=dprFor(main,ac); let v=d.perAttack*n; let hits=n;
+      if(bonusAtk){ v+=dprFor(bonusAtk,ac).perAttack; hits++; }
+      v+=(1-Math.pow(1-d.hit,hits))*d.once; return {hit:d.hit, dpr:v}; });
+  }
+  if(rng) mk(`${rng.name} × ${n}`, ac=>{ const d=dprFor(rng,ac); return {hit:d.hit, dpr:d.perAttack*n+(1-Math.pow(1-d.hit,n))*d.once}; });
+  const ct=bestCantrip();
+  if(ct) mk(`${ct.name}${ct.beams>1?" × "+ct.beams:""}`, (ac,i)=>{
+    if(ct.attackRoll){ const h=hitChance(ct.atk,ac); return {hit:h, dpr:(h*ct.per+0.05*ct.per*0.5)*ct.beams}; }
+    const fail=Math.min(.95,Math.max(.05,(ct.dc-PG_SAVE[i]-1)/20)); return {hit:fail, dpr:ct.per*(fail+(ct.half?(1-fail)*.5:0)), save:true};
+  });
+  const ac=armorClass(), hp=maxHP();
+  const ehp=PG_ATK.map(a=>Math.round(hp/hitChance(a,ac)));
+  return {rows, ac, hp, ehp, attacks:n};
+}
+
+/* ---------------- Kits & spoils ---------------- */
+function kitsFor(cls){ return ((window.STARTING_KITS||{})[cls])||[]; }
+function applyKit(){
+  const kits=kitsFor(S.firstClass); if(!kits.length) return;
+  const k=kits.find(x=>x.name===S.kit)||kits[0]; S.kit=k.name;
+  const g=gearState(); g.armor=k.armor||null; g.offhand=k.offhand||null; g.weapon=k.weapon||null; g.ranged=k.ranged||null;
+}
+function archetype(){
+  const cl=classLevels(), order=classOrder(); if(!order.length) return "heavy-melee";
+  const sum=list=>order.filter(c=>list.includes(c)).reduce((t,c)=>t+cl[c],0);
+  const martial=sum(["Barbarian","Fighter","Rogue"]), monk=cl["Monk"]||0, caster=sum(["Bard","Cleric","Druid","Sorcerer","Warlock","Wizard"]), half=sum(["Paladin","Ranger"]);
+  if(monk&&monk>=Math.max(martial,caster,half)) return "unarmed";
+  if(caster>martial+half+monk) return "full-caster";
+  if(half>martial+monk&&half>=caster) return "half-caster";
+  const g=gearState(); const w=gearItem(g.weapon), r=gearItem(g.ranged);
+  const bow=r&&r.rec&&r.rec.kind==="ranged"&&hasProp(r.rec,"ammunition");
+  const lightMain=!w||!w.rec||w.rec.cat==="simple"||hasProp(w.rec,"light");
+  if(bow&&lightMain&&mod("DEX")>=mod("STR")) return "ranged";
+  if(w&&w.rec&&hasProp(w.rec,"finesse")&&mod("DEX")>=mod("STR")) return "finesse-melee";
+  if(bow&&mod("DEX")>mod("STR")) return "ranged";
+  return "heavy-melee";
+}
+function reforge(it){
+  if(!it||!it.base||!/^\+\d /.test(it.name)) return it?it.name:null;
+  const g=gearState(); const isW=!!weaponRec(it.base); const n=it.name.match(/^(\+\d) /)[1];
+  let cur=null;
+  if(isW){ const base=weaponRec(it.base); const slot=base.kind==="ranged"?g.ranged:g.weapon; const ci=gearItem(slot); cur=ci&&ci.rec&&ci.rec.dmg?ci.rec.name:null; }
+  else { const base=armorRec(it.base); const slot=base.cat==="shield"?g.offhand:g.armor; const ci=gearItem(slot); cur=ci&&ci.rec&&!ci.rec.dmg?ci.rec.name:null; }
+  if(cur&&cur!==it.base){ const alt=MID().find(m=>m.base===cur&&m.name.startsWith(n+" ")); if(alt) return alt.name; }
+  return it.name;
+}
+function spoilsOffer(level){
+  const SP=window.SPOILS||{}; const list=((SP[archetype()]||{})[level])||[]; const out=[];
+  const vt=(S.log[S.log.length-1]||{}).title; const trophy=TRD()[vt];
+  for(const n of list){
+    if(n==="<trophy>"){ if(trophy&&!out.some(o=>o.name===trophy.name)) out.push({name:trophy.name, item:trophy, trophy:true, from:vt}); continue; }
+    const it=magicRec(n); if(!it) continue;
+    const nm=reforge(it); const rec=magicRec(nm)||it;
+    if(!out.some(o=>o.name===nm)) out.push({name:nm, item:rec, trophy:false});
+  }
+  return out;
+}
+function unequipSpoil(name){
+  const g=gearState(); if(!name) return;
+  for(const s of GEAR_SLOTS) if(g[s]===name){ const it=gearItem(name); g[s]=it&&it.rec?it.rec.name:null; }
+  g.wonders=g.wonders.filter(w=>w!==name);
+  S.owned=S.owned.filter(w=>w!==name);
+}
+function equipSpoil(name, level){
+  const g=gearState(); const it=gearItem(name); if(!it) return;
+  unequipSpoil(S.spoils[level]);
+  if(it.kind==="wonder"){ if(!g.wonders.includes(name)){ g.wonders.push(name); if(g.wonders.length>3) g.wonders.shift(); } }
+  else if(it.kind==="shield") g.offhand=name;
+  else if(it.kind==="armor") g.armor=name;
+  else if(it.rec&&it.rec.kind==="ranged") g.ranged=name;
+  else g.weapon=name;
+  if(!S.owned.includes(name)) S.owned.push(name);
+  S.spoils[level]=name;
+}
+function gearOptions(slot){
+  const g=gearState(); const opts=[]; const tr=armorTraining();
+  const owned=S.owned.map(gearItem).filter(Boolean);
+  if(slot==="armor"){
+    AD().filter(a=>a.cat!=="shield").forEach(a=>opts.push({name:a.name, group:tr.has(a.cat)?"Armor":"Armor (untrained)"}));
+    owned.filter(i=>i.kind==="armor").forEach(i=>opts.push({name:i.name, group:"Won"}));
+  } else if(slot==="offhand"){
+    AD().filter(a=>a.cat==="shield").forEach(a=>opts.push({name:a.name, group:"Shield"}));
+    WD().filter(w=>w.kind==="melee"&&hasProp(w,"light")).forEach(w=>opts.push({name:w.name, group:weaponProficient(w)?"Light weapon":"Light weapon (not proficient)"}));
+    owned.filter(i=>i.kind==="shield"||(i.kind==="weapon"&&i.rec&&hasProp(i.rec,"light"))).forEach(i=>opts.push({name:i.name, group:"Won"}));
+  } else {
+    const kind=slot==="ranged"?"ranged":"melee";
+    WD().filter(w=>w.kind===kind||(kind==="ranged"&&hasProp(w,"thrown"))).forEach(w=>opts.push({name:w.name, group:weaponProficient(w)?(w.cat==="simple"?"Simple":"Martial"):"Not proficient"}));
+    owned.filter(i=>i.kind==="weapon"&&i.rec&&(i.rec.kind===kind||(kind==="ranged"&&hasProp(i.rec,"thrown")))).forEach(i=>opts.push({name:i.name, group:"Won"}));
+  }
+  return opts;
 }
 /* ================= Legend Forge: UI ================= */
 
@@ -6216,7 +9002,7 @@ function renderRail(){
     <button class="btn primary big" data-act="xp" ${atCap||S.pending?"disabled":""}>✦ Venture Forth</button>
     ${atCap?`<div style="margin-top:10px"><button class="btn danger" data-act="askreset">⚑ Start Over</button></div>`:""}
     <div class="hint" style="margin-top:8px">${atCap?"Twenty levels: the summit of mortal adventure.":`${S.xp.toLocaleString()} XP · ${nextXP.toLocaleString()} for level ${L+1}`}</div>
-    ${S.prevSnap&&!S.pending&&L>1?`<div style="margin-top:8px"><button class="btn ghost" data-act="askundo" style="font-size:13px">↩ Step back a level</button></div>`:""}
+    ${S.prevSnap&&!S.pending&&L>1?`<div style="margin-top:8px"><button class="btn ghost" data-act="askundo" style="font-size:13px">↩ Step back a level${(S.undoStack||[]).length>1?` <span class="hint">(${S.undoStack.length} kept)</span>`:""}</button></div>`:""}
     ${unfinishedChoices().length?`<div class="nudge">Still to choose: ${esc(unfinishedChoices().join(", "))}</div>`:""}
   </div>
   ${vignetteShown?`<div class="vignette"><div class="vhead">Level ${latest.level}: ${esc(latest.title)}</div>${esc(latest.text)}${latest.gains?`<div class="gains" style="font-style:normal;margin-top:6px">▸ ${esc(latest.gains)}</div>`:""}</div>`:""}
@@ -6436,7 +9222,8 @@ function wizAbilities(){
   }
   return `<h2>Determine Ability Scores</h2>
   <p class="lede">Your six ability scores are the raw numbers behind every roll you will ever make: each score's modifier is added to attacks, checks, and saves. Put your best scores where your class needs them${S.firstClass?` (${esc(S.firstClass)}: ${CLASS_DATA[S.firstClass].primary.map(a=>ABIL_NAMES[a]).join(" and ")})`:""}.</p>
-  <div class="radiorow">${methods.map(([v,l])=>`<label><input type="radio" name="method" value="${v}" data-act-change="method" ${S.method===v?"checked":""}> ${l}</label>`).join("")}</div>
+  <div class="radiorow">${methods.map(([v,l])=>`<label><input type="radio" name="method" value="${v}" data-act-change="method" ${S.method===v?"checked":""}> ${l}</label>`).join("")}
+    ${S.firstClass&&(S.method!=="roll"||T.rollPools.length)?`<button class="btn" data-act="autoscores" data-tipt="Auto-place" data-tipb="Puts your best scores where a ${esc(S.firstClass)} needs them (primary abilities first, then Constitution). You can still adjust everything.">✦ Place scores for a ${esc(S.firstClass)}</button>`:""}</div>
   ${body}
   <h3 class="eyebrow">Final scores (with background increases)</h3>
   <div class="abilrow">${ABILITIES.map(a=>`<div class="abil"><div class="aname">${a}</div><div class="ascore">${previewScore(a)}</div><div class="amod">${fmtMod(Math.floor((previewScore(a)-10)/2))}</div></div>`).join("")}</div>
@@ -6472,7 +9259,18 @@ function wizClass(){
     ${(cd.features[1]||[]).map(f=>`<div class="featline"><span class="fname" data-act="tipfeat" data-a="${esc(f.name)}" data-b="${esc(f.desc)}">${esc(f.name)}</span></div>`).join("")}
     <div class="kv"><span>Hit points at 1st</span><b>${cd.hitDie} + CON</b></div>
     <div class="kv"><span>Armor</span><b>${esc(cd.armor||"None")}</b></div>
-    <div class="kv"><span>Weapons</span><b>${esc(cd.weapons||"None")}</b></div>`:""}`;
+    <div class="kv"><span>Weapons</span><b>${esc(cd.weapons||"None")}</b></div>
+    ${kitPicker()}`:""}`;
+}
+function kitPicker(){
+  const kits=kitsFor(S.firstClass); if(!kits.length) return "";
+  const sel=kits.find(k=>k.name===S.kit)||kits[0];
+  return `<h3 class="eyebrow">Starting kit</h3>
+  <div class="cardgrid">${kits.map(k=>`<button class="card ${sel.name===k.name?"sel":""}" data-act="kit" data-a="${esc(k.name)}">
+    <div class="cname">${esc(k.name)}</div>
+    <div class="cmeta">${esc([k.armor,k.offhand,k.weapon,k.ranged].filter(Boolean).join(" · ")||"Travelling light")}</div>
+    <div class="cdesc">${esc(k.blurb||"")}</div></button>`).join("")}</div>
+  <p class="hint">Sets your armor class, attacks and damage on the sheet. Swap any piece later from the Gear card.</p>`;
 }
 
 function wizConfirm(){
@@ -6520,10 +9318,7 @@ function renderOriginSummary(){
     <label class="fld" style="margin-top:14px">Notes</label>
     <textarea class="flav" style="min-height:60px" data-act-input="flavnotes" placeholder="Table notes, bonds, reminders…">${esc(S.flavor.notes)}</textarea>
     <hr class="orn">
-    <button class="btn danger" data-act="askreset">Burn this page &amp; start anew</button>
-    <button class="btn" data-act="export">Copy build summary</button>
-    <button class="btn" data-act="sharelink">Copy build link</button>
-    <button class="btn ghost" data-act="stash" ${loadVault().length>=VAULT_MAX?"disabled title='Vault full'":""}>Add to Vault</button>
+    <div class="btnrow" style="margin-top:0"><button class="btn danger" data-act="askreset">Burn this page &amp; start anew</button><button class="btn" data-act="export">Copy build summary</button><button class="btn" data-act="sharelink">Copy build link</button><button class="btn ghost" data-act="stash" ${loadVault().length>=VAULT_MAX?"disabled title='Vault full'":""}>Add to Vault</button></div>
   </div>`;
 }
 
@@ -6543,28 +9338,42 @@ function renderSheetMain(){
     <div class="charname">${esc(S.name)}</div>
     <div class="charline">${esc(S.species)}${S.speciesChoice?" ("+esc(S.speciesChoice)+")":""} · ${esc(S.background)} · Level ${L}: ${esc(clsLine)}</div>
     ${S.flavor.hook||S.flavor.alignment?`<div class="hookline">${esc([S.flavor.hook,S.flavor.alignment].filter(Boolean).join(" · "))}</div>`:""}
+    ${roadmapStrip()}
     <div class="xpbar"><i style="width:${pct}%"></i></div>
     <div class="hint" style="font-size:11.5px">${S.xp.toLocaleString()} XP${nextXP?` · ${nextXP.toLocaleString()} for level ${L+1}`:" · maximum level reached"}</div>
     <div class="statgrid">
       <div class="stat" data-tipt="Hit Points" data-tipb="Your maximum health. Level 1 grants your first class's full Hit Die (${S.firstClass?CLASS_DATA[S.firstClass].hitDie:8}); every later level adds the average roll, plus your CON modifier (${fmtMod(mod("CON"))}) per level. At 0 you fall unconscious and start making Death Saves."><div class="sv">${maxHP()}</div><div class="sl">Hit Points</div></div>
+      <div class="stat" data-tipt="Armor Class" data-tipb="${esc(armorClassBreakdown().parts.join("; "))}. Attack rolls must meet or beat this to hit you."><div class="sv">${armorClass()}</div><div class="sl">Armor Class</div></div>
       <div class="stat" data-tipt="Proficiency Bonus" data-tipb="Added to everything you are trained in: proficient skills, saving throws, weapon attacks, and spell attack rolls and DCs. It rises with total character level, from +2 at level 1 to +6 at level 17."><div class="sv">+${profBonus()}</div><div class="sl">Prof. Bonus</div></div>
       <div class="stat" data-tipt="Speed" data-tipb="How far you can move on your turn, in feet. Set by your species; some class features add more."><div class="sv">${(SPECIES_DATA.find(s=>s.name===S.species)||{speed:30}).speed} ft</div><div class="sl">Speed</div></div>
       <div class="stat" data-tipt="Initiative" data-tipb="Added to a d20 roll at the start of combat to decide turn order. Equal to your DEX modifier (${fmtMod(mod("DEX"))}); the Alert feat adds your Proficiency Bonus."><div class="sv">${fmtMod(mod("DEX"))}</div><div class="sl">Initiative</div></div>
       <div class="stat" data-tipt="Passive Perception" data-tipb="What you notice without actively searching: 10 + your Perception bonus. The DM checks hidden creatures and traps against it."><div class="sv">${10+mod("WIS")+(S.skills.includes("Perception")?profBonus()*(S.expertise.includes("Perception")?2:1):0)}</div><div class="sl">Pass. Percep.</div></div>
-      <div class="stat" data-tipt="Hit Dice" data-tipb="Your recovery pool: during a Short Rest, spend dice to heal (one die + CON modifier each). You have one per level, sized by the class that granted it."><div class="sv">${classOrder().map(c=>cl[c]+"d"+CLASS_DATA[c].hitDie).join(" ")}</div><div class="sl">Hit Dice</div></div>
+      <div class="stat" data-tipt="Hit Dice" data-tipb="Your recovery pool: during a Short Rest, spend dice to heal (one die + CON modifier each). You have one per level, sized by the class that granted it."><div class="sv ${classOrder().length>1?"sv-long":""}">${classOrder().map(c=>cl[c]+"d"+CLASS_DATA[c].hitDie).join(" · ")}</div><div class="sl">Hit Dice</div></div>
     </div>
   </div>
   <div class="sheetcols">
     <div class="scard"><div class="eyebrow">Abilities &amp; Saves</div>${abilitySheetBlock()}</div>
     <div class="scard"><div class="eyebrow">Actions in Combat</div>${actionsBlock()}</div>
+    <div class="scard"><div class="eyebrow">Gear</div>${gearBlock()}</div>
     ${casterEntries().length||innateMagicEntries().length?`<div class="scard"><div class="eyebrow">Spellcasting</div>${magicBlock()}</div>`:""}
     ${talentsBlock()?`<div class="scard"><div class="eyebrow">Talents &amp; Techniques</div>${talentsBlock()}</div>`:""}
     <div class="scard"><div class="eyebrow">Skills</div>${skillsBlock()}</div>
     <div class="scard"><div class="eyebrow">Feats &amp; Styles</div>${featsBlock()}</div>
     <div class="scard"><div class="eyebrow">Features by Level</div>${featuresBlock()}</div>
     <div class="scard"><div class="eyebrow">Proficiencies &amp; Training</div>${profsBlock()}
-      <div style="margin-top:10px"><button class="btn ghost" data-act="export">Copy summary</button> <button class="btn ghost" data-act="sharelink">Copy build link</button> <button class="btn ghost" data-act="stash" ${loadVault().length>=VAULT_MAX?"disabled title='Vault full'":""}>Add to Vault</button></div></div>
+      <div class="btnrow"><button class="btn ghost" data-act="export">Copy summary</button><button class="btn ghost" data-act="sharelink">Copy build link</button><button class="btn ghost" data-act="stash" ${loadVault().length>=VAULT_MAX?"disabled title='Vault full'":""}>Add to Vault</button></div></div>
   </div>`;
+}
+function roadmapStrip(){
+  const cl=classLevels(); const order=classOrder().slice(0,2); if(!order.length) return "";
+  const LBL={sub:"Subclass",asi:"Feat / ASI",attack:"Extra Attack",boon:"Epic Boon",cap:"Capstone",feat:"Feature"};
+  return `<div class="roadmap">${order.map(c=>{
+    const cur=cl[c]||0;
+    return `<div class="rm-row"><span class="rm-cls">${esc(c)}</span>${roadmapFor(c).map(m=>{
+      const state=m.l<cur?"done":m.l===cur?"now":"";
+      const tip=(m.names.length?m.names.join(", "):"Hit points and steady growth");
+      return `<span class="rm ${m.k} ${state}" data-tipt="${esc(c)} ${m.l}${LBL[m.k]?" · "+LBL[m.k]:""}" data-tipb="${esc(tip)}"></span>`;}).join("")}</div>`;
+  }).join("")}<div class="rm-key"><span><i class="rm sub"></i>subclass</span><span><i class="rm asi"></i>feat / ASI</span><span><i class="rm attack"></i>extra attack</span><span><i class="rm boon"></i>epic boon</span><span><i class="rm cap"></i>capstone</span></div></div>`;
 }
 function abilitySheetBlock(){
   const saveProfs=saveProficiencies();
@@ -6593,11 +9402,11 @@ function actionsBlock(){
   const atkCount=fighterL>=20?4:fighterL>=11?3:attacks;
   const cat=(re)=>feats.filter(f=>re.test(f.desc)&&!/Ability Score Improvement/.test(f.name));
   const bonus=cat(/bonus action/i), reac=cat(/reaction/i);
-  return `<div class="kv"><span>Attacks per Attack action</span><b>${atkCount}</b></div>
+  return `${attackLines()}<div class="kv" style="margin-top:6px"><span class="hint">Attacks per Attack action</span><b>${atkCount}</b></div>
   ${extraFeats.length>1&&fighterL<11?`<div class="hint" style="font-size:12px">Extra Attack from multiple classes doesn't stack: still ${atkCount} attacks (only Fighter 11+ grants a third).</div>`:""}
-  <div class="eyebrow" style="margin-top:8px">Bonus action options</div>
+  <div class="eyebrow">Bonus actions</div>
   ${bonus.length?bonus.map(f=>featTipLine(f)).join(""):`<div class="hint">None yet from class features</div>`}
-  <div class="eyebrow" style="margin-top:8px">Reactions</div>
+  <div class="eyebrow">Reactions</div>
   <div class="featline"><span class="hint">Opportunity Attack (everyone)</span></div>
   ${reac.map(f=>featTipLine(f)).join("")}
   ${(()=>{ // resource pools with computed uses (Rage, Channel Divinity, Focus Points, ...)
@@ -6608,9 +9417,51 @@ function actionsBlock(){
       const u=resourceUsesText(f.name);
       if(u) rows.push({...f,u});
     }
-    return rows.length?`<div class="eyebrow" style="margin-top:8px">Resource pools</div>`+
+    return rows.length?`<div class="eyebrow">Resource pools</div>`+
       rows.map(f=>`<div class="kv"><span class="fname" data-act="tipfeat" data-a="${esc(f.name)}" data-b="${esc(f.desc+" Uses: "+f.u.n+(f.u.pool?" points":"")+" ("+f.u.recharge+").")}">${esc(f.name)}</span><b>${f.u.n}${f.u.pool?" pts":"×"}</b></div>`).join(""):"";
   })()}`;
+}
+function rarityChip(r){ return r&&r!=="mundane"?`<span class="rar rar-${esc(String(r).replace(/ /g,"-"))}">${esc(r)}</span>`:""; }
+function attackLines(){
+  const ps=attackProfiles(); if(!ps.length) return "";
+  return `<div class="eyebrow">Attacks</div>`+ps.map(p=>{
+    const tip=`${p.abil} ${fmtMod(mod(p.abil))}${p.prof?" + proficiency +"+profBonus():" (not proficient)"}${p.magic&&gearEffect({magic:p.magic}).bonus?" + magic +"+gearEffect({magic:p.magic}).bonus:""}${p.ranged&&S.fightingStyles.includes("Archery")?" + Archery +2":""}. Damage ${formatDmg(p)} ${p.type}${p.riders.length?" (includes "+p.riders.map(r=>r.label).join(", ")+")":""}${p.once.length?"; once per turn add "+p.once.map(o=>o.dice+" "+o.label).join(", "):""}.${p.mastery?" Mastery: "+p.mastery+".":""}`;
+    const meta=[p.type, p.mastery?"mastery: "+p.mastery:"", p.riders.length?"with "+p.riders.map(r=>r.label).join(", "):"", p.once.length?"+"+p.once.map(o=>o.dice+" "+o.label).join(", ")+" once per turn":""].filter(Boolean).join(" · ");
+    return `<div class="kv atkrow"><span><span class="fname" data-act="tipfeat" data-a="${esc(p.name)}" data-b="${esc(tip)}">${esc(p.name)}</span>${p.slot==="offhand"?' <span class="hint">off-hand</span>':""}<span class="atkmeta">${esc(meta)}</span></span><span class="atkval">${fmtMod(p.atk)} to hit · ${esc(formatDmg(p))}</span></div>`;
+  }).join("");
+}
+function provingMini(){
+  const pg=provingGround(); if(!pg.rows.length) return "";
+  return `<div class="eyebrow" style="margin-top:8px">Damage per round vs AC ${PG_AC.join(" · ")}</div>
+  ${pg.rows.map(r=>`<div class="kv"><span class="hint" style="font-size:12.5px">${esc(r.label)}</span><b class="pgcells">${r.cells.map(c=>Math.round(c.dpr*10)/10).join(" · ")}</b></div>`).join("")}
+  <div class="hint" style="font-size:11.5px">Averages, first target hit each turn. The full table is on the Analysis tab.</div>`;
+}
+function gearBlock(){
+  const g=gearState();
+  const LBL={armor:"Armor",offhand:"Off-hand",weapon:"Main hand",ranged:"Ranged"};
+  let html=GEAR_SLOTS.map(slot=>{
+    const it=gearItem(g[slot]); const opts=gearOptions(slot); const groups=[...new Set(opts.map(o=>o.group))];
+    return `<div class="kv gearrow"><span><span class="hint">${LBL[slot]}</span><br><span class="fname" data-act="tipfeat" data-a="${esc(g[slot]||"Nothing")}" data-b="${esc(it?(itemSummary(it)+(it.magic&&it.magic.desc?". "+it.magic.desc:"")):"Empty slot.")}">${esc(g[slot]||"None")}</span> ${it?rarityChip(it.rarity):""}</span>
+      <select data-act-change="gear" data-a="${slot}" aria-label="Change ${LBL[slot]}"><option value="">None</option>${groups.map(gr=>`<optgroup label="${esc(gr)}">${opts.filter(o=>o.group===gr).map(o=>`<option value="${esc(o.name)}" ${g[slot]===o.name?"selected":""}>${esc(o.name)}</option>`).join("")}</optgroup>`).join("")}</select></div>`;
+  }).join("");
+  html+=`<div class="kv"><span class="hint">Wonders (attune up to 3)</span></div>`;
+  html+=g.wonders.length?g.wonders.map(n=>{const it=gearItem(n);return `<div class="kv"><span><span class="fname" data-act="tipfeat" data-a="${esc(n)}" data-b="${esc(itemSummary(it)+(it.magic&&it.magic.desc?". "+it.magic.desc:""))}">${esc(n)}</span>${rarityChip(it.rarity)}</span><button class="btn ghost" style="padding:1px 8px;font-size:11px" data-act="unwonder" data-a="${esc(n)}">remove</button></div>`;}).join(""):`<div class="hint" style="font-size:12px">None yet. Spoils arrive at levels ${SPOIL_LEVELS.join(", ")}.</div>`;
+  const spare=(S.owned||[]).filter(n=>!g.wonders.includes(n)&&(gearItem(n)||{}).kind==="wonder"&&![g.armor,g.offhand,g.weapon,g.ranged].includes(n));
+  if(spare.length) html+=`<div class="kv" style="margin-top:4px"><span class="hint">Owned, not attuned</span></div>`+spare.map(n=>`<div class="kv"><span><span class="fname" data-act="tipfeat" data-a="${esc(n)}" data-b="${esc(itemSummary(gearItem(n))+((gearItem(n).magic||{}).desc?". "+gearItem(n).magic.desc:""))}">${esc(n)}</span>${rarityChip(gearItem(n).rarity)}</span><button class="btn ghost" style="padding:1px 8px;font-size:11px" data-act="attune" data-a="${esc(n)}" ${g.wonders.length>=3?"disabled title='Remove a wonder first'":""}>attune</button></div>`).join("");
+  const ac=armorClassBreakdown();
+  html+=`<div class="hint" style="font-size:11.5px;margin-top:6px">AC ${ac.ac}: ${esc(ac.parts.join(" · "))}</div>`;
+  if(S.kit) html+=`<div class="hint" style="font-size:11.5px">Starting kit: ${esc(S.kit)}</div>`;
+  return html;
+}
+function spoilsBlock(c,i){
+  const offers=spoilsOffer(c.level); const chosen=S.spoils[c.level];
+  const vt=(S.log[S.log.length-1]||{}).title;
+  return `<div class="cardgrid" style="margin-top:8px">${offers.map(o=>`
+    <button class="card ${chosen===o.name?"sel":""}" data-act="spoilpick" data-a="${esc(o.name)}" data-b="${c.level}" data-c="${i}">
+      <div class="cname">${esc(o.name)} ${rarityChip(o.item.rarity)}</div>
+      <div class="cmeta">${esc(itemSummary(gearItem(o.name)))}${o.trophy?" · trophy":""}</div>
+      <div class="cdesc">${esc(o.item.desc||"")}</div></button>`).join("")||`<p class="hint">No spoils this time.</p>`}</div>
+  ${vt?`<p class="hint" style="margin-top:6px">Found during ${esc(vt)}.</p>`:""}`;
 }
 function resourceUsesText(name){
   const R=(window.RESOURCE_USES||{})[name]; if(!R) return null;
@@ -6763,7 +9614,7 @@ function profsBlock(){
   const bg=BACKGROUND_DATA.find(b=>b.name===S.background)||{};
   let lines=[];
   if(first){
-    lines.push(["Armor", first.armor||"None"],["Weapons", first.weapons||"None"],["Tools",[first.tools,bg.tool].filter(Boolean).join(", ")||"None"]);
+    lines.push(["Armor", first.armor||"None"],["Weapons", first.weapons||"None"],["Tools",[first.tools,bg.tool].filter(t=>t&&t!=="None").join(", ")||"None"]);
     for(const c of classOrder()){
       if(c!==classOrder()[0]) lines.push(["From "+c+" (multiclass)", CLASS_DATA[c].multiclassGrants||"–"]);
     }
@@ -6930,6 +9781,9 @@ function renderChoiceBlock(c,i){
   if(c.kind==="featspells"){
     return wrap(`${esc(c.feat)}: choose your spells`,
       featPickBlock(c.fromSlot, c.feat));
+  }
+  if(c.kind==="spoils"){
+    return wrap(`Spoils of the adventure (level ${c.level})`, spoilsBlock(c,i));
   }
   if(c.kind==="spells"){
     return `<div class="choice-block done"><span class="ch-status">Optional</span>
@@ -7185,6 +10039,7 @@ function renderSpellModal(){
       <input type="text" placeholder="Search spells…" value="${esc(T.spellFilter.q)}" data-act-input="spq">
       ${!isCan?`<select data-act-change="splvl"><option value="all">All levels</option>${Array.from({length:poolMax},(_,i)=>`<option value="${i+1}" ${T.spellFilter.lvl==String(i+1)?"selected":""}>Level ${i+1}</option>`).join("")}</select>`:""}
       <span class="counts">${chosen.length} / ${limit} chosen</span>
+      ${chosen.length<limit?`<button class="btn" data-act="suggestspells" data-a="${esc(cls)}" data-tipt="Suggest a loadout" data-tipb="Fills the empty slots with a balanced classic set: healing, control, damage and defense, highest level first. Edit freely afterwards.">✦ Suggest a loadout</button>`:""}
     </div>
     <div class="spellpick-list">
       ${poolF.map(sp=>{
@@ -7310,6 +10165,14 @@ function signatureSpells(topTags){
     .filter(sp=>((window.SPELL_TAGS||{})[sp.name]||[]).some(t=>topTags.includes(t)))
     .sort((a,b)=>b.level-a.level).slice(0,4).map(sp=>sp.name);
 }
+function provingPanel(){
+  const pg=provingGround();
+  return `<h3 class="eyebrow">Proving Ground</h3>
+  <p class="hint">Expected results against three benchmark defenses: AC ${PG_AC.join(" / ")} (a bandit, a knight, a dragon). Attack bonuses of +${PG_ATK.join(" / +")} are used against you. Averages assume every attack goes at one target and once-per-turn extras land on the first hit.</p>
+  <div style="overflow-x:auto"><table class="mini"><tr><th>Attack routine</th>${PG_AC.map(a=>`<th>vs AC ${a}</th>`).join("")}</tr>
+  ${pg.rows.map(r=>`<tr><td>${esc(r.label)}</td>${r.cells.map(c=>`<td><b>${Math.round(c.dpr*10)/10}</b> <span class="hint">${Math.round(c.hit*100)}% ${c.save?"fail":"hit"}</span></td>`).join("")}</tr>`).join("")||`<tr><td colspan="4" class="hint">No weapon or damaging cantrip equipped yet.</td></tr>`}
+  <tr><td>Effective hit points (AC ${pg.ac}, ${pg.hp} HP)</td>${pg.ehp.map((v,i)=>`<td><b>${v}</b> <span class="hint">vs +${PG_ATK[i]}</span></td>`).join("")}</tr></table></div>`;
+}
 function renderAnalysis(){
   const cl=classLevels(), L=totalLevel();
   const order=classOrder();
@@ -7368,6 +10231,7 @@ function renderAnalysis(){
         </div>
       </div>
     </div>
+    ${provingPanel()}
     <h3 class="eyebrow">How ${esc(S.name)} fights</h3>
     ${order.map(c=>`<p>${multiclass?"<b>"+esc(c)+" ("+cl[c]+"):</b> ":""}As a ${esc(c.toLowerCase())}${S.subclasses[c]?` of the ${esc(S.subclasses[c])}`:""}, ${esc(S.name)} favors ${CLASS_ROLES[c].style}.${S.subclasses[c]&&SUBCLASS_DATA[c][S.subclasses[c]]?" "+esc(SUBCLASS_DATA[c][S.subclasses[c]].blurb||""):""}</p>`).join("")}
     ${multiclass?`<p><b>The blend:</b> the ${esc(order.map(c=>c+" "+cl[c]).join(" / "))} recipe trades ${esc(highest)}'s top-end features for flexibility; the ${esc(order.filter(c=>c!==highest).join(" and "))} seasoning changes the action economy round to round. Whether it sings at a real table depends on how often each piece comes online in a typical fight.</p>`:""}
@@ -7410,7 +10274,8 @@ function exportSummary(){
     classOrder().map(c=>`${c} ${cl[c]}${S.subclasses[c]?" ["+S.subclasses[c]+"]":""}`).join(" / "),
     ``,`## Abilities`,
     ABILITIES.map(a=>`${a} ${abilityScore(a)} (${fmtMod(mod(a))})`).join(" · "),
-    `HP ${maxHP()} · Prof +${profBonus()}`,
+    `HP ${maxHP()} · AC ${armorClass()} · Prof +${profBonus()}`,
+    ``,`## Gear`, GEAR_SLOTS.map(s=>gearState()[s]).filter(Boolean).concat(gearState().wonders).join(", ")||"–",
     ``,`## Skills`, S.skills.map(s=>s+(S.expertise.includes(s)?" (expertise)":"")).join(", ")||"–",
     ``,`## Feats & styles`,
     [ ...(S.background?[(BACKGROUND_DATA.find(b=>b.name===S.background)||{}).feat+" (origin)"]:[]),
@@ -7447,10 +10312,11 @@ function forgeCharacter(){
   const bg=BACKGROUND_DATA.find(b=>b.name===S.background);
   S.skills=[...new Set([...(bg?bg.skills:[]), ...S.classSkills])];
   S.created=true;
+  applyKit();
   resetTemp();
   S.levelSeq=[S.firstClass];
   S.xp=0;
-  S.log.push({level:1, title:"The First Page", text:"Every legend begins with a name and a road. "+S.name+" takes both.", gains:S.firstClass+" 1"});
+  S.log.push({level:1, title:"The First Page", text:"Every legend starts with a name and a first step on the road. "+S.name+" just took both.", gains:S.firstClass+" 1"});
   const ch=pendingChoicesFor(S.firstClass,1);
   if(ch.length){ S.pending={cls:S.firstClass, classLevel:1, choices:ch, done:{}, fromXP:false}; }
   S.ui.tab="sheet";
@@ -7460,7 +10326,7 @@ function gainXP(){
   const L=totalLevel();
   if(L>=20) return;
   T.hpBefore=maxHP();
-  T.levelSnap=JSON.stringify({...S, prevSnap:null});
+  T.levelSnap=JSON.stringify({...S, prevSnap:null, undoStack:[]});
   const newLevel=L+1;
   S.xp=XP_THRESHOLDS[newLevel-1];
   const v=pickVignette(newLevel);
@@ -7488,12 +10354,25 @@ function applyLevel(cls){
   S.levelSeq.push(cls);
   const newCl=classLevels()[cls];
   S.pending={cls, classLevel:newCl, choices:pendingChoicesFor(cls,newCl), done:{}, fromXP:true};
+  // spoils default to the obvious upgrade so sealing is never blocked by loot
+  S.pending.choices.forEach((c,i)=>{ if(c.kind==="spoils"){ const o=spoilsOffer(c.level); if(o.length){ equipSpoil(o[0].name,c.level); S.pending.done[i]=true; } else S.pending.done[i]=true; } });
 }
 function finishLevel(){
   const p=S.pending;
   const last=S.log[S.log.length-1];
-  if(last&&p.cls) last.gains=`${p.cls} → level ${p.classLevel}`+(S.subclasses[p.cls]&&p.classLevel===CLASS_DATA[p.cls].subclassLevel?` (${S.subclasses[p.cls]})`:"");
-  if(p.fromXP&&T.levelSnap) S.prevSnap=T.levelSnap;   // one-step undo point
+  if(last&&p.cls){
+    const cd=CLASS_DATA[p.cls], L=totalLevel();
+    const bits=[`${p.cls} ${p.classLevel}`+(S.subclasses[p.cls]&&p.classLevel===cd.subclassLevel?` (${S.subclasses[p.cls]})`:"")];
+    const names=(cd.features[p.classLevel]||[]).filter(f=>!f.asi&&!f.epicBoon&&!/subclass/i.test(f.name)).map(f=>f.name);
+    const sc=S.subclasses[p.cls]&&SUBCLASS_DATA[p.cls][S.subclasses[p.cls]];
+    if(sc) names.push(...(sc.features[p.classLevel]||[]).map(f=>f.name));
+    if(names.length) bits.push(names.join(", "));
+    S.feats.filter(f=>f.slot&&f.slot.startsWith("L"+L+"#")).forEach(f=>bits.push((f.cat==="epicBoons"?"Boon: ":"Feat: ")+f.name));
+    if(S.styleBy[L]) bits.push("Style: "+S.styleBy[L]);
+    if(T.hpBefore!=null){ const d=maxHP()-T.hpBefore; if(d) bits.push((d>0?"+":"")+d+" HP"); }
+    last.gains=bits.join(" · ");
+  }
+  if(p.fromXP&&T.levelSnap){ S.undoStack=[...(S.undoStack||[]), T.levelSnap].slice(-UNDO_MAX); S.prevSnap=T.levelSnap; }
   if(totalLevel()===20&&!S.archivedAt20){
     const r=stashToVault(S,"Maxed at 20");
     if(r.ok) S.archivedAt20=true;
@@ -7614,6 +10493,7 @@ function surpriseMe(){
   if(BD.hooks) S.flavor.hook=R(BD.hooks);
   if(BD.alignments) S.flavor.alignment=R(Object.keys(BD.alignments));
   S.flavor.backstory=composeBackstory();
+  { const kits=kitsFor(cls); if(kits.length) S.kit=R(kits).name; }
   forgeCharacter();
   if(S.pending){
     S.pending.choices.forEach((c,i)=>{
@@ -7659,7 +10539,10 @@ function copyToClipboard(text, btn){
 }
 function doUndo(){
   if(!S.prevSnap) return;
-  S=Object.assign(freshState(), JSON.parse(S.prevSnap));
+  const stack=(S.undoStack&&S.undoStack.length)?S.undoStack:[S.prevSnap];
+  const snap=stack[stack.length-1], rest=stack.slice(0,-1);
+  S=Object.assign(freshState(), JSON.parse(snap));
+  S.undoStack=rest; S.prevSnap=rest.length?rest[rest.length-1]:null;
   T.lastVignette=null; T.levelSnap=null;
   T.asiFeat={}; T.asiA={}; T.asiB={}; T.featAb={}; T.expTmp=[]; T.styleTmp={};
   render();
@@ -7823,6 +10706,12 @@ document.addEventListener("click",ev=>{
       else if(f&&f.type==="import"&&T.importPending){ S=rehydrateState(T.importPending); T.importPending=null; resetTemp(); S.ui.tab="sheet"; render(); }
       break; }
     case "dismisswelcome": T.welcome=false; render(); break;
+    case "autoscores": autoPlaceScores(); render(); break;
+    case "kit": S.kit=a; render(); break;
+    case "spoilpick": equipSpoil(a,+b); if(S.pending) S.pending.done[+el.dataset.c]=true; render(); break;
+    case "unwonder": { const g=gearState(); g.wonders=g.wonders.filter(w=>w!==a); render(); break; }
+    case "attune": { const g=gearState(); if(g.wonders.length<3&&!g.wonders.includes(a)) g.wonders.push(a); render(); break; }
+    case "suggestspells": suggestLoadout(a); render(); renderSpellModal(); break;
     case "startbuild": S.ui.tab="create"; render(); break;
     case "surprise": surpriseMe(); break;
     case "surpriseback": $("#tipmodal").classList.add("hidden"); doReset(); break;
@@ -7872,6 +10761,7 @@ document.addEventListener("change",ev=>{
     case "sptoggle": toggleSpell(a, el.checked); break;
     case "splvl": T.spellFilter.lvl=el.value; renderSpellModal(); break;
     case "hook": S.flavor.hook=el.value||null; render(); break;
+    case "gear": { const g=gearState(); g[a]=el.value||null; render(); break; }
     case "glosscat": T.glossCat=el.value; render(); break;
   }
 });
