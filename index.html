@@ -319,6 +319,9 @@ label.fld{display:block; font-size:12px; text-transform:uppercase; letter-spacin
 .rar-very-rare{border-color:var(--gold);color:var(--gold)}
 .rar-legendary{border-color:var(--garnet);color:var(--garnet)}
 .pgcells{font-variant-numeric:tabular-nums;white-space:nowrap}
+.pgpick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0}
+.pgpick select{width:100%;min-width:0;font-size:12.5px}
+@media(max-width:600px){.pgpick{grid-template-columns:1fr}}
 
 /* ============ Road map strip ============ */
 .roadmap{margin:8px 0 2px}
@@ -7962,6 +7965,145 @@ window.SPOILS = {
     20: ["Defender (Quarterstaff)", "Ring of Three Wishes", "<trophy>"]
   }
 };
+// Monsters for the Proving Ground, D&D 2024 / SRD 5.2.1 (CC BY 4.0) stat blocks.
+// Verified against the SRD 5.2.1 text (System Reference Document 5.2, the 2024 Monster Manual
+// numbers) via the open5e v2 API (document key "srd-2024") and cross-checked against
+// aidedd.org's 5.5e stat block pages. 2024 stat blocks differ from 2014 ones (Owlbear, Troll,
+// and the dragons all changed) — every entry here uses the current numbers, not the old ones.
+//
+// tier: 1 = character levels 1-4, 2 = 5-10, 3 = 11-16, 4 = 17-20. Five monsters per tier.
+// attacks: the creature's typical full round per its Multiattack. Where a Multiattack offers a
+// choice ("Weapon A or Weapon B in any combination"), the melee option is used twice. Where a
+// single hit deals damage of two different types on two different dice, the smaller/secondary
+// component is folded into the flat modifier so the string stays a single "NdM+K" (the total
+// average damage is preserved, or comes within a point of it via standard 5e round-down).
+// Recharge abilities (breath weapons, etc.) are separate entries with recharge:true; the QA
+// script counts them at one third when totaling expected damage per round.
+// dmg strings are "NdM+K". atk is the attack bonus; save-based attacks use save + dc instead.
+// saves are the six saving-throw modifiers as numbers (ability modifier if not proficient, the
+// full listed save bonus — modifier + proficiency — if proficient).
+//
+// Left out: legendary actions and lair actions (per spec, not modeled here), and any purely
+// situational/DoT follow-up effects (e.g. a poisoned-condition damage-over-time that only
+// triggers after a failed save on an already-resolved hit, or a rider effect on a triggered
+// once-per-turn ability that isn't part of the base Multiattack). One nova ability was left out
+// entirely: the Pit Fiend's Hellfire Spellcasting (a Recharge 4 double Fireball) — its exact
+// upcast damage wasn't independently confirmed, so it's omitted rather than guessed.
+
+window.MONSTER_DATA = [
+  // -- Tier 1 (levels 1-4) --
+  { name:"Wolf", cr:0.25, tier:1, type:"Beast", ac:12, hp:11, srd:true,
+    attacks:[ { name:"Bite", atk:4, dmg:"1d6+2" } ],
+    saves:{ STR:2, DEX:2, CON:1, INT:-4, WIS:1, CHA:-2 },
+    desc:"A pack hunter that knocks a foe down with its bite and lets its allies finish the job." },
+
+  { name:"Goblin Warrior", cr:0.25, tier:1, type:"Fey", ac:15, hp:10, srd:true,
+    attacks:[ { name:"Scimitar", atk:4, dmg:"1d6+2" } ],
+    saves:{ STR:-1, DEX:2, CON:0, INT:0, WIS:-1, CHA:-1 },
+    desc:"A small, quick raider armed with a scimitar and a shortbow, always ready to slip away and hide." },
+
+  { name:"Ghoul", cr:1, tier:1, type:"Undead", ac:12, hp:22, srd:true,
+    attacks:[ { name:"Bite", atk:4, dmg:"2d6+2" }, { name:"Bite", atk:4, dmg:"2d6+2" } ],
+    saves:{ STR:1, DEX:2, CON:0, INT:-2, WIS:0, CHA:-2 },
+    desc:"An undead scavenger whose claws paralyze the living so its jaws can feed at leisure." },
+
+  { name:"Ankheg", cr:2, tier:1, type:"Monstrosity", ac:14, hp:45, srd:true,
+    attacks:[ { name:"Bite", atk:5, dmg:"3d6+3" }, { name:"Acid Spray", save:"DEX", dc:12, dmg:"4d6", recharge:true } ],
+    saves:{ STR:3, DEX:0, CON:2, INT:-5, WIS:1, CHA:-2 },
+    desc:"A burrowing insect the size of a horse that grabs prey with its jaws and sprays acid down a line of foes." },
+
+  { name:"Owlbear", cr:3, tier:1, type:"Monstrosity", ac:13, hp:59, srd:true,
+    attacks:[ { name:"Rend", atk:7, dmg:"2d8+5" }, { name:"Rend", atk:7, dmg:"2d8+5" } ],
+    saves:{ STR:5, DEX:1, CON:3, INT:-4, WIS:1, CHA:-2 },
+    desc:"A bear-bodied predator with an owl's beak and claws, fast enough to run down anything it decides to eat." },
+
+  // -- Tier 2 (levels 5-10) --
+  { name:"Wight", cr:3, tier:2, type:"Undead", ac:14, hp:82, srd:true,
+    attacks:[ { name:"Necrotic Sword", atk:4, dmg:"2d8+2" }, { name:"Necrotic Sword", atk:4, dmg:"2d8+2" } ],
+    saves:{ STR:2, DEX:2, CON:3, INT:0, WIS:1, CHA:2 },
+    desc:"An undead soldier that drains life with a touch and raises its human kills as zombies under its command." },
+
+  { name:"Troll", cr:5, tier:2, type:"Giant", ac:15, hp:94, srd:true,
+    attacks:[ { name:"Rend", atk:7, dmg:"2d6+4" }, { name:"Rend", atk:7, dmg:"2d6+4" }, { name:"Rend", atk:7, dmg:"2d6+4" } ],
+    saves:{ STR:4, DEX:1, CON:5, INT:-2, WIS:-1, CHA:-2 },
+    desc:"A regenerating brute with three raking claws that only stops getting back up when burned or dissolved." },
+
+  { name:"Hill Giant", cr:5, tier:2, type:"Giant", ac:13, hp:105, srd:true,
+    attacks:[ { name:"Tree Club", atk:8, dmg:"3d8+5" }, { name:"Tree Club", atk:8, dmg:"3d8+5" } ],
+    saves:{ STR:5, DEX:-1, CON:4, INT:-3, WIS:-1, CHA:-2 },
+    desc:"A huge, hungry brute that swings a tree like a club and throws trash hard enough to break bones." },
+
+  { name:"Medusa", cr:6, tier:2, type:"Monstrosity", ac:15, hp:127, srd:true,
+    attacks:[ { name:"Claw", atk:6, dmg:"2d6+3" }, { name:"Claw", atk:6, dmg:"2d6+3" }, { name:"Snake Hair", atk:6, dmg:"4d6+6" } ],
+    saves:{ STR:0, DEX:3, CON:3, INT:1, WIS:4, CHA:2 },
+    desc:"A snake-haired predator whose claws and living hair poison, and whose gaze turns onlookers to stone." },
+
+  { name:"Young Red Dragon", cr:10, tier:2, type:"Dragon", ac:18, hp:178, srd:true,
+    attacks:[ { name:"Rend", atk:10, dmg:"3d6+6" }, { name:"Rend", atk:10, dmg:"3d6+6" }, { name:"Rend", atk:10, dmg:"3d6+6" },
+      { name:"Fire Breath", save:"DEX", dc:17, dmg:"16d6", recharge:true } ],
+    saves:{ STR:6, DEX:4, CON:5, INT:2, WIS:4, CHA:4 },
+    desc:"A red dragon old enough to fight in the open, raking with its claws and jaws and breathing a cone of fire." },
+
+  // -- Tier 3 (levels 11-16) --
+  { name:"Frost Giant", cr:8, tier:3, type:"Giant", ac:15, hp:149, srd:true,
+    attacks:[ { name:"Frost Axe", atk:9, dmg:"2d12+15" }, { name:"Frost Axe", atk:9, dmg:"2d12+15" } ],
+    saves:{ STR:6, DEX:-1, CON:8, INT:-1, WIS:3, CHA:4 },
+    desc:"A towering ice-age warrior who swings a frost-rimed axe and rallies its kin to hit harder." },
+
+  { name:"Vampire", cr:13, tier:3, type:"Undead", ac:16, hp:195, srd:true,
+    attacks:[ { name:"Grave Strike", atk:9, dmg:"1d8+11" }, { name:"Grave Strike", atk:9, dmg:"1d8+11" },
+      { name:"Bite", save:"CON", dc:17, dmg:"3d8+7" } ],
+    saves:{ STR:4, DEX:9, CON:9, INT:3, WIS:7, CHA:9 },
+    desc:"An undead noble that grapples victims to drain their blood and can turn to mist or a bat when threatened." },
+
+  { name:"Storm Giant", cr:13, tier:3, type:"Giant", ac:16, hp:230, srd:true,
+    attacks:[ { name:"Storm Sword", atk:14, dmg:"4d6+22" }, { name:"Storm Sword", atk:14, dmg:"4d6+22" },
+      { name:"Lightning Storm", save:"DEX", dc:18, dmg:"10d10", recharge:true } ],
+    saves:{ STR:14, DEX:2, CON:10, INT:3, WIS:10, CHA:9 },
+    desc:"A giant crackling with storm power, striking with a lightning-charged sword and calling down bolts from the sky." },
+
+  { name:"Iron Golem", cr:16, tier:3, type:"Construct", ac:20, hp:252, srd:true,
+    attacks:[ { name:"Bladed Arm", atk:12, dmg:"3d8+17" }, { name:"Bladed Arm", atk:12, dmg:"3d8+17" },
+      { name:"Poison Breath", save:"CON", dc:18, dmg:"10d10", recharge:true } ],
+    saves:{ STR:7, DEX:-1, CON:5, INT:-4, WIS:0, CHA:-5 },
+    desc:"A constructed guardian built of iron that cuts with a bladed arm and exhales a cloud of poison gas." },
+
+  { name:"Adult Red Dragon", cr:17, tier:3, type:"Dragon", ac:19, hp:256, srd:true,
+    attacks:[ { name:"Rend", atk:14, dmg:"1d10+13" }, { name:"Rend", atk:14, dmg:"1d10+13" }, { name:"Rend", atk:14, dmg:"1d10+13" },
+      { name:"Fire Breath", save:"DEX", dc:21, dmg:"17d6", recharge:true } ],
+    saves:{ STR:8, DEX:6, CON:7, INT:3, WIS:7, CHA:6 },
+    desc:"A fully grown red dragon that rakes with claws and jaws and unleashes a wide cone of scorching fire." },
+
+  // -- Tier 4 (levels 17-20) --
+  { name:"Balor", cr:19, tier:4, type:"Fiend", ac:19, hp:287, srd:true,
+    attacks:[ { name:"Flame Whip", atk:14, dmg:"5d6+18" }, { name:"Lightning Blade", atk:14, dmg:"4d10+21" } ],
+    saves:{ STR:8, DEX:2, CON:12, INT:5, WIS:9, CHA:6 },
+    desc:"A demon lord of the Abyss that lashes with a flame whip and cuts with a lightning-charged blade, wreathed in fire." },
+
+  { name:"Pit Fiend", cr:20, tier:4, type:"Fiend", ac:21, hp:337, srd:true,
+    attacks:[ { name:"Bite", atk:14, dmg:"3d6+8" }, { name:"Devilish Claw", atk:14, dmg:"4d8+8" },
+      { name:"Devilish Claw", atk:14, dmg:"4d8+8" }, { name:"Fiery Mace", atk:14, dmg:"10d6+8" } ],
+    saves:{ STR:8, DEX:8, CON:7, INT:6, WIS:10, CHA:7 },
+    desc:"A devil general clad in fire and poison, tearing with claws, jaws, and a burning mace all at once." },
+
+  { name:"Lich", cr:21, tier:4, type:"Undead", ac:20, hp:315, srd:true,
+    attacks:[ { name:"Eldritch Burst", atk:12, dmg:"4d12+5" }, { name:"Eldritch Burst", atk:12, dmg:"4d12+5" }, { name:"Eldritch Burst", atk:12, dmg:"4d12+5" } ],
+    saves:{ STR:0, DEX:10, CON:10, INT:12, WIS:9, CHA:3 },
+    desc:"An undead spellcaster that channels raw magic through its hands and returns from death if its phylactery survives." },
+
+  { name:"Ancient Red Dragon", cr:24, tier:4, type:"Dragon", ac:22, hp:507, srd:true,
+    attacks:[ { name:"Rend", atk:17, dmg:"2d8+20" }, { name:"Rend", atk:17, dmg:"2d8+20" }, { name:"Rend", atk:17, dmg:"2d8+20" },
+      { name:"Fire Breath", save:"DEX", dc:24, dmg:"26d6", recharge:true } ],
+    saves:{ STR:10, DEX:7, CON:9, INT:4, WIS:9, CHA:8 },
+    desc:"A colossal, ancient red dragon whose claws and jaws are backed by a breath of fire that can level a village." },
+
+  { name:"Tarrasque", cr:30, tier:4, type:"Monstrosity", ac:25, hp:697, srd:true,
+    attacks:[ { name:"Bite", atk:19, dmg:"4d12+10" }, { name:"Claw", atk:19, dmg:"4d8+10" },
+      { name:"Claw", atk:19, dmg:"4d8+10" }, { name:"Claw", atk:19, dmg:"4d8+10" },
+      { name:"Thunderous Bellow", save:"CON", dc:27, dmg:"12d12", recharge:true } ],
+    saves:{ STR:10, DEX:9, CON:10, INT:5, WIS:9, CHA:9 },
+    desc:"A near-unstoppable engine of destruction that bites, claws, and swallows whole, shrugging off nearly everything thrown at it." },
+];
 const CLASS_DATA=window.CLASS_DATA, SUBCLASS_DATA=window.SUBCLASS_DATA, SPELL_DATA=window.SPELL_DATA;
 const SPECIES_DATA=window.SPECIES_DATA, BACKGROUND_DATA=window.BACKGROUND_DATA, FEAT_DATA=window.FEAT_DATA;
 const SPELL_TAGS=window.SPELL_TAGS, GLOSSARY_DATA=window.GLOSSARY_DATA;
@@ -8637,6 +8779,27 @@ function armorClassBreakdown(){
   return {ac, parts};
 }
 function armorClass(){ return armorClassBreakdown().ac; }
+/* ---------------- Speed ---------------- */
+function speedBreakdown(){
+  const sp=SPECIES_DATA.find(s=>s.name===S.species)||{speed:30};
+  let base=sp.speed; const parts=[];
+  if(S.species==="Elf"&&S.speciesChoice==="Wood Elf") base=35;
+  parts.push(`${S.species||"Base"} ${base}`);
+  let v=base; const g=gearState(); const cl=classLevels();
+  const arm=gearItem(g.armor), off=gearItem(g.offhand);
+  const heavy=arm&&arm.rec&&arm.rec.cat==="heavy", shield=off&&off.kind==="shield";
+  const monk=cl["Monk"]||0;
+  if(monk>=2&&!arm&&!shield){ const b=monk>=18?30:monk>=14?25:monk>=10?20:monk>=6?15:10; v+=b; parts.push(`Unarmored Movement +${b}`); }
+  if(cl["Barbarian"]>=5&&!heavy){ v+=10; parts.push("Fast Movement +10"); }
+  if(cl["Ranger"]>=6&&!heavy){ v+=10; parts.push("Roving +10"); }
+  if(S.subclasses["Paladin"]==="Oath of Glory"&&cl["Paladin"]>=7){ v+=10; parts.push("Aura of Alacrity +10"); }
+  if(hasFeat("Speedy")){ v+=10; parts.push("Speedy +10"); }
+  if(hasFeat("Boon of Speed")){ v+=30; parts.push("Boon of Speed +30"); }
+  for(const n of g.wonders){ const b=gearEffect(gearItem(n)).speed||0; if(b){ v+=b; parts.push(`${n} +${b}`); } }
+  if(heavy&&arm.rec.strReq&&abilityScore("STR")<arm.rec.strReq){ v-=10; parts.push(`${arm.name} needs STR ${arm.rec.strReq}: −10`); }
+  return {speed:v, parts};
+}
+function speedValue(){ return speedBreakdown().speed; }
 function gearHPBonus(){ let t=0; for(const n of gearState().wonders){ t+=gearEffect(gearItem(n)).hpMax||0; } return t; }
 function gearSaveBonus(){ let t=0; for(const n of gearState().wonders){ t+=gearEffect(gearItem(n)).saveBonus||0; } return t; }
 
@@ -8731,35 +8894,59 @@ function bestCantrip(){
       if((S.options["Elemental Fury"]||[]).includes("Potent Spellcasting")&&e.cls==="Druid") flat+=mod("WIS");
       const per=dice*(+m[2]+1)/2+flat;
       const spellAtk=gearState().wonders.reduce((t,w)=>t+(gearEffect(gearItem(w)).spellAtk||0),0);
-      const c={name:n, cls:e.cls, attackRoll, beams, per, atk:profBonus()+mod(e.caster.ability)+spellAtk, dc:8+profBonus()+mod(e.caster.ability)+spellAtk, half:/half/i.test(sp.desc)};
+      const sm=sp.desc.match(/(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma) sav/i);
+      const c={name:n, cls:e.cls, attackRoll, beams, per, atk:profBonus()+mod(e.caster.ability)+spellAtk, dc:8+profBonus()+mod(e.caster.ability)+spellAtk, half:/half/i.test(sp.desc), saveAb:sm?sm[1].slice(0,3).toUpperCase():"DEX"};
       if(!best||c.per*c.beams>best.per*best.beams) best=c;
     }
   }
   return best;
+}
+/* ---------------- Benchmark monsters (phase c) ---------------- */
+function tierOf(L){ return L>=17?4:L>=11?3:L>=5?2:1; }
+function monsterByName(n){ return (window.MONSTER_DATA||[]).find(m=>m.name===n)||null; }
+function benchmarkMonsters(){
+  const all=window.MONSTER_DATA||[]; if(!all.length) return [];
+  const pool=all.filter(m=>m.tier===tierOf(totalLevel())).sort((a,b)=>a.cr-b.cr);
+  const defaults=pool.length>3?[pool[0],pool[Math.floor(pool.length/2)],pool[pool.length-1]]:pool;
+  const picks=T.pgPick||[];
+  return [0,1,2].map(i=>monsterByName(picks[i])||defaults[i]).filter(Boolean);
+}
+function monsterRound(m, ac){ // the monster's expected damage per round against a given AC (and your saves)
+  let t=0;
+  for(const a of m.attacks||[]){
+    const w=a.recharge?1/3:1, avg=avgDice(a.dmg), diceOnly=avgDice(String(a.dmg).replace(/[+-]\s*\d+$/,""));
+    if(a.atk!=null){ const h=hitChance(a.atk,ac); t+=w*(h*avg+0.05*diceOnly); }
+    else if(a.save){ const mine=mod(a.save)+(saveProficiencies().has(a.save)?profBonus():0)+gearSaveBonus(); const fail=Math.min(.95,Math.max(.05,(a.dc-mine-1)/20)); t+=w*avg*(fail+(1-fail)*.5); }
+  }
+  return t;
 }
 function provingGround(){
   const ps=attackProfiles(); const n=attacksPerAction();
   const main=ps.find(p=>p.slot==="weapon")||ps.find(p=>p.slot==="ranged")||ps.find(p=>p.slot==="unarmed");
   const off=ps.find(p=>p.slot==="offhand"); const rng=ps.find(p=>p.slot==="ranged"&&p!==main);
   const monkL=classLevels()["Monk"]||0;
+  const monsters=benchmarkMonsters();
+  const cols=monsters.length?monsters.map(m=>({label:m.name, ac:m.ac, hp:m.hp, saves:m.saves||{}, atk:null, m})):PG_AC.map((ac,i)=>({label:"AC "+ac, ac, hp:null, saves:{}, saveMod:PG_SAVE[i], atk:PG_ATK[i]}));
   const rows=[];
-  const mk=(label, fn)=>rows.push({label, cells:PG_AC.map(fn)});
+  const mk=(label, fn)=>rows.push({label, cells:cols.map(fn)});
+  const finish=(c,r)=>{ if(c.hp&&r.dpr>0) r.rounds=Math.ceil(c.hp/r.dpr); return r; };
   if(main){
     const bonusAtk=(off&&off.light&&main.light)?off:(monkL?ps.find(p=>p.slot==="unarmed"):null);
     const lbl=`${main.name} × ${n}${bonusAtk?" + "+(bonusAtk.slot==="unarmed"?"unarmed (bonus action)":"off-hand"):""}`;
-    mk(lbl, ac=>{ const d=dprFor(main,ac); let v=d.perAttack*n; let hits=n;
-      if(bonusAtk){ v+=dprFor(bonusAtk,ac).perAttack; hits++; }
-      v+=(1-Math.pow(1-d.hit,hits))*d.once; return {hit:d.hit, dpr:v}; });
+    mk(lbl, c=>{ const d=dprFor(main,c.ac); let v=d.perAttack*n; let hits=n;
+      if(bonusAtk){ v+=dprFor(bonusAtk,c.ac).perAttack; hits++; }
+      v+=(1-Math.pow(1-d.hit,hits))*d.once; return finish(c,{hit:d.hit, dpr:v}); });
   }
-  if(rng) mk(`${rng.name} × ${n}`, ac=>{ const d=dprFor(rng,ac); return {hit:d.hit, dpr:d.perAttack*n+(1-Math.pow(1-d.hit,n))*d.once}; });
+  if(rng) mk(`${rng.name} × ${n}`, c=>{ const d=dprFor(rng,c.ac); return finish(c,{hit:d.hit, dpr:d.perAttack*n+(1-Math.pow(1-d.hit,n))*d.once}); });
   const ct=bestCantrip();
-  if(ct) mk(`${ct.name}${ct.beams>1?" × "+ct.beams:""}`, (ac,i)=>{
-    if(ct.attackRoll){ const h=hitChance(ct.atk,ac); return {hit:h, dpr:(h*ct.per+0.05*ct.per*0.5)*ct.beams}; }
-    const fail=Math.min(.95,Math.max(.05,(ct.dc-PG_SAVE[i]-1)/20)); return {hit:fail, dpr:ct.per*(fail+(ct.half?(1-fail)*.5:0)), save:true};
+  if(ct) mk(`${ct.name}${ct.beams>1?" × "+ct.beams:""}`, c=>{
+    if(ct.attackRoll){ const h=hitChance(ct.atk,c.ac); return finish(c,{hit:h, dpr:(h*ct.per+0.05*ct.per*0.5)*ct.beams}); }
+    const sm=c.saves[ct.saveAb]!=null?c.saves[ct.saveAb]:(c.saveMod||0);
+    const fail=Math.min(.95,Math.max(.05,(ct.dc-sm-1)/20)); return finish(c,{hit:fail, dpr:ct.per*(fail+(ct.half?(1-fail)*.5:0)), save:true});
   });
   const ac=armorClass(), hp=maxHP();
-  const ehp=PG_ATK.map(a=>Math.round(hp/hitChance(a,ac)));
-  return {rows, ac, hp, ehp, attacks:n};
+  const threat=cols.map(c=>{ if(!c.m) return {dpr:null, ehp:Math.round(hp/hitChance(c.atk,ac))}; const dpr=monsterRound(c.m,ac); return {dpr, rounds:dpr>0?Math.ceil(hp/dpr):null}; });
+  return {rows, cols, threat, ac, hp, attacks:n, monsters};
 }
 
 /* ---------------- Kits & spoils ---------------- */
@@ -9345,7 +9532,7 @@ function renderSheetMain(){
       <div class="stat" data-tipt="Hit Points" data-tipb="Your maximum health. Level 1 grants your first class's full Hit Die (${S.firstClass?CLASS_DATA[S.firstClass].hitDie:8}); every later level adds the average roll, plus your CON modifier (${fmtMod(mod("CON"))}) per level. At 0 you fall unconscious and start making Death Saves."><div class="sv">${maxHP()}</div><div class="sl">Hit Points</div></div>
       <div class="stat" data-tipt="Armor Class" data-tipb="${esc(armorClassBreakdown().parts.join("; "))}. Attack rolls must meet or beat this to hit you."><div class="sv">${armorClass()}</div><div class="sl">Armor Class</div></div>
       <div class="stat" data-tipt="Proficiency Bonus" data-tipb="Added to everything you are trained in: proficient skills, saving throws, weapon attacks, and spell attack rolls and DCs. It rises with total character level, from +2 at level 1 to +6 at level 17."><div class="sv">+${profBonus()}</div><div class="sl">Prof. Bonus</div></div>
-      <div class="stat" data-tipt="Speed" data-tipb="How far you can move on your turn, in feet. Set by your species; some class features add more."><div class="sv">${(SPECIES_DATA.find(s=>s.name===S.species)||{speed:30}).speed} ft</div><div class="sl">Speed</div></div>
+      <div class="stat" data-tipt="Speed" data-tipb="How far you can move on your turn, in feet: ${esc(speedBreakdown().parts.join(" · "))}."><div class="sv">${speedValue()} ft</div><div class="sl">Speed</div></div>
       <div class="stat" data-tipt="Initiative" data-tipb="Added to a d20 roll at the start of combat to decide turn order. Equal to your DEX modifier (${fmtMod(mod("DEX"))}); the Alert feat adds your Proficiency Bonus."><div class="sv">${fmtMod(mod("DEX"))}</div><div class="sl">Initiative</div></div>
       <div class="stat" data-tipt="Passive Perception" data-tipb="What you notice without actively searching: 10 + your Perception bonus. The DM checks hidden creatures and traps against it."><div class="sv">${10+mod("WIS")+(S.skills.includes("Perception")?profBonus()*(S.expertise.includes("Perception")?2:1):0)}</div><div class="sl">Pass. Percep.</div></div>
       <div class="stat" data-tipt="Hit Dice" data-tipb="Your recovery pool: during a Short Rest, spend dice to heal (one die + CON modifier each). You have one per level, sized by the class that granted it."><div class="sv ${classOrder().length>1?"sv-long":""}">${classOrder().map(c=>cl[c]+"d"+CLASS_DATA[c].hitDie).join(" · ")}</div><div class="sl">Hit Dice</div></div>
@@ -9576,13 +9763,22 @@ function placeholderExtra(f){
   const rest=f.desc.replace(/^[^.]*\.\s*/,"").trim();
   return rest.length>3?rest:null;
 }
+// "Unarmored Movement rises to +15 feet." -> {name:"Unarmored Movement: +15 feet", desc:rider}
+function riderTitle(rider){
+  const r=rider.replace(/\.$/,"");
+  let m=r.match(/^(.+?) (?:rises to|becomes|increases to|is now|now has|is) (.+)$/i);
+  if(m) return `${m[1].replace(/^Your /i,"")}: ${m[2].replace(/ (per rest cycle|from level \d+)$/i,"")}`;
+  m=r.match(/^(.+?) (?:rise to|become|increase to) (.+)$/i);
+  if(m) return `${m[1].replace(/^Your /i,"")}: ${m[2]}`;
+  return r.length>48?r.slice(0,45).replace(/\s+\S*$/,"")+"…":r;
+}
 function displayFeatures(list){
   // Substitute placeholder class-table rows with the player's actual choices;
   // hide subclass placeholders (real subclass features render on their own) but
   // keep any progression info they carried.
   return list.map(f=>{
     const extra=placeholderExtra(f);
-    if(extra) return {...f, name:extra.replace(/\.$/,""), desc:f.desc, placeholder:true};
+    if(extra) return {...f, name:riderTitle(extra), desc:extra, placeholder:true};
     return f;
   }).filter(f=>f.placeholder||!/subclass/i.test(f.name)).map(f=>{
     if(f.asi||f.epicBoon){
@@ -9629,7 +9825,7 @@ function renderLevelUp(){
   const cd=CLASS_DATA[p.cls];
   const gained=(cd.features[p.classLevel]||[]).map(f=>{
     const extra=placeholderExtra(f);
-    return extra?{...f, name:extra.replace(/\.$/,""), placeholder:true}:f;
+    return extra?{...f, name:riderTitle(extra), desc:extra, placeholder:true}:f;
   }).filter(f=>f.placeholder||!/subclass/i.test(f.name));
   const scName=S.subclasses[p.cls];
   const scGained=scName&&SUBCLASS_DATA[p.cls][scName]?(SUBCLASS_DATA[p.cls][scName].features[p.classLevel]||[]):[];
@@ -10166,12 +10362,18 @@ function signatureSpells(topTags){
     .sort((a,b)=>b.level-a.level).slice(0,4).map(sp=>sp.name);
 }
 function provingPanel(){
-  const pg=provingGround();
+  const pg=provingGround(); const all=window.MONSTER_DATA||[];
+  const picker=all.length?`<div class="pgpick">${pg.cols.map((c,i)=>`<select data-act-change="pgpick" data-a="${i}" aria-label="Benchmark ${i+1}">${[1,2,3,4].map(t=>`<optgroup label="Tier ${t} (levels ${t===1?"1–4":t===2?"5–10":t===3?"11–16":"17–20"})">${all.filter(m=>m.tier===t).sort((a,b)=>a.cr-b.cr).map(m=>`<option value="${esc(m.name)}" ${c.label===m.name?"selected":""}>${esc(m.name)} (CR ${m.cr})</option>`).join("")}</optgroup>`).join("")}</select>`).join("")}</div>`:"";
+  const verdicts=pg.cols.map((c,i)=>{ if(!c.m) return ""; const best=pg.rows.reduce((b,r)=>(!b||r.cells[i].dpr>b.cells[i].dpr)?r:b,null); const you=best&&best.cells[i].rounds, it=pg.threat[i].rounds;
+    const call=you==null?"":(it==null?"it cannot hurt you":you<it?"you win":you>it?"it wins":"a coin flip");
+    return `<div class="featline"><span class="fname" data-act="tipfeat" data-a="${esc(c.m.name)}" data-b="${esc((c.m.desc||"")+" CR "+c.m.cr+", AC "+c.ac+", "+c.hp+" HP.")}">${esc(c.m.name)}</span> <span class="hint">${you!=null?`you fell it in ${you} round${you>1?"s":""}`:"you cannot hurt it"}${it!=null?`, it drops you in ${it}`:""}${call?` · <b>${call}</b>`:""}</span></div>`; }).join("");
   return `<h3 class="eyebrow">Proving Ground</h3>
-  <p class="hint">Expected results against three benchmark defenses: AC ${PG_AC.join(" / ")} (a bandit, a knight, a dragon). Attack bonuses of +${PG_ATK.join(" / +")} are used against you. Averages assume every attack goes at one target and once-per-turn extras land on the first hit.</p>
-  <div style="overflow-x:auto"><table class="mini"><tr><th>Attack routine</th>${PG_AC.map(a=>`<th>vs AC ${a}</th>`).join("")}</tr>
-  ${pg.rows.map(r=>`<tr><td>${esc(r.label)}</td>${r.cells.map(c=>`<td><b>${Math.round(c.dpr*10)/10}</b> <span class="hint">${Math.round(c.hit*100)}% ${c.save?"fail":"hit"}</span></td>`).join("")}</tr>`).join("")||`<tr><td colspan="4" class="hint">No weapon or damaging cantrip equipped yet.</td></tr>`}
-  <tr><td>Effective hit points (AC ${pg.ac}, ${pg.hp} HP)</td>${pg.ehp.map((v,i)=>`<td><b>${v}</b> <span class="hint">vs +${PG_ATK[i]}</span></td>`).join("")}</tr></table></div>`;
+  <p class="hint">${all.length?`Expected results against three benchmark creatures from your tier (swap any of them). Averages assume every attack goes at one target and once-per-turn extras land on the first hit; legendary and lair actions are ignored. Casters are measured on their best cantrip only, so leveled spells will make them stronger than this reads.`:`Expected results against AC ${PG_AC.join(" / ")}.`}</p>
+  ${picker}
+  <div style="overflow-x:auto"><table class="mini"><tr><th>Attack routine</th>${pg.cols.map(c=>`<th>${esc(c.label)}${c.hp?`<span class="hint" style="display:block;font-weight:400;letter-spacing:0;text-transform:none">AC ${c.ac} · ${c.hp} HP</span>`:""}</th>`).join("")}</tr>
+  ${pg.rows.map(r=>`<tr><td>${esc(r.label)}</td>${r.cells.map(c=>`<td><b>${Math.round(c.dpr*10)/10}</b> <span class="hint">/ round · ${Math.round(c.hit*100)}% ${c.save?"fail":"hit"}${c.rounds?` · ${c.rounds} rd`:""}</span></td>`).join("")}</tr>`).join("")||`<tr><td colspan="4" class="hint">No weapon or damaging cantrip equipped yet.</td></tr>`}
+  <tr><td>Its round against you (AC ${pg.ac}, ${pg.hp} HP)</td>${pg.threat.map(t=>t.dpr!=null?`<td><b>${Math.round(t.dpr*10)/10}</b> <span class="hint">/ round${t.rounds?` · ${t.rounds} rd`:""}</span></td>`:`<td><b>${t.ehp}</b> <span class="hint">effective HP</span></td>`).join("")}</tr></table></div>
+  ${verdicts}`;
 }
 function renderAnalysis(){
   const cl=classLevels(), L=totalLevel();
@@ -10762,6 +10964,7 @@ document.addEventListener("change",ev=>{
     case "splvl": T.spellFilter.lvl=el.value; renderSpellModal(); break;
     case "hook": S.flavor.hook=el.value||null; render(); break;
     case "gear": { const g=gearState(); g[a]=el.value||null; render(); break; }
+    case "pgpick": { T.pgPick=T.pgPick||[]; const cur=benchmarkMonsters().map(m=>m.name); for(let i=0;i<3;i++) T.pgPick[i]=T.pgPick[i]||cur[i]; T.pgPick[+a]=el.value; render(); break; }
     case "glosscat": T.glossCat=el.value; render(); break;
   }
 });

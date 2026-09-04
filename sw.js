@@ -2,7 +2,7 @@
    Strategy: network-first for the page itself (so every online visit gets the
    latest release immediately), cache-first for static assets, full cache
    fallback when offline. */
-const CACHE = "legend-forge-v17";
+const CACHE = "legend-forge-v18";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {
