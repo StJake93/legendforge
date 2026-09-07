@@ -323,6 +323,55 @@ label.fld{display:block; font-size:12px; text-transform:uppercase; letter-spacin
 .pgpick select{width:100%;min-width:0;font-size:12.5px}
 @media(max-width:600px){.pgpick{grid-template-columns:1fr}}
 
+/* ============ Mobile pass (≤760 / ≤600 / ≤420) ============ */
+@media(max-width:760px){
+  #app{padding:0 14px 60px}
+  .btn{min-height:40px; padding:9px 16px}
+  .btn.big{min-height:48px}
+  .chip{min-height:38px; padding:8px 14px; font-size:14px}
+  .wizsteps .ws{padding:11px 4px; min-height:40px}
+  .abil .stepper button{width:36px; height:36px; font-size:18px}
+  input[type=text], select, textarea.flav{font-size:16px; padding:9px 10px} /* 16px stops iOS zooming on focus */
+  .gearrow select, .pgpick select, .actbar select{font-size:16px; padding:8px 10px}
+  .scard .btn, .kv .btn{min-height:36px}
+  .stat .sl{font-size:10px}
+  .kv b{white-space:normal; text-align:right}
+  .kv .btn{white-space:nowrap}
+  .spellpick-controls input[type=text]{flex:1 1 160px; min-width:0}
+  .spellpick-controls select{flex:1 1 120px; min-width:0}
+  #overlay, .modalwrap{padding:2vh 8px}
+  #overlay .sheet, .modalwrap .sheet{padding:16px 14px}
+  .choice-block{padding:10px 12px}
+  .tlog{max-height:260px}
+  .actbar .btn{flex:1 1 auto}
+  .sheethead{padding:14px 14px}
+  .scard{padding:14px 14px 16px}
+}
+@media(max-width:600px){
+  header.masthead{padding:12px 0 4px}
+  .masthead h1{font-size:18px; letter-spacing:.22em}
+  .masthead .subtitle{font-size:9px; letter-spacing:.16em; max-width:34ch; margin:2px auto 4px}
+  nav.tabs{flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; gap:0; margin:0 -14px; padding:0 14px}
+  nav.tabs::-webkit-scrollbar{display:none}
+  nav.tabs button{flex:0 0 auto; padding:11px 12px; white-space:nowrap}
+  .sheethead .statgrid{grid-template-columns:repeat(4,1fr); gap:5px}
+  .sheethead .statgrid .sv{font-size:21px; white-space:nowrap}
+  .sheethead .statgrid .sv.sv-long{font-size:13px}
+  .stat{padding:9px 2px; min-height:66px}
+  .charname{font-size:22px}
+  .rm-key{gap:10px}
+  h2{font-size:19px}
+  .cardgrid{grid-template-columns:1fr}
+  .rollpool .die{width:42px; height:42px}
+  .btnrow .btn{flex:1 1 calc(50% - 8px)}
+}
+@media(max-width:420px){
+  .sheethead .statgrid{grid-template-columns:repeat(4,1fr)}
+  .sheethead .statgrid .sv{font-size:19px}
+  .abilrow{grid-template-columns:repeat(3,1fr)}
+  .arena{grid-template-columns:1fr}
+}
+
 /* ============ The Trial ============ */
 .arena{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:700px){.arena{grid-template-columns:1fr}}
@@ -10006,6 +10055,7 @@ function render(){
   const ovNew=document.querySelector("#overlay");
   if(ovNew&&ovScroll) ovNew.scrollTop=ovScroll;
   const tlog=document.querySelector("#tlog"); if(tlog) tlog.scrollTop=tlog.scrollHeight;
+  const activeTab=document.querySelector("nav.tabs button.active"); if(activeTab&&activeTab.scrollIntoView&&innerWidth<=600) activeTab.scrollIntoView({inline:"center", block:"nearest"});
   saveState();
 }
 function renderCelebration(){
