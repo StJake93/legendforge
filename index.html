@@ -10025,6 +10025,10 @@ function render(){
   // the level-up overlay is rebuilt on every render; keep its scroll position
   const ovOld=document.querySelector("#overlay");
   const ovScroll=ovOld&&!ovOld.classList.contains("hidden")?ovOld.scrollTop:0;
+  // the whole app is rebuilt below; keep the page where the player left it (installed iOS apps
+  // otherwise snap to the top while the document is momentarily empty)
+  const scroller=document.scrollingElement||document.documentElement;
+  const pageY=T.scrollTop!=null?T.scrollTop:scroller.scrollTop; T.scrollTop=null;
   const tabs = S.created
     ? [["sheet","Character"],["origin","Origin"],["analysis","Analysis"],["trial","Trial"],["vault","Vault"],["glossary","Glossary"]]
     : [["start","Welcome"],["create","Create"],["vault","Vault"],["glossary","Glossary"]];
@@ -10054,8 +10058,10 @@ function render(){
     ${T.legendForged?renderCelebration():""}`;
   const ovNew=document.querySelector("#overlay");
   if(ovNew&&ovScroll) ovNew.scrollTop=ovScroll;
+  if(scroller.scrollTop!==pageY){ scroller.scrollTop=pageY; }
+  requestAnimationFrame(()=>{ if(Math.abs(scroller.scrollTop-pageY)>2&&pageY<=scroller.scrollHeight) scroller.scrollTop=pageY; });
   const tlog=document.querySelector("#tlog"); if(tlog) tlog.scrollTop=tlog.scrollHeight;
-  const activeTab=document.querySelector("nav.tabs button.active"); if(activeTab&&activeTab.scrollIntoView&&innerWidth<=600) activeTab.scrollIntoView({inline:"center", block:"nearest"});
+  const activeTab=document.querySelector("nav.tabs button.active"); if(activeTab&&innerWidth<=600){ const nav=activeTab.parentElement; nav.scrollLeft=Math.max(0, activeTab.offsetLeft-(nav.clientWidth-activeTab.offsetWidth)/2); }
   saveState();
 }
 function renderCelebration(){
@@ -11741,8 +11747,8 @@ document.addEventListener("click",ev=>{
   hideHoverTip();
   if(act.startsWith("tr:")){ trialAction(act.slice(3), el); return; }
   switch(act){
-    case "tab": S.ui.tab=a; render(); break;
-    case "wiz": S.ui.wizStep=+a; render(); break;
+    case "tab": S.ui.tab=a; T.scrollTop=0; render(); break;
+    case "wiz": S.ui.wizStep=+a; T.scrollTop=0; render(); break;
     case "species": S.species=a; S.speciesChoice=null; if(a!=="Human")S.humanBonusFeat=null; render(); break;
     case "specchoice": S.speciesChoice=a; render(); break;
     case "bg": S.background=a; S.boostPlus2=null; S.boostPlus1=null; render(); break;
@@ -11898,7 +11904,7 @@ document.addEventListener("click",ev=>{
     case "unwonder": { const g=gearState(); g.wonders=g.wonders.filter(w=>w!==a); render(); break; }
     case "attune": { const g=gearState(); if(g.wonders.length<3&&!g.wonders.includes(a)) g.wonders.push(a); render(); break; }
     case "suggestspells": suggestLoadout(a); render(); renderSpellModal(); break;
-    case "startbuild": S.ui.tab="create"; render(); break;
+    case "startbuild": S.ui.tab="create"; T.scrollTop=0; render(); break;
     case "surprise": surpriseMe(); break;
     case "surpriseback": $("#tipmodal").classList.add("hidden"); doReset(); break;
     case "align": S.flavor.alignment=S.flavor.alignment===a?null:a; render(); break;
