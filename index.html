@@ -323,6 +323,25 @@ label.fld{display:block; font-size:12px; text-transform:uppercase; letter-spacin
 .pgpick select{width:100%;min-width:0;font-size:12.5px}
 @media(max-width:600px){.pgpick{grid-template-columns:1fr}}
 
+/* ============ The Trial ============ */
+.arena{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:700px){.arena{grid-template-columns:1fr}}
+.combatant{background:var(--panel2);border:1px solid var(--line-soft);border-radius:12px;padding:12px 14px}
+.combatant .cname{font-family:var(--font-display);font-weight:600;font-size:17px}
+.hpbar{height:8px;background:var(--line-soft);border-radius:99px;overflow:hidden;margin:8px 0 4px}
+.hpbar i{display:block;height:100%;background:var(--emerald);transition:width .25s ease}
+.hpbar i.low{background:var(--garnet)}
+.resline{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.45}
+.turnline{font-family:var(--font-display);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin:14px 0 6px}
+.actbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.actbar .btn{font-size:13px;padding:6px 12px}
+.actbar .btn.on{border-color:var(--gold);color:var(--gold)}
+.actbar select{font-size:12.5px;padding:5px 8px}
+.tlog{max-height:340px;overflow-y:auto;background:var(--bg2);border:1px solid var(--line-soft);border-radius:12px;padding:6px 12px;font-size:13.5px;margin-top:12px}
+.tl{padding:4px 0;border-top:1px solid var(--line-soft)} .tl:first-child{border-top:none}
+.tl.hit{color:var(--emerald)} .tl.hurt{color:var(--garnet)} .tl.heal{color:var(--azure)} .tl.roll{color:var(--muted)}
+.tl.narr{color:var(--ink-dim);font-family:var(--font-lore);font-style:italic} .tl.end{color:var(--gold);font-weight:600}
+
 /* ============ Road map strip ============ */
 .roadmap{margin:8px 0 2px}
 .rm-row{display:flex;align-items:center;gap:3px;margin:3px 0}
@@ -8104,6 +8123,392 @@ window.MONSTER_DATA = [
     saves:{ STR:10, DEX:9, CON:10, INT:5, WIS:9, CHA:9 },
     desc:"A near-unstoppable engine of destruction that bites, claws, and swallows whole, shrugging off nearly everything thrown at it." },
 ];
+// The Trial: combat spell-effects dataset. See docs/Trial_Schema.md ("data/data_spell_effects.js")
+// for the base contract. Keyed by the exact spell `name` in data_spells_1/2/3/4.js. Covers every
+// damaging cantrip across all classes, the classic damage spells at levels 1-9, the core healing/
+// temp-HP spells, self buffs, the Paladin smites, both attack/damage reactions, and single-target
+// control spells — 83 spells with a real effect in a solo Trial fight. Anything not listed here is
+// "no effect in the Trial" per contract. Every dice value is taken from the 2024 spell text (cross-
+// checked against dnd2024.wikidot.com where data_spells_*.js's summary was ambiguous).
+//
+// ---------------------------------------------------------------------------------------------
+// DOCUMENTED EXTRAS (beyond docs/Trial_Schema.md's base contract) — every one used below:
+//
+//   rays:N, upcastRays:true  — kind:"attack" fires N separate attack rolls at base level; each
+//     slot level above base adds one more ray (Scorching Ray: rays:3, +1/level).
+//   killBelow:N               — kind:"auto" that instantly kills a target at or below N current
+//     HP instead of rolling `dmg` (Power Word Kill: killBelow:100, falling back to its `dmg` roll
+//     above that threshold).
+//   fullHeal:true             — kind:"heal" that restores the target to full HP instead of rolling
+//     `heal` (Power Word Heal).
+//   retaliate:"N"             — on kind:"temphp", flat damage dealt back to a melee attacker while
+//     the temp HP lasts (Armor of Agathys). `upcast` applies equally to both `temp` and
+//     `retaliate`, since the 2024 text raises both by the same amount per slot level.
+//   kind:"companion" reusing `save`+`dmg` (Call Lightning) or `heal` (Aura of Vitality) instead of
+//     `atk` — the companion kind's "repeats each turn" engine behavior still applies; the repeated
+//     action is a save-forcing bolt or a flat heal rather than a spell attack roll, since neither
+//     spell makes an attack roll.
+//   buff.disadvantage:true    — imposes disadvantage on attack rolls made against the caster
+//     (Blur), the mirror of the existing buff.advantage key.
+//   buff.images:N             — number of illusory duplicates that can absorb a hit before this
+//     buff ends (Mirror Image).
+//   buff.resist:[types]       — damage resistance to the listed types; reuses the `resist` key
+//     already established for CLASS_ACTIONS' `effect.resist` in data_class_actions.js (Stoneskin).
+//   buff.enemyDisadvantage:true — imposes disadvantage on attack rolls the enemy makes against the
+//     caster; mirrors CLASS_ACTIONS' `effect.enemyAdvantage` naming, inverted (Foresight; paired
+//     with the existing buff.advantage:true for the caster's own rolls/saves/checks).
+//
+// Simplifications noted spell-by-spell:
+//   - Chromatic Orb / Sorcerous Burst let the caster choose the damage type; "fire" is used as a
+//     representative choice for both.
+//   - Flame Strike and Ice Storm each deal two damage types in one save (5d6 fire + 5d6 radiant;
+//     2d10 bludgeoning + 4d6 cold). A single dmg/type pair can't hold both, so only one component
+//     is modeled: Flame Strike's fire half (radiant half is numerically identical), and Ice
+//     Storm's bludgeoning half (the 2024 text ties the spell's upcast specifically to the
+//     bludgeoning die, so that's the half that upcasts correctly).
+//   - Meteor Swarm deals 20d6 fire + 20d6 bludgeoning; only the fire half is modeled for the same
+//     single-type-field reason.
+//   - Witch Bolt models only the initial ranged spell attack, not the sustained Bonus Action drain.
+//   - Toll the Dead models only the base 1d8 die, not the conditional 1d12 against an
+//     already-damaged target.
+//   - Delayed Blast Fireball models only its base detonation, not the growth from turns spent
+//     concentrating.
+//   - Banishing Smite models only its damage; the conditional banish-on-threshold isn't modeled.
+//
+// Spells considered and dropped (not enough of a clean fit without inventing new keys):
+//   - Prayer of Healing (10-minute cast, no effect within a Trial turn).
+//   - Protection from Energy (situational resistance chosen per-fight; no clean single value).
+//   - Blade Ward (subtracts 1d4 from an attacker's roll — not equivalent to disadvantage, and no
+//     "reduce enemy attack roll" buff key exists without inventing one).
+//   - Absorb Elements (not a 2024 Player's Handbook spell).
+//   - True Strike (a weapon-attack rider using the weapon's own dice, not spell dice).
+
+window.SPELL_EFFECTS = {
+  // ---------------------------------------------------------------- Damaging cantrips (all classes)
+  "Acid Splash":      { kind:"save", save:"DEX", dmg:"1d6", type:"acid", half:false, scale:"cantrip" },
+  "Chill Touch":       { kind:"attack", dmg:"1d10", type:"necrotic", scale:"cantrip" },
+  "Eldritch Blast":    { kind:"attack", dmg:"1d10", type:"force", scale:"cantrip", beams:true },
+  "Fire Bolt":         { kind:"attack", dmg:"1d10", type:"fire", scale:"cantrip" },
+  "Mind Sliver":       { kind:"save", save:"INT", dmg:"1d6", type:"psychic", half:false, scale:"cantrip" },
+  "Poison Spray":      { kind:"attack", dmg:"1d12", type:"poison", scale:"cantrip" },
+  "Produce Flame":     { kind:"attack", dmg:"1d8", type:"fire", scale:"cantrip" },
+  "Ray of Frost":      { kind:"attack", dmg:"1d8", type:"cold", scale:"cantrip" },
+  "Sacred Flame":      { kind:"save", save:"DEX", dmg:"1d8", type:"radiant", half:false, scale:"cantrip" },
+  "Shocking Grasp":    { kind:"attack", dmg:"1d8", type:"lightning", scale:"cantrip" },
+  "Sorcerous Burst":   { kind:"attack", dmg:"1d8", type:"fire", scale:"cantrip" },
+  "Starry Wisp":       { kind:"attack", dmg:"1d8", type:"radiant", scale:"cantrip" },
+  "Thorn Whip":        { kind:"attack", dmg:"1d6", type:"piercing", scale:"cantrip" },
+  "Thunderclap":       { kind:"save", save:"CON", dmg:"1d6", type:"thunder", half:false, scale:"cantrip" },
+  "Toll the Dead":     { kind:"save", save:"WIS", dmg:"1d8", type:"necrotic", half:false, scale:"cantrip" },
+  "Vicious Mockery":   { kind:"save", save:"WIS", dmg:"1d6", type:"psychic", half:false, scale:"cantrip" },
+  "Word of Radiance":  { kind:"save", save:"CON", dmg:"1d6", type:"radiant", half:false, scale:"cantrip" },
+
+  // ---------------------------------------------------------------- Classic damage spells, levels 1-9
+  "Magic Missile":     { kind:"auto", dmg:"3d4+3", type:"force", upcast:"1d4+1" },
+  "Burning Hands":     { kind:"save", save:"DEX", dmg:"3d6", type:"fire", half:true, upcast:"1d6" },
+  "Guiding Bolt":      { kind:"attack", dmg:"4d6", type:"radiant", upcast:"1d6" },
+  "Inflict Wounds":    { kind:"save", save:"CON", dmg:"2d10", type:"necrotic", half:true, upcast:"1d10" },
+  "Chromatic Orb":     { kind:"attack", dmg:"3d8", type:"fire", upcast:"1d8" },
+  "Thunderwave":       { kind:"save", save:"CON", dmg:"2d8", type:"thunder", half:true, upcast:"1d8" },
+  "Witch Bolt":        { kind:"attack", dmg:"2d12", type:"lightning", upcast:"1d12" },
+  "Scorching Ray":     { kind:"attack", dmg:"2d6", type:"fire", beams:true, rays:3, upcastRays:true },
+  "Shatter":           { kind:"save", save:"CON", dmg:"3d8", type:"thunder", half:true, upcast:"1d8" },
+  "Moonbeam":          { kind:"aura", save:"CON", dmg:"2d10", type:"radiant", half:true, conc:true, upcast:"1d10" },
+  "Fireball":          { kind:"save", save:"DEX", dmg:"8d6", type:"fire", half:true, upcast:"1d6" },
+  "Lightning Bolt":    { kind:"save", save:"DEX", dmg:"8d6", type:"lightning", half:true, upcast:"1d6" },
+  "Spirit Guardians":  { kind:"aura", save:"WIS", dmg:"3d8", type:"radiant", half:true, conc:true, upcast:"1d8" },
+  "Call Lightning":    { kind:"companion", save:"DEX", dmg:"3d10", type:"lightning", half:true, conc:true, upcast:"1d10" },
+  "Blight":            { kind:"save", save:"CON", dmg:"8d8", type:"necrotic", half:true, upcast:"1d8" },
+  "Ice Storm":         { kind:"save", save:"DEX", dmg:"2d10", type:"bludgeoning", half:true, upcast:"1d10" },
+  "Cone of Cold":      { kind:"save", save:"CON", dmg:"8d8", type:"cold", half:true, upcast:"1d8" },
+  "Flame Strike":      { kind:"save", save:"DEX", dmg:"5d6", type:"fire", half:true, upcast:"1d6" },
+  "Synaptic Static":   { kind:"save", save:"INT", dmg:"8d6", type:"psychic", half:true },
+  "Steel Wind Strike": { kind:"attack", dmg:"6d10", type:"force" },
+  "Chain Lightning":   { kind:"save", save:"DEX", dmg:"10d8", type:"lightning", half:true },
+  "Disintegrate":      { kind:"save", save:"DEX", dmg:"10d6+40", type:"force", half:false, upcast:"3d6" },
+  "Harm":              { kind:"save", save:"CON", dmg:"14d6", type:"necrotic", half:true },
+  "Finger of Death":   { kind:"save", save:"CON", dmg:"7d8+30", type:"necrotic", half:true },
+  "Fire Storm":        { kind:"save", save:"DEX", dmg:"7d10", type:"fire", half:true },
+  "Delayed Blast Fireball": { kind:"save", save:"DEX", dmg:"12d6", type:"fire", half:true, conc:true, upcast:"1d6" },
+  "Sunburst":          { kind:"save", save:"CON", dmg:"12d6", type:"radiant", half:true },
+  "Power Word Kill":   { kind:"auto", killBelow:100, dmg:"12d12", type:"psychic" },
+  "Meteor Swarm":      { kind:"save", save:"DEX", dmg:"20d6", type:"fire", half:true },
+
+  // ---------------------------------------------------------------- Healing
+  "Cure Wounds":       { kind:"heal", heal:"2d8+MOD", upcast:"2d8" },
+  "Healing Word":      { kind:"heal", heal:"2d4+MOD", upcast:"2d4", bonus:true },
+  "Mass Healing Word":  { kind:"heal", heal:"2d4+MOD", upcast:"1d4", bonus:true },
+  "Aura of Vitality":  { kind:"companion", heal:"2d6", conc:true },
+  "Heal":              { kind:"heal", heal:"70", upcast:"10" },
+  "Power Word Heal":   { kind:"heal", fullHeal:true },
+
+  // ---------------------------------------------------------------- Temporary HP
+  "False Life":        { kind:"temphp", temp:"2d4+4", upcast:"5" },
+  "Armor of Agathys":  { kind:"temphp", temp:"5", retaliate:"5", upcast:"5", bonus:true },
+
+  // ---------------------------------------------------------------- Buffs
+  "Shield of Faith":   { kind:"buff", buff:{ ac:2 }, conc:true, bonus:true },
+  "Bless":             { kind:"buff", buff:{ atkDie:"1d4", saveDie:"1d4" }, conc:true },
+  "Haste":             { kind:"buff", buff:{ ac:2, extraAttacks:1 }, conc:true },
+  "Mage Armor":        { kind:"buff", buff:{ baseAC:13 }, duration:"fight" },
+  "Divine Favor":      { kind:"buff", buff:{ extraDmg:"1d4", extraType:"radiant" }, bonus:true },
+  "Hunter's Mark":     { kind:"buff", buff:{ extraDmg:"1d6", extraType:"force" }, conc:true, bonus:true },
+  "Hex":               { kind:"buff", buff:{ extraDmg:"1d6", extraType:"necrotic" }, conc:true, bonus:true },
+  "Barkskin":          { kind:"buff", buff:{ baseAC:17 }, duration:"fight", bonus:true },
+  "Blur":              { kind:"buff", buff:{ disadvantage:true }, conc:true },
+  "Mirror Image":      { kind:"buff", buff:{ images:3 }, duration:"fight" },
+  "Stoneskin":         { kind:"buff", buff:{ resist:["bludgeoning","piercing","slashing"] }, conc:true },
+  "Foresight":         { kind:"buff", buff:{ advantage:true, enemyDisadvantage:true }, duration:"fight" },
+  "Greater Invisibility": { kind:"buff", buff:{ advantage:true }, conc:true },
+
+  // ---------------------------------------------------------------- Smites (Paladin)
+  "Divine Smite":      { kind:"smite", dmg:"2d8", type:"radiant", upcast:"1d8", bonus:true },
+  "Searing Smite":     { kind:"smite", dmg:"1d6", type:"fire", upcast:"1d6", bonus:true },
+  "Thunderous Smite":  { kind:"smite", dmg:"2d6", type:"thunder", upcast:"1d6", bonus:true },
+  "Wrathful Smite":    { kind:"smite", dmg:"1d6", type:"necrotic", upcast:"1d6", bonus:true },
+  "Blinding Smite":    { kind:"smite", dmg:"3d8", type:"radiant", upcast:"1d8", bonus:true },
+  "Staggering Smite":  { kind:"smite", dmg:"4d6", type:"psychic", upcast:"1d6", bonus:true },
+  "Banishing Smite":   { kind:"smite", dmg:"5d10", type:"force", bonus:true, conc:true },
+
+  // ---------------------------------------------------------------- Reactions
+  "Shield":            { kind:"reaction", trigger:"hit", buff:{ ac:5 }, duration:"round" },
+  "Hellish Rebuke":    { kind:"reaction", trigger:"damaged", save:"DEX", dmg:"2d10", type:"fire", half:true, upcast:"1d10" },
+
+  // ---------------------------------------------------------------- Single-target control
+  "Hold Person":       { kind:"save", save:"WIS", condition:"paralyzed", conc:true, repeat:true, targetTypes:["Humanoid"] },
+  "Hold Monster":      { kind:"save", save:"WIS", condition:"paralyzed", conc:true, repeat:true },
+  "Command":           { kind:"save", save:"WIS", condition:"skipturn" },
+  "Tasha's Hideous Laughter": { kind:"save", save:"WIS", condition:"incapacitated", conc:true, repeat:true },
+  "Banishment":        { kind:"save", save:"CHA", condition:"banished", conc:true },
+  "Slow":              { kind:"save", save:"WIS", condition:"slowed", conc:true, repeat:true },
+  "Blindness/Deafness": { kind:"save", save:"CON", condition:"blinded", repeat:true }
+};
+// The Trial: class actions dataset. See docs/Trial_Schema.md ("data/data_class_actions.js")
+// for the base contract. Keyed by the exact feature name in data_classes_1/2/3.js (CLASS_DATA
+// or SUBCLASS_DATA). Covers every base-class feature that does something in a solo fight and
+// can be expressed with the contract's kinds/effect keys, across all twelve classes, plus a
+// small set of simple, iconic subclass features. Rules the engine already handles (Extra
+// Attack, Sneak Attack dice, Martial Arts, fighting styles, weapon mastery, Divine Smite,
+// Eldritch Blast riders, Radiant Strikes, Divine Strike) are intentionally absent, per contract.
+//
+// ---------------------------------------------------------------------------------------------
+// DOCUMENTED EXTRAS (beyond docs/Trial_Schema.md's base contract) — every one used below:
+//
+// New `kind` values:
+//   "passive"        — an always-on trait with no action/trigger (Evasion, Improved/Superior
+//                       Critical, Assassinate, Aura of Protection).
+//   "convert"         — spend a point pool to create something else, not to heal/attack
+//                       (Font of Magic converting Sorcery Points into a spell slot).
+//   "free-cast"       — a limited-per-fight free casting of a named spell, keyed by `spell`
+//                       (Favored Enemy's free Hunter's Mark castings).
+//   "heal-or-damage"  — Channel Divinity's Divine Spark: choose to heal (`heal`) or force a
+//                       save (`save`, `half`) for damage (`dmg`) of one or more `type`s.
+//   "recover"         — regain expended resources mid-fight (Magical Cunning).
+//   kind "dodge" is reused with no `cost` for Cunning Action's bare Dodge sub-option (the
+//   Dash/Disengage sub-options aren't modeled — they're movement, out of Trial scope).
+//   kind "on-hit" is reused for a rest-limited (not Focus/pool-limited) bonus-damage rider
+//   (Dread Ambusher) via `usesFlat` instead of `cost`.
+//
+// New `trigger` values (kind:"reaction"): "zero" (the reaction fires when you drop to 0 HP —
+//   Relentless Rage) and "failedSave" (fires after failing a save — Indomitable).
+//
+// New `effect` keys:
+//   survive (bool), hpOnSurvive (dice/formula) — Relentless Rage: survive at 0 HP instead of
+//     dying, dropping to `hpOnSurvive` HP instead.
+//   reroll (bool) — Indomitable: reroll the failed save with the same modifier.
+//   evasion (bool) — Evasion: no damage on a successful DEX save for half, half on a failure.
+//   critRange (number) — Champion: crit threshold (19, then 18).
+//   firstRoundAdvantage (bool) — Assassinate: advantage on attacks in the first round.
+//   saveBonus (formula) — Aura of Protection: bonus added to all saving throws.
+//   atkBonus (formula) — Sacred Weapon: bonus added to one weapon's attack rolls.
+//   extraDmg (dice), extraType (damage type) — a bonus damage rider on a hit (Dread Ambusher),
+//     mirroring SPELL_EFFECTS' buff.extraDmg/extraType naming for consistency.
+//   pactSlots ("half") — Magical Cunning: regain half (round up) of max Pact Magic slots.
+//
+// Other new top-level keys:
+//   usesByLevel: { classLevel: uses } — an alternative to `uses` (a RESOURCE_USES key) for a
+//     feature whose own per-fight count scales by class level but isn't tracked in
+//     data_resources.js (Indomitable, Favored Enemy).
+//   usesFlat may be a formula string (e.g. "MOD_WIS"), not just a literal integer, when a
+//     feature's per-fight count is derived from an ability modifier (Dread Ambusher).
+//   diceByLevel: { classLevel: diceCount } — the number of dice (of the type in `heal`/`dmg`)
+//     a feature rolls at a given class level (Channel Divinity's Divine Spark: 1d8 at 1,
+//     2d8 at 7, 3d8 at 13, 4d8 at 18).
+//   slotCostByLevel: { slotLevel: pointCost }, used with `cost:{ pool, n:"SLOT_COST" }` — the
+//     point cost to create a spell slot of a given level (Font of Magic: 2/3/5/6/7 for
+//     slot levels 1-5). "SLOT_COST" is a token meaning "look up slotCostByLevel[chosen level]".
+//   replaces — marks that taking this (subclass) entry supersedes a named base-class
+//     CLASS_ACTIONS entry (Circle of the Moon's Circle Forms replaces Wild Shape).
+//   type may hold an array of damage types when the feature lets you choose at time of use
+//     (Divine Spark: Necrotic or Radiant), rather than a single string.
+//
+// New dice token: MARTIAL_DIE — the owner's Martial Arts die (a Monk's unarmed-strike die,
+//   d6 -> d8 -> d10 -> d12 by Monk level; also fuels Warrior of Mercy's Hand of Healing).
+//
+// ---------------------------------------------------------------------------------------------
+// Two intentional name collisions in the source data, resolved by picking a single owner
+// (object keys must be unique) — the other class's identically-named feature is not modeled
+// separately, since JS can't hold two "Evasion" or two "Channel Divinity" keys:
+//   "Evasion" is keyed to Rogue (Monk gains an identical Evasion at Monk level 7; its effect
+//     is the same shape and is considered covered by this entry).
+//   "Channel Divinity" is keyed to Cleric, for the Divine Spark option specifically (Turn
+//     Undead is situational/skipped — see the omissions list in the QA/report). Paladin's
+//     identically-named feature only grants Divine Sense (detection, no Trial effect); its
+//     Channel Divinity *uses* are still spent by its subclass options below (Sacred Weapon,
+//     Vow of Enmity), which reference the shared "Channel Divinity" RESOURCE_USES entry
+//     (data_resources.js already tracks Cleric and Paladin uses separately via `byClass`).
+//
+// "Flurry of Blows" and "Patient Defense" are not top-level feature-array names — they are
+// named sub-abilities described inside the Monk's "Monk's Focus" feature text (Step of the
+// Wind too, but it's skipped as pure movement). This matches docs/Trial_Schema.md's own
+// worked examples, which key these two exactly this way.
+window.CLASS_ACTIONS = {
+  // ---------------------------------------------------------------- Barbarian
+  "Rage": {
+    owner: "Barbarian", kind: "toggle", action: "bonus", uses: "Rage", duration: "fight",
+    effect: { dmgBonus: "RAGE", resist: ["bludgeoning", "piercing", "slashing"] }
+  },
+  "Reckless Attack": {
+    owner: "Barbarian", kind: "stance", action: "free", duration: "round",
+    effect: { advantage: true, enemyAdvantage: true }
+  },
+  "Relentless Rage": {
+    owner: "Barbarian", kind: "reaction", trigger: "zero", minLevel: 11,
+    effect: { survive: true, hpOnSurvive: "CLASS_LEVEL*2" }
+  },
+
+  // ---------------------------------------------------------------- Fighter
+  "Second Wind": {
+    owner: "Fighter", kind: "heal", action: "bonus", uses: "Second Wind", heal: "1d10+CLASS_LEVEL"
+  },
+  "Action Surge": {
+    owner: "Fighter", kind: "extra-action", action: "free", uses: "Action Surge"
+  },
+  "Indomitable": {
+    owner: "Fighter", kind: "reaction", trigger: "failedSave", minLevel: 9,
+    usesByLevel: { 9: 1, 13: 2, 17: 3 },
+    effect: { reroll: true }
+  },
+  // Champion (Fighter subclass)
+  "Improved Critical": {
+    owner: "Champion", kind: "passive", minLevel: 3, effect: { critRange: 19 }
+  },
+  "Superior Critical": {
+    owner: "Champion", kind: "passive", minLevel: 15, effect: { critRange: 18 }
+  },
+
+  // ---------------------------------------------------------------- Rogue
+  "Steady Aim": {
+    owner: "Rogue", kind: "stance", action: "bonus", duration: "turn", effect: { advantage: true }
+  },
+  "Cunning Action": {
+    owner: "Rogue", kind: "dodge", action: "bonus"
+  },
+  "Uncanny Dodge": {
+    owner: "Rogue", kind: "reaction", trigger: "hit", minLevel: 5, effect: { halve: true }
+  },
+  "Evasion": {
+    owner: "Rogue", kind: "passive", minLevel: 7, effect: { evasion: true }
+  },
+  // Assassin (Rogue subclass)
+  "Assassinate": {
+    owner: "Assassin", kind: "passive", minLevel: 3, effect: { firstRoundAdvantage: true }
+  },
+
+  // ---------------------------------------------------------------- Monk
+  "Flurry of Blows": {
+    owner: "Monk", kind: "extra-attacks", action: "bonus",
+    cost: { pool: "Monk's Focus", n: 1 }, weapon: "unarmed", attacksByLevel: { 2: 2, 10: 3 }
+  },
+  "Patient Defense": {
+    owner: "Monk", kind: "dodge", action: "bonus", cost: { pool: "Monk's Focus", n: 1 }
+  },
+  "Stunning Strike": {
+    owner: "Monk", kind: "on-hit", cost: { pool: "Monk's Focus", n: 1 },
+    save: "CON", condition: "stunned", duration: "round", minLevel: 5
+  },
+  "Deflect Attacks": {
+    owner: "Monk", kind: "reaction", trigger: "hit", minLevel: 3,
+    effect: { reduce: "1d10+MOD_DEX+CLASS_LEVEL" }
+  },
+  "Uncanny Metabolism": {
+    owner: "Monk", kind: "heal", action: "free", usesFlat: 1, heal: "CLASS_LEVEL+MARTIAL_DIE"
+  },
+  // Warrior of Mercy (Monk subclass)
+  "Hand of Healing": {
+    owner: "Warrior of Mercy", kind: "heal", action: "action", minLevel: 3,
+    cost: { pool: "Monk's Focus", n: 1 }, heal: "MARTIAL_DIE+MOD_WIS"
+  },
+
+  // ---------------------------------------------------------------- Paladin
+  "Lay On Hands": {
+    owner: "Paladin", kind: "heal", action: "bonus", pool: "Lay On Hands"
+  },
+  "Aura of Protection": {
+    owner: "Paladin", kind: "passive", minLevel: 6, effect: { saveBonus: "MOD_CHA" }
+  },
+  // Oath of Devotion (Paladin subclass)
+  "Sacred Weapon": {
+    owner: "Oath of Devotion", kind: "toggle", action: "free", uses: "Channel Divinity",
+    duration: "fight", minLevel: 3, effect: { atkBonus: "MOD_CHA" }
+  },
+  // Oath of Vengeance (Paladin subclass)
+  "Vow of Enmity": {
+    owner: "Oath of Vengeance", kind: "toggle", action: "free", uses: "Channel Divinity",
+    duration: "fight", minLevel: 3, effect: { advantage: true }
+  },
+
+  // ---------------------------------------------------------------- Ranger
+  "Favored Enemy": {
+    owner: "Ranger", kind: "free-cast", action: "bonus", spell: "Hunter's Mark",
+    usesByLevel: { 1: 2, 5: 3, 9: 4, 13: 5, 17: 6 }
+  },
+  // Gloom Stalker (Ranger subclass) — the 2024 text (unlike 2014) grants no extra attack;
+  // it grants a WIS-mod-limited bonus Psychic damage rider on a weapon hit (Dreadful Strike).
+  "Dread Ambusher": {
+    owner: "Gloom Stalker", kind: "on-hit", minLevel: 3, usesFlat: "MOD_WIS",
+    effect: { extraDmg: "2d6", extraType: "psychic" }
+  },
+
+  // ---------------------------------------------------------------- Cleric
+  "Channel Divinity": {
+    owner: "Cleric", kind: "heal-or-damage", action: "action", uses: "Channel Divinity",
+    heal: "1d8+MOD", dmg: "1d8+MOD", type: ["necrotic", "radiant"], save: "CON", half: true,
+    diceByLevel: { 1: 1, 7: 2, 13: 3, 18: 4 }
+  },
+
+  // ---------------------------------------------------------------- Druid
+  "Wild Shape": {
+    owner: "Druid", kind: "temphp", action: "bonus", uses: "Wild Shape", temp: "CLASS_LEVEL"
+  },
+  // Circle of the Moon (Druid subclass) — supersedes base Wild Shape once taken.
+  "Circle Forms": {
+    owner: "Circle of the Moon", kind: "temphp", action: "bonus", minLevel: 3,
+    uses: "Wild Shape", temp: "CLASS_LEVEL*3", replaces: "Wild Shape"
+  },
+
+  // ---------------------------------------------------------------- Sorcerer
+  "Innate Sorcery": {
+    owner: "Sorcerer", kind: "toggle", action: "bonus", usesFlat: 2, duration: "fight",
+    effect: { spellDC: 1, spellAdvantage: true }
+  },
+  "Font of Magic": {
+    owner: "Sorcerer", kind: "convert", action: "bonus",
+    cost: { pool: "Font of Magic", n: "SLOT_COST" },
+    slotCostByLevel: { 1: 2, 2: 3, 3: 5, 4: 6, 5: 7 }
+  },
+
+  // ---------------------------------------------------------------- Warlock
+  "Magical Cunning": {
+    owner: "Warlock", kind: "recover", action: "free", usesFlat: 1, effect: { pactSlots: "half" }
+  }
+
+  // ---------------------------------------------------------------- Wizard, Bard
+  // No entries: every Wizard/Bard feature that does something in a fight either targets
+  // allies (Bardic Inspiration, Font of Inspiration — explicitly skipped per instructions;
+  // there are no allies in a 1v1 Trial) or is rest-gated utility/preparation (Arcane
+  // Recovery, Scholar, Ritual Adept, Memorize Spell, Spell Mastery, Signature Spells).
+};
 const CLASS_DATA=window.CLASS_DATA, SUBCLASS_DATA=window.SUBCLASS_DATA, SPELL_DATA=window.SPELL_DATA;
 const SPECIES_DATA=window.SPECIES_DATA, BACKGROUND_DATA=window.BACKGROUND_DATA, FEAT_DATA=window.FEAT_DATA;
 const SPELL_TAGS=window.SPELL_TAGS, GLOSSARY_DATA=window.GLOSSARY_DATA;
@@ -8160,6 +8565,8 @@ function freshState(){
     gear:{armor:null,offhand:null,weapon:null,ranged:null,wonders:[]},
     owned:[],               // magic items won as spoils
     spoils:{},              // character level -> spoil chosen (5, 11, 17, 20)
+    trial:null,             // the fight in progress (The Trial)
+    trials:[],              // past trial results
     xp:0, log:[],           // log: {level, title, text, gains}
     ui:{tab:"start", wizStep:0, sheetOpen:{}},
     pending:null            // level-up in progress: {klass, choices:[...]}
@@ -8605,7 +9012,8 @@ function slimState(st){
   // strip bulk that can be rebuilt: undo snapshot, UI state, vignette prose (rehydrated by title)
   const o=JSON.parse(JSON.stringify(st));
   o.prevSnap=null; o.undoStack=[]; o.ui=undefined;
-  o.log=(o.log||[]).map(l=>({level:l.level, title:l.title, gains:l.gains}));
+  o.trial=null;
+  o.log=(o.log||[]).map(l=>l.trial?{level:l.level, title:l.title, gains:l.gains, text:l.text, trial:true}:{level:l.level, title:l.title, gains:l.gains});
   return o;
 }
 function rehydrateState(o){
@@ -9025,6 +9433,528 @@ function gearOptions(slot){
   }
   return opts;
 }
+/* ================= Legend Forge: The Trial (solo encounter engine) ================= */
+// Data: MONSTER_DATA, SPELL_EFFECTS (data_spell_effects.js), CLASS_ACTIONS (data_class_actions.js).
+// Everything here operates on a trial object `tr` (S.trial for the live fight, a scratch copy for the
+// auto-simulation) and never touches the DOM; renderTrial() reads it.
+
+const SE=()=>window.SPELL_EFFECTS||{}, CA=()=>window.CLASS_ACTIONS||{};
+const SLOT_COST={1:2,2:3,3:5,4:6,5:7};
+let TRIAL_RNG=Math.random;
+function d(n){ return 1+Math.floor(TRIAL_RNG()*n); }
+function trialTokens(txt, ctx){
+  return String(txt)
+    .replace(/MARTIAL_DIE/g, martialArtsDie())
+    .replace(/MOD_(STR|DEX|CON|INT|WIS|CHA)/g,(m,a)=>String(mod(a)))
+    .replace(/CLASS_LEVEL\*(\d+)/g,(m,k)=>String((classLevels()[ctx&&ctx.owner]||0)*+k))
+    .replace(/CLASS_LEVEL/g,String(classLevels()[ctx&&ctx.owner]||totalLevel()))
+    .replace(/LEVEL/g,String(totalLevel())).replace(/PB/g,String(profBonus()))
+    .replace(/MOD/g,String(ctx&&ctx.mod!=null?ctx.mod:0))
+    .replace(/RAGE/g,String(rageBonus()));
+}
+function rollDice(str, ctx, dbl){
+  // returns {total, rolls:[..], text}
+  const s=trialTokens(str,ctx).replace(/\s/g,""); let total=0; const rolls=[];
+  const re=/([+-]?)(\d*)d(\d+)|([+-]?\d+)/g; let m;
+  while((m=re.exec(s))){
+    if(m[3]){ const sign=m[1]==="-"?-1:1; const n=(+m[2]||1)*(dbl?2:1); for(let i=0;i<n;i++){ const r=d(+m[3]); rolls.push(r); total+=sign*r; } }
+    else if(m[4]){ total+=+m[4]; }
+  }
+  return {total:Math.max(0,total), rolls, text:s};
+}
+function trialMaxHP(){ return maxHP(); }
+
+/* ---------------- Setup ---------------- */
+function trialActionsAvailable(){
+  // CLASS_ACTIONS entries the character actually has
+  const out=[]; const feats=acquiredFeatures(); const cl=classLevels();
+  const names=new Set(feats.map(f=>f.name));
+  const hasKey=(key,owner)=>names.has(key)||feats.some(f=>(f.cls===owner||f.cls.startsWith(owner+" ")||f.cls.endsWith("("+owner+")"))&&f.desc&&f.desc.includes(key));
+  for(const key in CA()){
+    const a=CA()[key]; if(!hasKey(key,a.owner)) continue;
+    const ownerLv=CLASS_DATA[a.owner]?(cl[a.owner]||0):(classOrder().find(c=>S.subclasses[c]===a.owner)?cl[classOrder().find(c=>S.subclasses[c]===a.owner)]:0);
+    if(a.minLevel&&ownerLv<a.minLevel) continue;
+    out.push({key, ...a, ownerLevel:ownerLv});
+  }
+  // subclass replacements (Circle Forms replaces Wild Shape)
+  const replaced=new Set(out.filter(a=>a.replaces).map(a=>a.replaces));
+  return out.filter(a=>!replaced.has(a.key));
+}
+function usesFor(a){
+  if(a.usesFlat!=null) return typeof a.usesFlat==="string"?Math.max(1,+trialTokens(a.usesFlat,{owner:a.owner})||1):a.usesFlat;
+  if(a.usesByLevel){ let n=0; for(const k in a.usesByLevel) if(+k<=a.ownerLevel) n=a.usesByLevel[k]; return n; }
+  if(a.uses){ const u=resourceUsesText(a.uses); return u?u.n:0; }
+  return null;
+}
+function castableSpells(){
+  // [{name, cls, ability, atk, dc, eff, level}]
+  const out=[]; const spellAtk=gearState().wonders.reduce((t,w)=>t+(gearEffect(gearItem(w)).spellAtk||0),0);
+  for(const e of casterEntries()){
+    const ss=spellState(e.cls);
+    const names=new Set([...ss.cantrips, ...ss.prepared, ...alwaysPrepared(e.cls), ...Object.values(ss.arcanum).filter(Boolean)]);
+    for(const n of names){ const sp=spellByName(n), eff=SE()[n]; if(!sp) continue;
+      out.push({name:n, cls:e.cls, ability:e.caster.ability, mod:mod(e.caster.ability), atk:profBonus()+mod(e.caster.ability)+spellAtk, dc:8+profBonus()+mod(e.caster.ability)+spellAtk, eff:eff||null, level:sp.level, pact:e.caster.kind==="pact", sp}); }
+  }
+  for(const en of innateMagicEntries()){ for(const n of en.spells){ const sp=spellByName(n), eff=SE()[n]; if(!sp||out.some(o=>o.name===n)) continue; const ab=["INT","WIS","CHA"].sort((a,b)=>mod(b)-mod(a))[0]; out.push({name:n, cls:en.source, ability:ab, mod:mod(ab), atk:profBonus()+mod(ab), dc:8+profBonus()+mod(ab), eff:eff||null, level:sp.level, innate:true, sp}); } }
+  return out.sort((a,b)=>a.level-b.level||a.name.localeCompare(b.name));
+}
+function newTrial(creatureName){
+  const m=monsterByName(creatureName); if(!m) return null;
+  const slots={}; sharedSlots().forEach((n,i)=>{ slots[i+1]=n; });
+  const pi=pactInfo();
+  const uses={}, pools={};
+  for(const a of trialActionsAvailable()){ const n=usesFor(a); if(n!=null) uses[a.key]=n; if(a.cost&&a.cost.pool){ const u=resourceUsesText(a.cost.pool); if(u) pools[a.cost.pool]=u.n; } if(a.pool){ const u=resourceUsesText(a.pool); if(u) pools[a.pool]=u.n; } }
+  const fe=(window.FEAT_EFFECTS||{});
+  const tr={ creature:m.name, round:0, turn:null, started:Date.now(), over:null, log:[],
+    you:{hp:trialMaxHP(), temp:0, slots, pact:pi?{n:pi.slots, level:pi.slotLevel}:null, uses, pools, buffs:[], conc:null, conds:{}, stance:{}, toggles:{}, action:0, bonus:0, reaction:0, extraActions:0, companion:null, dealt:0, taken:0, innateUsed:{} },
+    it:{name:m.name, hp:m.hp, maxhp:m.hp, ac:m.ac, conds:{}, recharge:{}, dealt:0} };
+  const yourInit=d(20)+mod("DEX")+(hasFeat("Alert")?profBonus():0), itsInit=d(20)+(m.saves?m.saves.DEX||0:0);
+  tr.turn=yourInit>=itsInit?"you":"it";
+  say(tr,"narr",`${m.name} steps into the ring. ${m.desc||""}`);
+  say(tr,"roll",`Initiative: you ${yourInit}, ${m.name} ${itsInit}. ${tr.turn==="you"?"You act first.":"It acts first."}`);
+  tr.round=1;
+  if(tr.turn==="you") startYourTurn(tr); else monsterTurn(tr);
+  return tr;
+}
+function say(tr, kind, text){ tr.log.push({kind, text, round:tr.round}); if(tr.log.length>400) tr.log.shift(); }
+
+/* ---------------- Your turn ---------------- */
+function activeBuff(tr,key){ return tr.you.buffs.find(b=>b.buff&&b.buff[key]!=null); }
+function buffSum(tr,key){ return tr.you.buffs.reduce((t,b)=>t+((b.buff&&typeof b.buff[key]==="number")?b.buff[key]:0),0); }
+function yourAC(tr){
+  let ac=armorClass();
+  const base=activeBuff(tr,"baseAC"); if(base&&!gearState().armor) ac=Math.max(ac, base.buff.baseAC+mod("DEX")+((gearItem(gearState().offhand)||{}).kind==="shield"?2:0)+buffSum(tr,"acFromWonders"));
+  ac+=buffSum(tr,"ac");
+  if(tr.you.stance.shield) ac+=5;
+  return ac;
+}
+function startYourTurn(tr){
+  const y=tr.you;
+  y.action=1; y.bonus=1; y.reaction=1; y.extraActions=0; y.stance={}; y.smiteHit=false; y.sneakUsed=false; y.turns=(y.turns||0)+1;
+  y.buffs=y.buffs.filter(b=>{ if(b.duration==="round"||b.duration==="turn"){ return false; } return true; });
+  if(y.conds.stunned||y.conds.paralyzed){ say(tr,"narr",`You are ${y.conds.stunned?"stunned":"paralyzed"} and lose your turn.`); y.action=0; y.bonus=0; endYourTurn(tr); return; }
+  if(y.conds.prone){ say(tr,"narr","You get back on your feet."); delete y.conds.prone; }
+}
+function endYourTurn(tr){
+  if(tr.over) return;
+  tr.turn="it"; monsterTurn(tr);
+}
+function playerAttackProfile(tr, slot){
+  const p=attackProfiles().find(x=>x.slot===slot); if(!p) return null;
+  const y=tr.you; const raging=!!y.toggles["Rage"];
+  const riders=p.riders.filter(r=>!(r.label==="Rage"&&!raging)&&!(r.label==="Hunter's Mark")); // Hunter's Mark only when cast
+  for(const b of y.buffs){ if(b.buff&&b.buff.extraDmg) riders.push({dice:b.buff.extraDmg, label:b.name}); }
+  let atkBonus=p.atk+buffSum(tr,"atkBonus");
+  for(const e of toggledEffects(tr)){ if(e.atkBonus!=null) atkBonus+=+trialTokens(e.atkBonus,{owner:e.owner})||0; if(typeof e.dmgBonus==="number") riders.push({flat:e.dmgBonus, label:e.key}); }
+  return {...p, riders, atk:atkBonus};
+}
+function attackOnce(tr, p, opts){
+  const y=tr.you, it=tr.it, m=monsterByName(it.name); opts=opts||{};
+  let adv=!!(y.stance.advantage||opts.advantage||it.conds.prone&&!p.ranged||it.conds.stunned||it.conds.paralyzed||activeBuff(tr,"advantage")||toggledEffects(tr).some(e=>e.advantage));
+  if(tr.round===1&&trialPassive("firstRoundAdvantage")) adv=true;
+  let dis=!!(y.conds.prone||y.conds.blinded||(p.ranged&&it.conds.prone));
+  const r1=d(20), r2=d(20); let nat=(adv&&!dis)?Math.max(r1,r2):(dis&&!adv)?Math.min(r1,r2):r1;
+  const bless=activeBuff(tr,"atkDie"); const blessRoll=bless?rollDice(bless.buff.atkDie).total:0;
+  const critRange=trialPassive("critRange")||20;
+  const crit=nat>=critRange||(it.conds.paralyzed&&!p.ranged);
+  const total=nat+p.atk+blessRoll;
+  const hit=nat!==1&&(nat>=critRange||total>=it.ac);
+  if(!hit){ say(tr,"roll",`${p.name}: ${nat}${adv?" (advantage)":dis?" (disadvantage)":""} +${p.atk}${blessRoll?" +"+blessRoll:""} = ${total} vs AC ${it.ac}. Miss.`); return {hit:false}; }
+  const dmg=rollDice(p.die,null,crit); let total2=dmg.total+p.flat; const parts=[`${p.die}${crit?" ×2":""} ${dmg.rolls.join("+")}`+(p.flat?` ${p.flat>=0?"+":"−"}${Math.abs(p.flat)}`:"")];
+  for(const r of p.riders){ if(r.dice){ const rr=rollDice(r.dice,null,crit); total2+=rr.total; parts.push(`${r.label} ${rr.total}`); } else if(r.flat){ total2+=r.flat; parts.push(`${r.label} +${r.flat}`); } }
+  if(!y.sneakUsed){ for(const o of p.once){ if(o.label==="Sneak Attack"&&!(adv||it.conds.stunned||it.conds.paralyzed)) continue; const rr=rollDice(o.dice,null,crit); total2+=rr.total; parts.push(`${o.label} ${rr.total}`); y.sneakUsed=true; } }
+  if(y.smite&&!y.smiteHit&&!p.ranged){ const s=y.smite; const rr=rollDice(s.dice,null,crit); total2+=rr.total; parts.push(`${s.name} ${rr.total} ${s.type||"radiant"}`); y.smiteHit=true; y.smite=null; }
+  total2=Math.max(1,total2);
+  it.hp-=total2; y.dealt+=total2;
+  say(tr,"hit",`${p.name}: ${nat}${crit?" critical!":""} +${p.atk} = ${total} hits AC ${it.ac}. ${parts.join(", ")} = ${total2} ${p.type}.`);
+  for(const a of trialActionsAvailable()){
+    if(a.kind!=="on-hit"||!y.toggles[a.key]) continue;
+    const canPay=(!a.cost||(y.pools[a.cost.pool]||0)>=a.cost.n)&&(y.uses[a.key]==null||y.uses[a.key]>0);
+    if(!canPay) continue;
+    if(a.save&&a.condition){ if(y.stunnedThisTurn||p.ranged) continue; if(a.cost) y.pools[a.cost.pool]-=a.cost.n; if(y.uses[a.key]!=null) y.uses[a.key]--; y.stunnedThisTurn=true;
+      const dc=8+profBonus()+mod("WIS"); const sv=d(20)+(m.saves?m.saves[a.save]||0:0);
+      if(sv<dc){ it.conds[a.condition]=1; say(tr,"narr",`${a.key}: it rolls ${sv} against DC ${dc} and is ${a.condition} until the end of your next turn.`); } else say(tr,"narr",`${a.key}: it rolls ${sv} against DC ${dc} and shakes it off.`); }
+    else if(a.effect&&a.effect.extraDmg){ if(a.cost) y.pools[a.cost.pool]-=a.cost.n; if(y.uses[a.key]!=null) y.uses[a.key]--; const rr=rollDice(a.effect.extraDmg,{owner:a.owner},crit); it.hp-=rr.total; y.dealt+=rr.total; say(tr,"hit",`${a.key}: +${rr.total} ${a.effect.extraType||""}.`); }
+  }
+  checkOver(tr);
+  return {hit:true, crit, dmg:total2};
+}
+function doAttackAction(tr, slot){
+  const y=tr.you; if(y.action<=0||tr.over) return;
+  const p=playerAttackProfile(tr, slot); if(!p) return;
+  y.action--; y.stunnedThisTurn=false;
+  const n=attacksPerAction()+buffSum(tr,"extraAttacks");
+  say(tr,"narr",`You attack with ${p.name}${n>1?" ×"+n:""}.`);
+  for(let i=0;i<n&&!tr.over;i++) attackOnce(tr,p);
+}
+function doOffhand(tr){
+  const y=tr.you; if(y.bonus<=0||tr.over) return; const p=playerAttackProfile(tr,"offhand"); if(!p) return;
+  y.bonus--; say(tr,"narr","Off-hand strike."); attackOnce(tr,p);
+}
+function trialPassive(key){
+  let v=null;
+  for(const a of trialActionsAvailable()){ if(a.kind==="passive"&&a.effect&&a.effect[key]!=null){ const x=a.effect[key]; v=(key==="critRange"&&v!=null)?Math.min(v,x):x; } }
+  return v;
+}
+function toggledEffects(tr){ // effects from active toggles (Rage, Sacred Weapon, Vow of Enmity, Innate Sorcery)
+  const out=[]; for(const a of trialActionsAvailable()){ if(a.kind==="toggle"&&tr.you.toggles[a.key]&&a.effect) out.push({...a.effect, owner:a.owner, key:a.key}); } return out;
+}
+/* ---------------- Spells ---------------- */
+function spellSlotOptions(tr, c){
+  if(c.level===0||c.innate) return [c.level];
+  const y=tr.you; const out=[];
+  if(c.pact){ if(y.pact&&y.pact.n>0&&y.pact.level>=c.level) out.push(y.pact.level); if(c.level>=6) out.push(c.level); return out; }
+  for(const l in y.slots) if(+l>=c.level&&y.slots[l]>0) out.push(+l);
+  return out;
+}
+function castSpell(tr, name, atLevel){
+  const y=tr.you, it=tr.it, m=monsterByName(it.name); if(tr.over) return;
+  const c=castableSpells().find(x=>x.name===name); if(!c||!c.eff) return;
+  const e=c.eff; const isBonus=!!e.bonus; const isReaction=e.kind==="reaction";
+  if(isReaction) return;
+  if(isBonus?y.bonus<=0:y.action<=0) return;
+  // pay the slot
+  let lvl=c.level;
+  if(c.level>0&&!c.innate){
+    const opts=spellSlotOptions(tr,c); if(!opts.length) return;
+    lvl=opts.includes(+atLevel)?+atLevel:opts[0];
+    if(c.pact&&c.level<6){ y.pact.n--; } else if(c.level>=6&&c.pact){ y.innateUsed[name]=1; } else y.slots[lvl]--;
+  } else if(c.innate){ if(y.innateUsed[name]) return; y.innateUsed[name]=1; }
+  if(isBonus) y.bonus--; else y.action--;
+  const up=Math.max(0,lvl-c.level);
+  const ctx={mod:c.mod, owner:c.cls};
+  const scaleDice=(dice)=>{ if(e.scale==="cantrip"){ const L=totalLevel(); const k=1+(L>=5)+(L>=11)+(L>=17); return dice.replace(/^(\d+)d/,(m_,n)=>(+n*k)+"d"); } if(up&&e.upcast){ if(/d/.test(e.upcast)){ const [n,rest]=e.upcast.split("d"); const [bn,brest]=dice.split("d"); if(rest.split("+")[0]===brest.split("+")[0]) return (+bn+ +n*up)+"d"+brest; return dice+"+"+n*up+"d"+rest; } return dice+"+"+(+e.upcast*up); } return dice; };
+  const label=`${name}${lvl>c.level?" (level "+lvl+")":""}`;
+  if(e.conc){ if(y.conc){ say(tr,"narr",`Your concentration on ${y.conc} ends.`); y.buffs=y.buffs.filter(b=>b.name!==y.conc); y.companion=y.companion&&y.companion.name===y.conc?null:y.companion; for(const k in it.conds) if(it.conds[k]===y.conc) delete it.conds[k]; } y.conc=name; }
+  const saveOf=ab=>{ const bonus=m.saves?(m.saves[ab]||0):0; return d(20)+bonus; };
+  const applyDamage=(total,type)=>{ it.hp-=total; y.dealt+=total; checkOver(tr); };
+  if(e.kind==="attack"){
+    const n=e.beams?(1+(totalLevel()>=5)+(totalLevel()>=11)+(totalLevel()>=17)):(e.rays?e.rays+(e.upcastRays?up:0):1);
+    say(tr,"narr",`You cast ${label}${n>1?" ("+n+" rolls)":""}.`);
+    for(let i=0;i<n&&!tr.over;i++){ const adv=!!(activeBuff(tr,"spellAdvantage")||y.toggles["Innate Sorcery"]||it.conds.stunned||it.conds.paralyzed); const r1=d(20),r2=d(20); const nat=adv?Math.max(r1,r2):r1; const total=nat+c.atk; const crit=nat===20;
+      if(nat!==1&&(crit||total>=it.ac)){ const dice=scaleDice(e.beams?e.dmg:e.dmg); const rr=rollDice(dice,ctx,crit); let t=rr.total+(e.beams&&(S.options["Eldritch Invocations"]||[]).includes("Agonizing Blast")?mod("CHA"):0); applyDamage(t,e.type); say(tr,"hit",`${nat}${crit?" critical!":""} +${c.atk} = ${total} hits. ${dice} = ${t} ${e.type}.`); }
+      else say(tr,"roll",`${nat} +${c.atk} = ${total} vs AC ${it.ac}. Miss.`); }
+  } else if(e.kind==="save"){
+    if(e.targetTypes&&!e.targetTypes.includes(m.type)){ say(tr,"narr",`You cast ${label}, but ${m.name} is not a ${e.targetTypes.join("/")}. Nothing happens.`); return; }
+    const dc=c.dc+(y.toggles["Innate Sorcery"]?1:0); const sv=saveOf(e.save); const fail=sv<dc;
+    let txt=`You cast ${label}: it rolls ${sv} against DC ${dc}, ${fail?"fails":"succeeds"}.`;
+    if(e.dmg){ const dice=scaleDice(e.dmg); const rr=rollDice(dice,ctx); const t=fail?rr.total:(e.half?Math.floor(rr.total/2):0); if(t){ applyDamage(t,e.type); txt+=` ${dice} = ${t} ${e.type}.`; } else txt+=" No damage."; }
+    if(e.condition&&fail){ it.conds[e.condition]=e.conc?name:1; if(e.repeat) it.repeat={cond:e.condition, save:e.save, dc}; txt+=` It is ${e.condition}.`; }
+    say(tr,fail?"hit":"roll",txt);
+  } else if(e.kind==="auto"){
+    if(e.killBelow&&it.hp<=e.killBelow){ say(tr,"hit",`You cast ${label}. ${m.name} has ${it.hp} hit points left and dies.`); it.hp=0; checkOver(tr); return; }
+    const dice=scaleDice(e.dmg); const rr=rollDice(dice,ctx); applyDamage(rr.total,e.type); say(tr,"hit",`You cast ${label}: ${dice} = ${rr.total} ${e.type}.`);
+  } else if(e.kind==="heal"){
+    let amt; if(e.fullHeal) amt=trialMaxHP()-y.hp; else { const dice=scaleDice(e.heal); amt=rollDice(dice,ctx).total; }
+    const before=y.hp; y.hp=Math.min(trialMaxHP(), y.hp+amt); say(tr,"heal",`You cast ${label} and regain ${y.hp-before} hit points (${y.hp}/${trialMaxHP()}).`);
+  } else if(e.kind==="temphp"){
+    const t=rollDice(scaleDice(e.temp),ctx).total; y.temp=Math.max(y.temp,t); if(e.retaliate) y.retaliate=+e.retaliate*(1+up)||5; say(tr,"heal",`You cast ${label}: ${t} temporary hit points.`);
+  } else if(e.kind==="buff"){
+    y.buffs=y.buffs.filter(b=>b.name!==name); y.buffs.push({name, buff:e.buff, duration:e.conc?"conc":(e.duration||"fight")}); say(tr,"narr",`You cast ${label}.`);
+  } else if(e.kind==="smite"){
+    y.smite={name, dice:scaleDice(e.dmg), type:e.type}; say(tr,"narr",`${label} is ready: it lands on your next melee hit.`);
+  } else if(e.kind==="aura"){
+    y.aura={name, dc:c.dc, save:e.save, dice:scaleDice(e.dmg), type:e.type, half:e.half}; say(tr,"narr",`You cast ${label}. It will suffer at the start of each of its turns.`);
+  } else if(e.kind==="companion"){
+    y.companion={name, atk:e.save?null:c.atk, save:e.save||null, dc:c.dc, half:!!e.half, heal:e.heal?scaleDice(e.heal):null, dice:e.dmg?scaleDice(e.dmg):null, type:e.type, ctx, action:e.bonus?"bonus":"action"}; say(tr,"narr",`You cast ${label}.`); companionStrike(tr,true);
+  }
+}
+function companionStrike(tr, free){
+  const y=tr.you, it=tr.it; const cp=y.companion; if(!cp||tr.over) return; if(!free){ const need=cp.action==="bonus"?"bonus":"action"; if(y[need]<=0) return; y[need]--; }
+  if(cp.heal){ const before=y.hp; y.hp=Math.min(trialMaxHP(), y.hp+rollDice(cp.heal,cp.ctx).total); say(tr,"heal",`${cp.name}: you regain ${y.hp-before} hit points (${y.hp}/${trialMaxHP()}).`); return; }
+  if(cp.save){ const m=monsterByName(it.name); const sv=d(20)+(m.saves?m.saves[cp.save]||0:0); const rr=rollDice(cp.dice,cp.ctx); const t=sv<cp.dc?rr.total:(cp.half?Math.floor(rr.total/2):0); it.hp-=t; y.dealt+=t; say(tr,t?"hit":"roll",`${cp.name}: it rolls ${sv} against DC ${cp.dc}, ${t} ${cp.type}.`); checkOver(tr); return; }
+  const nat=d(20), total=nat+cp.atk; if(nat!==1&&(nat===20||total>=it.ac)){ const rr=rollDice(cp.dice,cp.ctx,nat===20); it.hp-=rr.total; y.dealt+=rr.total; say(tr,"hit",`${cp.name}: ${nat} +${cp.atk} = ${total} hits for ${rr.total} ${cp.type}.`); checkOver(tr); } else say(tr,"roll",`${cp.name}: ${nat} +${cp.atk} = ${total}. Miss.`);
+}
+/* ---------------- Class actions ---------------- */
+function useClassAction(tr, key, arg){
+  const y=tr.you, it=tr.it, m=monsterByName(it.name); if(tr.over) return;
+  const a=trialActionsAvailable().find(x=>x.key===key); if(!a) return;
+  const ctx={owner:a.owner, mod:mod("WIS")};
+  const needs=a.action==="bonus"?"bonus":a.action==="action"?"action":null;
+  if(needs&&y[needs]<=0) return;
+  if(y.uses[key]!=null&&y.uses[key]<=0&&a.kind!=="passive") return;
+  if(a.cost&&a.cost.pool){ if((y.pools[a.cost.pool]||0)<a.cost.n) return; }
+  const spend=()=>{ if(needs) y[needs]--; if(y.uses[key]!=null) y.uses[key]--; if(a.cost&&a.cost.pool) y.pools[a.cost.pool]-=a.cost.n; };
+  switch(a.kind){
+    case "toggle": spend(); y.toggles[key]=1; say(tr,"narr",`${key}.`); break;
+    case "stance": spend(); y.stance.advantage=!!(a.effect&&a.effect.advantage); y.stance.enemyAdvantage=!!(a.effect&&a.effect.enemyAdvantage); say(tr,"narr",`${key}.`); break;
+    case "heal": { spend(); const before=y.hp; const amt=rollDice(a.heal,ctx).total; y.hp=Math.min(trialMaxHP(),y.hp+amt); say(tr,"heal",`${key}: you regain ${y.hp-before} hit points (${y.hp}/${trialMaxHP()}).`); break; }
+    case "extra-action": spend(); y.action++; say(tr,"narr",`${key}: another action this turn.`); break;
+    case "extra-attacks": { spend(); let n=1; if(a.attacksByLevel){ for(const k in a.attacksByLevel) if(+k<=a.ownerLevel) n=a.attacksByLevel[k]; } const p=playerAttackProfile(tr,"unarmed")||playerAttackProfile(tr,"weapon"); say(tr,"narr",`${key}: ${n} strikes.`); for(let i=0;i<n&&!tr.over;i++) attackOnce(tr,p); break; }
+    case "dodge": spend(); y.stance.dodge=true; say(tr,"narr",`${key}: attacks against you have disadvantage until your next turn.`); break;
+    case "on-hit": y.toggles[key]=y.toggles[key]?0:1; say(tr,"narr",`${key} ${y.toggles[key]?"armed for your next hit":"disarmed"}.`); break;
+    case "temphp": { spend(); const t=rollDice(a.temp,ctx).total; y.temp=Math.max(y.temp,t); say(tr,"heal",`${key}: ${t} temporary hit points.`); break; }
+    case "heal-or-damage": { spend(); let dice=a.heal; if(a.diceByLevel){ let k=1; for(const l in a.diceByLevel) if(+l<=a.ownerLevel) k=a.diceByLevel[l]; dice=(arg==="damage"?a.dmg:a.heal).replace(/^\d+d/,k+"d"); }
+      if(arg==="damage"){ const dc=8+profBonus()+mod("WIS"); const sv=d(20)+(m.saves?m.saves[a.save||"CON"]||0:0); const rr=rollDice(dice,ctx); const t=sv<dc?rr.total:Math.floor(rr.total/2); it.hp-=t; y.dealt+=t; say(tr,"hit",`${key}: it rolls ${sv} against DC ${dc}; ${t} radiant.`); checkOver(tr); }
+      else { const before=y.hp; y.hp=Math.min(trialMaxHP(),y.hp+rollDice(dice,ctx).total); say(tr,"heal",`${key}: you regain ${y.hp-before} hit points.`); } break; }
+    case "free-cast": { if(y.uses[key]<=0) return; y.uses[key]--; const c=castableSpells().find(x=>x.name===a.spell); if(!c){ say(tr,"narr",`${a.spell} is not prepared.`); return; } // cast without a slot
+      const saveSlots={...y.slots}; y.slots[c.level]=(y.slots[c.level]||0)+1; castSpell(tr,a.spell,c.level); break; }
+    case "recover": { if(y.uses[key]<=0||!y.pact) return; y.uses[key]--; const half=Math.ceil(pactInfo().slots/2); y.pact.n=Math.min(pactInfo().slots, y.pact.n+half); say(tr,"narr",`${key}: you recover ${half} pact slots.`); break; }
+    case "convert": { const lvl=+arg||1; const cost=SLOT_COST[lvl]; if(!cost||(y.pools["Font of Magic"]||0)<cost||y.bonus<=0) return; y.bonus--; y.pools["Font of Magic"]-=cost; y.slots[lvl]=(y.slots[lvl]||0)+1; say(tr,"narr",`${key}: ${cost} sorcery points become a level ${lvl} slot.`); break; }
+  }
+  if(a.pool&&a.kind==="heal"){ /* handled above via heal with pool? */ }
+}
+function layOnHands(tr){
+  const y=tr.you; const a=trialActionsAvailable().find(x=>x.key==="Lay On Hands"); if(!a||y.bonus<=0) return;
+  const pool=y.pools["Lay On Hands"]||0; const need=trialMaxHP()-y.hp; const amt=Math.min(pool,need); if(amt<=0) return;
+  y.bonus--; y.pools["Lay On Hands"]-=amt; y.hp+=amt; say(tr,"heal",`Lay On Hands: you regain ${amt} hit points (${y.hp}/${trialMaxHP()}); ${y.pools["Lay On Hands"]} left in the pool.`);
+}
+function doDodge(tr){ const y=tr.you; if(y.action<=0) return; y.action--; y.stance.dodge=true; say(tr,"narr","You Dodge: attacks against you have disadvantage until your next turn."); }
+
+/* ---------------- Monster turn ---------------- */
+function yourSave(tr, ab){
+  const y=tr.you; let b=mod(ab)+(saveProficiencies().has(ab)?profBonus():0)+gearSaveBonus();
+  const aura=trialPassive("saveBonus"); if(aura) b+=Math.max(1,+trialTokens(aura));
+  const bless=activeBuff(tr,"saveDie"); const extra=bless?rollDice(bless.buff.saveDie).total:0;
+  const adv=!!(y.toggles["Rage"]&&ab==="STR"); const r1=d(20), r2=d(20); const nat=adv?Math.max(r1,r2):r1;
+  return {total:nat+b+extra, nat};
+}
+function takeDamage(tr, amount, type, src){
+  const y=tr.you; let t=amount;
+  const resists=new Set(); for(const e of toggledEffects(tr)){ (e.resist||[]).forEach(x=>resists.add(x)); }
+  for(const b of y.buffs){ if(b.buff&&b.buff.resist) b.buff.resist.forEach(x=>resists.add(x)); }
+  for(const n of gearState().wonders){ (gearEffect(gearItem(n)).resist||[]).forEach(x=>resists.add(x)); }
+  if(type&&resists.has(type)){ t=Math.floor(t/2); }
+  if(y.temp>0){ const a=Math.min(y.temp,t); y.temp-=a; t-=a; }
+  y.hp-=t; y.taken+=amount; tr.it.dealt+=t;
+  if(y.conc&&t>0){ const dc=Math.max(10,Math.floor(amount/2)); const sv=yourSave(tr,"CON"); const adv=hasFeat("War Caster"); const total=adv?Math.max(sv.total,yourSave(tr,"CON").total):sv.total; if(total<dc){ say(tr,"narr",`Concentration check ${total} against DC ${dc}: you lose ${y.conc}.`); y.buffs=y.buffs.filter(b=>b.name!==y.conc); if(y.companion&&y.companion.name===y.conc) y.companion=null; if(y.aura&&y.aura.name===y.conc) y.aura=null; for(const k in tr.it.conds) if(tr.it.conds[k]===y.conc) delete tr.it.conds[k]; y.conc=null; } }
+  if(y.retaliate&&/melee/i.test(src||"")&&t>0){ tr.it.hp-=y.retaliate; y.dealt+=y.retaliate; say(tr,"hit",`Armor of Agathys burns it for ${y.retaliate} cold.`); }
+  if(y.hp<=0){ const rr=trialActionsAvailable().find(a=>a.kind==="reaction"&&a.trigger==="zero"); if(rr&&(y.uses[rr.key]||0)>0&&y.toggles["Rage"]){ y.uses[rr.key]--; y.hp=+trialTokens(rr.effect.hpOnSurvive||"1",{owner:rr.owner}); say(tr,"narr",`${rr.key}: you refuse to fall (${y.hp} hit points).`); } }
+  checkOver(tr);
+  return t;
+}
+function monsterTurn(tr){
+  const y=tr.you, it=tr.it, m=monsterByName(it.name); if(tr.over) return;
+  tr.turn="it"; y.reaction=1;
+  // aura damage at the start of its turn
+  if(y.aura){ const sv=d(20)+(m.saves?m.saves[y.aura.save]||0:0); const rr=rollDice(y.aura.dice,{mod:0}); const t=sv<y.aura.dc?rr.total:(y.aura.half?Math.floor(rr.total/2):0); if(t){ it.hp-=t; y.dealt+=t; say(tr,"hit",`${y.aura.name}: it rolls ${sv} against DC ${y.aura.dc}, ${t} ${y.aura.type}.`); checkOver(tr); if(tr.over) return; } }
+  // recharge rolls
+  for(const a of m.attacks||[]){ if(a.recharge&&it.recharge[a.name]===false){ if(d(6)>=5){ it.recharge[a.name]=true; say(tr,"narr",`${it.name}'s ${a.name} recharges.`); } } }
+  if(it.conds.stunned||it.conds.paralyzed||it.conds.incapacitated||it.conds.skipturn){
+    say(tr,"narr",`${it.name} is ${it.conds.stunned?"stunned":it.conds.paralyzed?"paralyzed":"unable to act"} and loses its turn.`);
+    if(it.conds.skipturn) delete it.conds.skipturn;
+    if(it.conds.stunned===1) delete it.conds.stunned;
+  } else {
+    const attacks=(m.attacks||[]).filter(a=>!a.recharge||it.recharge[a.name]!==false);
+    let list=attacks; if(it.conds.slowed&&list.length>1) list=[list[0]];
+    if(it.conds.prone){ say(tr,"narr",`${it.name} gets up.`); delete it.conds.prone; }
+    for(const a of list){ if(tr.over) break; monsterAttack(tr,a); }
+  }
+  // end of its turn: repeat saves
+  if(it.repeat&&it.conds[it.repeat.cond]){ const sv=d(20)+(m.saves?m.saves[it.repeat.save]||0:0); if(sv>=it.repeat.dc){ say(tr,"narr",`It rolls ${sv} against DC ${it.repeat.dc} and is no longer ${it.repeat.cond}.`); delete it.conds[it.repeat.cond]; it.repeat=null; } else say(tr,"roll",`It rolls ${sv} against DC ${it.repeat.dc} and stays ${it.repeat.cond}.`); }
+  if(tr.over) return;
+  tr.round++; tr.turn="you"; startYourTurn(tr);
+}
+function attackDamageType(a){
+  if(a.type) return String(a.type).toLowerCase();
+  const n=(a.name||"").toLowerCase();
+  const table=[[/fire|flame|hellfire|burn/,"fire"],[/cold|frost|ice/,"cold"],[/acid/,"acid"],[/lightning|shock/,"lightning"],[/poison|venom/,"poison"],[/psychic|mind/,"psychic"],[/necrotic|life drain|rot/,"necrotic"],[/thunder|roar|sonic/,"thunder"],[/radiant|holy/,"radiant"],[/force|eldritch/,"force"],
+    [/bite|beak|fang|horn|gore|sting|spear|javelin|pike|rapier|dagger|arrow|bolt|tusk|stinger|pierc/,"piercing"],[/claw|talon|rend|sword|scimitar|axe|blade|slash|whip|scythe|sickle/,"slashing"],[/slam|fist|tail|tentacle|club|maul|hammer|crush|rock|boulder|stomp|kick|punch|bludgeon|hoof|wing/,"bludgeoning"]];
+  for(const [re,t] of table) if(re.test(n)) return t;
+  return "bludgeoning";
+}
+function monsterAttack(tr, a){
+  const y=tr.you, it=tr.it, m=monsterByName(it.name);
+  if(a.recharge) it.recharge[a.name]=false;
+  const dmgDice=String(a.dmg); const type=attackDamageType(a);
+  if(a.atk!=null){
+    let adv=!!(y.stance.enemyAdvantage||y.conds.prone||y.conds.stunned||y.conds.paralyzed||y.conds.blinded);
+    let dis=!!(y.stance.dodge||activeBuff(tr,"disadvantage")||activeBuff(tr,"enemyDisadvantage")||it.conds.prone||it.conds.blinded||it.conds.frightened);
+    const r1=d(20), r2=d(20); const nat=(adv&&!dis)?Math.max(r1,r2):(dis&&!adv)?Math.min(r1,r2):r1;
+    let ac=yourAC(tr); const total=nat+a.atk; const crit=nat===20||y.conds.paralyzed;
+    let hit=nat!==1&&(crit||total>=ac);
+    // reactions: Shield spell
+    if(hit&&!crit&&y.reaction>0&&total<ac+5){ const c=castableSpells().find(x=>x.name==="Shield"); if(c&&spellSlotOptions(tr,c).length){ const l=spellSlotOptions(tr,c)[0]; if(c.pact) y.pact.n--; else y.slots[l]--; y.reaction--; y.stance.shield=true; ac+=5; hit=false; say(tr,"narr",`${it.name}'s ${a.name}: ${nat} +${a.atk} = ${total}. You cast Shield: AC ${ac}. Miss.`); } }
+    // mirror images
+    const mi=activeBuff(tr,"images"); if(hit&&mi&&mi.buff.images>0){ if(d(20)>=6){ mi.buff.images--; say(tr,"narr",`${it.name}'s ${a.name} strikes a mirror image (${mi.buff.images} left).`); return; } }
+    if(!hit){ say(tr,"roll",`${it.name}'s ${a.name}: ${nat}${adv?" (advantage)":dis?" (disadvantage)":""} +${a.atk} = ${total} vs AC ${ac}. Miss.`); return; }
+    let rr=rollDice(dmgDice,null,crit); let dmg=rr.total;
+    // damage-reducing reactions
+    if(y.reaction>0){ for(const ra of trialActionsAvailable()){ if(ra.kind!=="reaction"||ra.trigger!=="hit") continue; if(ra.effect&&ra.effect.halve){ y.reaction--; dmg=Math.floor(dmg/2); say(tr,"narr",`${ra.key}: the blow is halved.`); break; } if(ra.effect&&ra.effect.reduce&&["bludgeoning","piercing","slashing",""].includes(type)){ y.reaction--; const red=rollDice(ra.effect.reduce,{owner:ra.owner}).total; dmg=Math.max(0,dmg-red); say(tr,"narr",`${ra.key}: you turn aside ${red} of it.`); break; } } }
+    const taken=takeDamage(tr,dmg,type,"melee "+a.name);
+    say(tr,"hurt",`${it.name}'s ${a.name}: ${nat}${crit?" critical!":""} +${a.atk} = ${total} hits AC ${ac}. ${dmgDice}${crit?" ×2":""} = ${dmg}${taken!==dmg?" ("+taken+" after resistance or temporary hit points)":""} ${type}. You: ${Math.max(0,y.hp)}/${trialMaxHP()}.`);
+    if(y.retaliate){}
+    // Hellish Rebuke
+    if(y.reaction>0&&taken>0&&!tr.over){ const c=castableSpells().find(x=>x.name==="Hellish Rebuke"); if(c&&c.eff&&spellSlotOptions(tr,c).length){ const l=spellSlotOptions(tr,c)[0]; if(c.pact) y.pact.n--; else y.slots[l]--; y.reaction--; const sv=d(20)+(m.saves?m.saves.DEX||0:0); const rr2=rollDice(c.eff.dmg,{mod:c.mod}); const t=sv<c.dc?rr2.total:Math.floor(rr2.total/2); it.hp-=t; y.dealt+=t; say(tr,"hit",`Hellish Rebuke: it rolls ${sv} against DC ${c.dc}, ${t} fire.`); checkOver(tr); } }
+  } else if(a.save){
+    let sv=yourSave(tr,a.save); const rr=rollDice(dmgDice); const ev=trialPassive("evasion")&&a.save==="DEX";
+    let fail=sv.total<a.dc;
+    if(fail){ const ind=trialActionsAvailable().find(x=>x.kind==="reaction"&&x.trigger==="failedSave"&&(y.uses[x.key]||0)>0); if(ind){ y.uses[ind.key]--; const re=yourSave(tr,a.save); re.total+=classLevels()[ind.owner]||0; say(tr,"narr",`${ind.key}: you reroll and get ${re.total}.`); sv=re; fail=sv.total<a.dc; } } let dmg=fail?(ev?Math.floor(rr.total/2):rr.total):(ev?0:Math.floor(rr.total/2));
+    const taken=takeDamage(tr,dmg,type,a.name);
+    say(tr,fail?"hurt":"roll",`${it.name}'s ${a.name}: you roll ${sv.total} against DC ${a.dc} and ${fail?"fail":"succeed"}. ${dmgDice} = ${rr.total}${dmg!==rr.total?" → "+dmg:""}${taken!==dmg?" ("+taken+" after resistance or temporary hit points)":""} ${type}. You: ${Math.max(0,y.hp)}/${trialMaxHP()}.`);
+  }
+}
+function checkOver(tr){
+  if(tr.over) return;
+  if(tr.it.hp<=0){ tr.it.hp=0; tr.over={result:"victory", rounds:tr.round, dealt:tr.you.dealt, taken:tr.you.taken, hpLeft:Math.max(0,tr.you.hp)}; say(tr,"end",`${tr.it.name} falls. Victory in ${tr.round} round${tr.round>1?"s":""}.`); }
+  else if(tr.you.hp<=0){ tr.you.hp=0; tr.over={result:"defeat", rounds:tr.round, dealt:tr.you.dealt, taken:tr.you.taken, hpLeft:0}; say(tr,"end",`You fall. ${tr.it.name} stands over you after ${tr.round} round${tr.round>1?"s":""}.`); }
+}
+function recordTrial(tr){
+  if(!tr||!tr.over||tr.recorded) return; tr.recorded=true;
+  const m=monsterByName(tr.creature)||{cr:"?"};
+  S.trials=S.trials||[]; S.trials.push({creature:tr.creature, cr:m.cr, level:totalLevel(), result:tr.over.result, rounds:tr.over.rounds, dealt:tr.over.dealt, taken:tr.over.taken, at:Date.now()});
+  const win=tr.over.result==="victory";
+  const text=win?`You met ${tr.creature} in the trial ring and brought it down in ${tr.over.rounds} round${tr.over.rounds>1?"s":""}, dealing ${tr.over.dealt} damage and taking ${tr.over.taken}. You walked out with ${tr.over.hpLeft} hit points.`
+              :`You met ${tr.creature} in the trial ring. It took you ${tr.over.taken} damage to fall, after ${tr.over.rounds} round${tr.over.rounds>1?"s":""} and ${tr.over.dealt} damage of your own. A trial, not a grave: you rise to fight again.`;
+  S.log.push({level:totalLevel(), title:`Trial: ${tr.creature}`, text, gains:win?`Victory in ${tr.over.rounds} rounds`:`Defeat after ${tr.over.rounds} rounds`, trial:true});
+}
+
+/* ---------------- Auto-play policy & simulation ---------------- */
+function autoTurn(tr){
+  const y=tr.you; const acts=trialActionsAvailable(); const has=k=>acts.some(a=>a.key===k);
+  const spells=castableSpells().filter(c=>c.eff);
+  const hpFrac=y.hp/trialMaxHP();
+  // round 1 setup
+  const opening=y.turns<=1;
+  if(opening||!y.toggles["Rage"]){ if(has("Rage")&&(y.uses["Rage"]||0)>0&&!y.toggles["Rage"]) useClassAction(tr,"Rage"); }
+  if(has("Innate Sorcery")&&!y.toggles["Innate Sorcery"]&&(y.uses["Innate Sorcery"]||0)>0&&spells.some(s=>s.eff.kind==="attack"||s.eff.kind==="save")) useClassAction(tr,"Innate Sorcery");
+  if(has("Reckless Attack")&&!y.stance.advantage) useClassAction(tr,"Reckless Attack");
+  if(has("Steady Aim")&&y.bonus>0) useClassAction(tr,"Steady Aim");
+  if(has("Stunning Strike")&&(y.pools["Monk's Focus"]||0)>=2&&!y.toggles["Stunning Strike"]) useClassAction(tr,"Stunning Strike");
+  // healing when hurt
+  if(hpFrac<0.35){
+    if(has("Second Wind")&&(y.uses["Second Wind"]||0)>0&&y.bonus>0) useClassAction(tr,"Second Wind");
+    else if(has("Lay On Hands")&&(y.pools["Lay On Hands"]||0)>0&&y.bonus>0) layOnHands(tr);
+    else { const hw=spells.find(s=>s.name==="Healing Word"&&spellSlotOptions(tr,s).length); if(hw&&y.bonus>0) castSpell(tr,"Healing Word",Math.max(...spellSlotOptions(tr,hw))); }
+  }
+  if(tr.over) return;
+  // concentration buff on round 1 for casters with a slot to spare
+  if(opening&&!y.conc){ const pref=["Spirit Guardians","Haste","Bless","Shield of Faith","Hunter's Mark","Hex","Spiritual Weapon"]; for(const n of pref){ const c=spells.find(s=>s.name===n&&spellSlotOptions(tr,s).length); if(c&&(c.eff.bonus?y.bonus>0:y.action>0)){ castSpell(tr,n,Math.max(...spellSlotOptions(tr,c))); break; } } }
+  if(!activeBuff(tr,"baseAC")&&!gearState().armor){ const ma=spells.find(s=>s.name==="Mage Armor"&&spellSlotOptions(tr,s).length); if(ma&&y.action>0&&opening) castSpell(tr,"Mage Armor",1); }
+  if(has("Action Surge")&&(y.uses["Action Surge"]||0)>0&&y.action<=1) useClassAction(tr,"Action Surge");
+  // main action(s)
+  let guard=0;
+  while(y.action>0&&!tr.over&&guard++<4){
+    const wp=playerAttackProfile(tr,"weapon")||playerAttackProfile(tr,"ranged")||playerAttackProfile(tr,"unarmed");
+    const wAvg=wp?attacksPerAction()*dprFor(wp,tr.it.ac).perAttack:0;
+    let best=null, bestAvg=wAvg;
+    for(const c of spells){ const e=c.eff; if(!["attack","save","auto"].includes(e.kind)||e.bonus) continue; const opts=spellSlotOptions(tr,c); if(!opts.length) continue; const lvl=Math.max(...opts); const up=Math.max(0,lvl-c.level);
+      let dice=e.dmg||""; if(e.scale==="cantrip"){ const L=totalLevel(); dice=dice.replace(/^(\d+)d/,(m_,n)=>(+n*(1+(L>=5)+(L>=11)+(L>=17)))+"d"); } else if(up&&e.upcast&&/d/.test(e.upcast)){ dice=dice+"+"+(+e.upcast.split("d")[0]*up)+"d"+e.upcast.split("d")[1]; }
+      let avg=avgDice(trialTokens(dice,{mod:c.mod})); const n=e.beams?(1+(totalLevel()>=5)+(totalLevel()>=11)+(totalLevel()>=17)):(e.rays||1);
+      if(e.kind==="attack") avg=n*avg*hitChance(c.atk,tr.it.ac); else if(e.kind==="save"){ const m=monsterByName(tr.it.name); const sv=(m.saves||{})[e.save]||0; const fail=Math.min(.95,Math.max(.05,(c.dc-sv-1)/20)); avg=avg*(fail+(e.half?(1-fail)*.5:0)); if(e.targetTypes&&!e.targetTypes.includes(m.type)) avg=0; }
+      if(c.level>0&&tr.round>6&&lvl<=2) avg*=0.9;
+      if(avg>bestAvg*1.05){ best={c,lvl}; bestAvg=avg; } }
+    if(best) castSpell(tr,best.c.name,best.lvl); else if(wp) doAttackAction(tr, wp.slot); else { doDodge(tr); }
+  }
+  if(tr.over) return;
+  // bonus action leftovers
+  if(y.bonus>0){
+    if(has("Flurry of Blows")&&(y.pools["Monk's Focus"]||0)>0) useClassAction(tr,"Flurry of Blows");
+    else if(y.companion) companionStrike(tr,false);
+    else if(playerAttackProfile(tr,"offhand")&&(playerAttackProfile(tr,"weapon")||{}).light) doOffhand(tr);
+    else if(has("Patient Defense")&&(y.pools["Monk's Focus"]||0)>0&&hpFrac<0.5) useClassAction(tr,"Patient Defense");
+    else { const sm=spells.find(s=>s.name==="Divine Smite"&&spellSlotOptions(tr,s).length&&!playerAttackProfile(tr,"weapon").ranged); if(sm&&!y.smite&&y.turns<=3) castSpell(tr,"Divine Smite",Math.max(...spellSlotOptions(tr,sm))); }
+  }
+  endYourTurn(tr);
+}
+function simulateTrials(creature, n){
+  const saveS=S.trial; let wins=0, rounds=0, hpLeft=0; const results=[];
+  for(let i=0;i<n;i++){
+    const tr=newTrial(creature); let guard=0;
+    while(!tr.over&&guard++<60){ if(tr.turn==="you") autoTurn(tr); else monsterTurn(tr); }
+    if(!tr.over) tr.over={result:"draw", rounds:tr.round, hpLeft:tr.you.hp, dealt:tr.you.dealt, taken:tr.you.taken};
+    if(tr.over.result==="victory"){ wins++; hpLeft+=tr.over.hpLeft; } rounds+=tr.over.rounds; results.push(tr.over);
+  }
+  S.trial=saveS;
+  return {n, wins, winRate:wins/n, avgRounds:rounds/n, avgHpLeft:wins?hpLeft/wins:0};
+}
+
+/* ================= Trial UI ================= */
+function hpBar(cur, max, temp){
+  const pct=Math.max(0,Math.min(100,Math.round(100*cur/max)));
+  return `<div class="hpbar"><i class="${pct<=30?"low":""}" style="width:${pct}%"></i></div><div class="kv" style="padding:0"><span class="hint">Hit points</span><b>${Math.max(0,cur)} / ${max}${temp?` <span class="hint">+${temp} temp</span>`:""}</b></div>`;
+}
+function renderTrialPicker(){
+  const all=window.MONSTER_DATA||[]; const bench=benchmarkMonsters(); const hist=(S.trials||[]).slice().reverse().slice(0,8);
+  const pick=T.trialPick||(bench[1]||bench[0]||{}).name;
+  const sim=T.simResult;
+  return `<div class="panel">
+    <h2>The Trial</h2>
+    <p class="lede">Fight one creature with the sheet exactly as it stands: your real attacks, spells, features and gear, its real stat block, every die shown. You start rested. Win or lose, the deed goes in the chronicle and nothing else changes.</p>
+    <h3 class="eyebrow">Choose your opponent</h3>
+    <div class="cardgrid">${bench.map(m=>`<button class="card ${pick===m.name?"sel":""}" data-act="tr:pickcard" data-a="${esc(m.name)}"><div class="cname">${esc(m.name)}</div><div class="cmeta">CR ${m.cr} · AC ${m.ac} · ${m.hp} HP</div><div class="cdesc">${esc(m.desc||"")}</div></button>`).join("")}</div>
+    <div class="btnrow" style="align-items:center">
+      <select data-act-change="tr:pick" aria-label="Any creature">${[1,2,3,4].map(t=>`<optgroup label="Tier ${t}">${all.filter(m=>m.tier===t).sort((a,b)=>a.cr-b.cr).map(m=>`<option value="${esc(m.name)}" ${pick===m.name?"selected":""}>${esc(m.name)} (CR ${m.cr})</option>`).join("")}</optgroup>`).join("")}</select>
+      <button class="btn primary" data-act="tr:begin" data-a="${esc(pick||"")}" ${pick?"":"disabled"}>⚔ Begin the trial</button>
+      <button class="btn" data-act="tr:sim" data-a="${esc(pick||"")}" ${pick?"":"disabled"} data-tipt="Run it 100 times" data-tipb="Plays this fight a hundred times with a sensible policy (attack, best spell, heal when low) and reports how often you win.">Run it 100 times</button>
+    </div>
+    ${sim?`<div class="welcome" style="margin-top:12px"><span>Against <b>${esc(sim.creature)}</b>: you win <b>${Math.round(sim.winRate*100)}%</b> of ${sim.n} fights, lasting ${sim.avgRounds.toFixed(1)} rounds on average${sim.wins?`, walking out with ${Math.round(sim.avgHpLeft)} hit points when you win`:""}.</span></div>`:""}
+    ${hist.length?`<h3 class="eyebrow">Past trials</h3>${hist.map(h=>`<div class="kv"><span>${esc(h.creature)} <span class="hint">CR ${h.cr} · level ${h.level}</span></span><b class="${h.result==="victory"?"gains":"nudge"}" style="margin:0">${h.result==="victory"?"Victory":"Defeat"} · ${h.rounds} rd</b></div>`).join("")}`:""}
+  </div>`;
+}
+function renderTrial(){
+  const tr=S.trial; if(!tr) return renderTrialPicker();
+  const y=tr.you, it=tr.it, m=monsterByName(it.name)||{}; const max=trialMaxHP();
+  const yourTurn=tr.turn==="you"&&!tr.over;
+  const acts=trialActionsAvailable(); const spells=castableSpells().filter(c=>c.eff&&c.eff.kind!=="reaction");
+  const conds=o=>Object.keys(o.conds||{}).filter(k=>o.conds[k]);
+  const slots=Object.keys(y.slots).filter(l=>y.slots[l]>0).map(l=>`L${l}×${y.slots[l]}`).join(" ");
+  const resBits=[]; if(slots) resBits.push("Slots "+slots); if(y.pact) resBits.push(`Pact ${y.pact.n}×L${y.pact.level}`);
+  for(const k in y.uses) if(y.uses[k]!=null) resBits.push(`${k} ${y.uses[k]}`); for(const k in y.pools) resBits.push(`${k.replace("Monk's ","")} ${y.pools[k]}`);
+  const btn=(label, act, a, b, ok, on)=>`<button class="btn ${on?"on":""}" data-act="${act}" ${a!=null?`data-a="${esc(String(a))}"`:""} ${b!=null?`data-b="${esc(String(b))}"`:""} ${ok?"":"disabled"}>${label}</button>`;
+  let bar="";
+  if(yourTurn){
+    const profiles=attackProfiles();
+    bar+=profiles.filter(p=>p.slot!=="offhand").map(p=>btn(`Attack: ${esc(p.name)}`, "tr:attack", p.slot, null, y.action>0)).join("");
+    if(profiles.some(p=>p.slot==="offhand")) bar+=btn("Off-hand strike (bonus)","tr:offhand",null,null,y.bonus>0);
+    if(y.companion) bar+=btn(`${esc(y.companion.name)} (${y.companion.action})`,"tr:companion",null,null,y.companion.action==="bonus"?y.bonus>0:y.action>0);
+    for(const a of acts){
+      if(["passive","reaction"].includes(a.kind)) continue;
+      const usesTxt=y.uses[a.key]!=null?` (${y.uses[a.key]})`:a.cost?` (${a.cost.n} ${a.cost.pool.replace("Monk's ","")})`:a.pool?` (${y.pools[a.pool]||0})`:"";
+      const econ=a.action==="bonus"?y.bonus>0:a.action==="action"?y.action>0:true;
+      const res=(y.uses[a.key]==null||y.uses[a.key]>0)&&(!a.cost||(y.pools[a.cost.pool]||0)>=a.cost.n)&&(!a.pool||(y.pools[a.pool]||0)>0);
+      if(a.kind==="toggle"&&y.toggles[a.key]) { bar+=btn(esc(a.key)+" ✓","tr:none",null,null,false,true); continue; }
+      if(a.key==="Lay On Hands"){ bar+=btn(`Lay On Hands (${y.pools["Lay On Hands"]||0})`,"tr:loh",null,null,econ&&res&&y.hp<max); continue; }
+      if(a.kind==="heal-or-damage"){ bar+=btn(`${esc(a.key)}: heal${usesTxt}`,"tr:act",a.key,"heal",econ&&res)+btn(`${esc(a.key)}: smite${usesTxt}`,"tr:act",a.key,"damage",econ&&res); continue; }
+      if(a.kind==="convert"){ [1,2,3,4,5].filter(l=>(y.pools["Font of Magic"]||0)>=SLOT_COST[l]&&l<=Math.max(...Object.keys(y.slots).map(Number),1)).forEach(l=>{ bar+=btn(`Sorcery → L${l} slot (${SLOT_COST[l]} pts)`,"tr:act",a.key,l,y.bonus>0); }); continue; }
+      if(a.kind==="on-hit"){ bar+=btn(`${esc(a.key)}${usesTxt}`,"tr:act",a.key,null,res,!!y.toggles[a.key]); continue; }
+      bar+=btn(`${esc(a.key)}${usesTxt}${a.action==="bonus"?" (bonus)":""}`,"tr:act",a.key,null,econ&&res);
+    }
+    if(spells.length){
+      const sel=T.trialSpell&&spells.some(s=>s.name===T.trialSpell)?T.trialSpell:spells[0].name; const c=spells.find(s=>s.name===sel); const opts=spellSlotOptions(tr,c);
+      bar+=`<span style="display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap"><select id="trspell" data-act-change="tr:spell">${spells.map(s=>`<option value="${esc(s.name)}" ${s.name===sel?"selected":""}>${esc(s.name)}${s.level?" (L"+s.level+")":""}${s.eff.bonus?" · bonus":""}${spellSlotOptions(tr,s).length?"":" · no slot"}</option>`).join("")}</select>
+        ${c.level>0&&!c.innate&&opts.length>1?`<select id="trslot">${opts.map(l=>`<option value="${l}">at level ${l}</option>`).join("")}</select>`:""}
+        ${btn("Cast","tr:cast",null,null,opts.length>0&&(c.eff.bonus?y.bonus>0:y.action>0))}</span>`;
+    }
+    bar+=btn("Dodge","tr:dodge",null,null,y.action>0)+btn("End turn","tr:end",null,null,true);
+  }
+  return `<div class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h2 style="margin:0">The Trial: ${esc(it.name)}</h2><span class="hint">CR ${m.cr} · ${esc(m.type||"")}</span></div>
+    <div class="arena" style="margin-top:12px">
+      <div class="combatant"><div class="cname">${esc(S.name)}</div>${hpBar(y.hp,max,y.temp)}
+        <div class="resline">AC ${yourAC(tr)}${conds(y).length?" · "+esc(conds(y).join(", ")):""}${y.conc?" · concentrating on "+esc(y.conc):""}${y.buffs.filter(b=>b.name!==y.conc).length?" · "+esc(y.buffs.filter(b=>b.name!==y.conc).map(b=>b.name).join(", ")):""}${Object.keys(y.toggles).filter(k=>y.toggles[k]).length?" · "+esc(Object.keys(y.toggles).filter(k=>y.toggles[k]).join(", ")):""}</div>
+        <div class="resline">${esc(resBits.join(" · ")||"No limited resources")}</div></div>
+      <div class="combatant"><div class="cname">${esc(it.name)}</div>${hpBar(it.hp,it.maxhp,0)}
+        <div class="resline">AC ${it.ac}${conds(it).length?" · "+esc(conds(it).join(", ")):""}${(m.attacks||[]).filter(a=>a.recharge).map(a=>` · ${esc(a.name)} ${it.recharge[a.name]===false?"spent":"ready"}`).join("")}</div>
+        <div class="resline">${esc((m.attacks||[]).map(a=>a.name+(a.atk!=null?" +"+a.atk:" DC "+a.dc)+" "+a.dmg).join(" · "))}</div></div>
+    </div>
+    <div class="turnline">Round ${tr.round} · ${tr.over?(tr.over.result==="victory"?"Victory":"Defeat"):yourTurn?"Your turn":"Its turn"}${yourTurn?` · action ${y.action} · bonus ${y.bonus}`:""}</div>
+    <div class="actbar">${tr.over?`<span class="hint">${tr.over.result==="victory"?"It falls.":"You fall."} ${tr.over.rounds} rounds, ${tr.over.dealt} dealt, ${tr.over.taken} taken.</span>${btn("Write it in the chronicle","tr:leave",null,null,true)}${btn("Fight again","tr:again",null,null,true)}${btn("Run it 100 times","tr:sim",tr.creature,null,true)}`:bar+btn("Abandon","tr:abandon",null,null,true)}</div>
+    ${T.simResult&&T.simResult.creature===tr.creature?`<div class="hint" style="margin-top:8px">Simulated: you win ${Math.round(T.simResult.winRate*100)}% of ${T.simResult.n}, ${T.simResult.avgRounds.toFixed(1)} rounds on average.</div>`:""}
+    <div class="tlog" id="tlog">${tr.log.map(l=>`<div class="tl ${l.kind}">${esc(l.text)}</div>`).join("")}</div>
+  </div>`;
+}
+function trialAction(act, el){
+  const a=el.dataset.a, b=el.dataset.b; const tr=S.trial;
+  switch(act){
+    case "pickcard": T.trialPick=a; break;
+    case "begin": S.trial=newTrial(a); T.simResult=null; break;
+    case "sim": { TRIAL_RNG=Math.random; const r=simulateTrials(a,100); T.simResult={...r, creature:a}; break; }
+    case "attack": if(tr) doAttackAction(tr,a); break;
+    case "offhand": if(tr) doOffhand(tr); break;
+    case "companion": if(tr) companionStrike(tr,false); break;
+    case "act": if(tr) useClassAction(tr,a,b); break;
+    case "loh": if(tr) layOnHands(tr); break;
+    case "cast": { if(!tr) break; const sp=document.querySelector("#trspell"); const sl=document.querySelector("#trslot"); if(sp) castSpell(tr, sp.value, sl?+sl.value:undefined); break; }
+    case "dodge": if(tr) doDodge(tr); break;
+    case "end": if(tr&&!tr.over) endYourTurn(tr); break;
+    case "leave": if(tr){ recordTrial(tr); S.trial=null; } break;
+    case "again": if(tr){ recordTrial(tr); S.trial=newTrial(tr.creature); } break;
+    case "abandon": S.trial=null; break;
+  }
+  render();
+  const l=document.querySelector("#tlog"); if(l) l.scrollTop=l.scrollHeight;
+}
 /* ================= Legend Forge: UI ================= */
 
 function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
@@ -9047,7 +9977,7 @@ function render(){
   const ovOld=document.querySelector("#overlay");
   const ovScroll=ovOld&&!ovOld.classList.contains("hidden")?ovOld.scrollTop:0;
   const tabs = S.created
-    ? [["sheet","Character"],["origin","Origin"],["analysis","Analysis"],["vault","Vault"],["glossary","Glossary"]]
+    ? [["sheet","Character"],["origin","Origin"],["analysis","Analysis"],["trial","Trial"],["vault","Vault"],["glossary","Glossary"]]
     : [["start","Welcome"],["create","Create"],["vault","Vault"],["glossary","Glossary"]];
   if(!tabs.some(t=>t[0]===S.ui.tab)) S.ui.tab=tabs[0][0];
   document.body.classList.toggle("hasbar", !!S.created);
@@ -9075,6 +10005,7 @@ function render(){
     ${T.legendForged?renderCelebration():""}`;
   const ovNew=document.querySelector("#overlay");
   if(ovNew&&ovScroll) ovNew.scrollTop=ovScroll;
+  const tlog=document.querySelector("#tlog"); if(tlog) tlog.scrollTop=tlog.scrollHeight;
   saveState();
 }
 function renderCelebration(){
@@ -9117,6 +10048,7 @@ function renderStart(){
 function renderStage(){
   if(S.ui.tab==="start"&&!S.created) return renderStart();
   if(S.ui.tab==="analysis") return renderAnalysis();
+  if(S.ui.tab==="trial") return renderTrial();
   if(S.ui.tab==="glossary") return renderGlossary();
   if(S.ui.tab==="vault") return renderVault();
   if(S.ui.tab==="origin") return renderOriginSummary();
@@ -9188,6 +10120,7 @@ function renderRail(){
   <div class="railxp">
     <button class="btn primary big" data-act="xp" ${atCap||S.pending?"disabled":""}>✦ Venture Forth</button>
     ${atCap?`<div style="margin-top:10px"><button class="btn danger" data-act="askreset">⚑ Start Over</button></div>`:""}
+    ${window.MONSTER_DATA?`<div style="margin-top:8px"><button class="btn ghost" data-act="tab" data-a="trial" style="font-size:13px">⚔ ${S.trial?"Return to the Trial":"Enter the Trial"}</button></div>`:""}
     <div class="hint" style="margin-top:8px">${atCap?"Twenty levels: the summit of mortal adventure.":`${S.xp.toLocaleString()} XP · ${nextXP.toLocaleString()} for level ${L+1}`}</div>
     ${S.prevSnap&&!S.pending&&L>1?`<div style="margin-top:8px"><button class="btn ghost" data-act="askundo" style="font-size:13px">↩ Step back a level${(S.undoStack||[]).length>1?` <span class="hint">(${S.undoStack.length} kept)</span>`:""}</button></div>`:""}
     ${unfinishedChoices().length?`<div class="nudge">Still to choose: ${esc(unfinishedChoices().join(", "))}</div>`:""}
@@ -10756,6 +11689,7 @@ document.addEventListener("click",ev=>{
   if(!el) return;
   const a=el.dataset.a, b=el.dataset.b, act=el.dataset.act;
   hideHoverTip();
+  if(act.startsWith("tr:")){ trialAction(act.slice(3), el); return; }
   switch(act){
     case "tab": S.ui.tab=a; render(); break;
     case "wiz": S.ui.wizStep=+a; render(); break;
@@ -10932,6 +11866,8 @@ document.addEventListener("change",ev=>{
   const el=ev.target.closest("[data-act-change]");
   if(!el) return;
   const act=el.dataset.actChange, a=el.dataset.a;
+  if(act==="tr:pick"){ T.trialPick=el.value; render(); return; }
+  if(act==="tr:spell"){ T.trialSpell=el.value; render(); return; }
   switch(act){
     case "boostmode": S.boostTriple=el.value==="111"; render(); break;
     case "method": S.method=el.value; render(); break;
