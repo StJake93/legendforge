@@ -2,7 +2,7 @@
    Strategy: network-first for the page itself (so every online visit gets the
    latest release immediately), cache-first for static assets, full cache
    fallback when offline. */
-const CACHE = "legend-forge-v22";
+const CACHE = "legend-forge-v23";
 // data packs are fetched as packs/<name>.js?v=<CACHE> (engine_sheet.js loadPack), so precache those exact URLs
 // and the Trial works offline after the first visit
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png",

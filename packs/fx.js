@@ -1,6 +1,12 @@
 // Combat data (v2, docs/Combat_Schema.md section B and C) for the four arcane classes:
 // Bard, Sorcerer, Warlock, Wizard. Registers window.ACTION_FX, window.RESOURCE_POOLS and window.RESOURCE_REST.
 //
+// ALLY QA FIXES (tests/suites/ally.js)
+//   * Healing Light: cost.n was the string "CHA_MIN1". The engine subtracts cost.n from the pool as a number, so one use turned
+//     the pool into NaN and the resource check then passed forever (unlimited healing). Now cost.n is 1: one die per bonus
+//     action, each die heals 1d6, so the pool's total healing is unchanged. (Other string n values, "CHA_MIN1" on Mantle of
+//     Inspiration, "MOD_INT" on Bulwark of Force, "MOD_CHA" on Abjure Foes, are an engine gap, listed in the ally QA report.)
+//
 // SCOPE
 //   Every class feature and every subclass feature of Bard, Sorcerer, Warlock and Wizard in data_classes_1/3.js
 //   (4 colleges, 4 sorcerous origins, 4 patrons, 4 schools), plus every option of the option features
@@ -21,6 +27,10 @@
 //
 // CONVENTIONS USED HERE (the contract's keys, used in a few specific ways; all are listed again in the final report)
 //   * `combat: "zones"` marks effects that only matter with positioning, flight, teleport or light (Phase 2).
+//     Zone data (Combat_Schema F.2): Misty Escape is now a free-cast of Misty Step (which is kind "move") as a Reaction. The other
+//     seven stay "zones": Dragon Wings and Revelation in Flesh (flight and swim states that last past a turn), Bewitching Magic
+//     (a free Misty Step after another spell), Inspiring Movement (a reaction triggered by an enemy ending its turn nearby),
+//     and the vision features The Third Eye, Devil's Sight and Witch Sight.
 //   * Metamagic: flags live in `effect` (careful, empower, ...) and counts live in `n` ("CHA_MIN1" = max(1, CHA modifier)).
 //     Cost is `{ pool: "Font of Magic", n }`. Empowered Spell and Seeking Spell may be added to a casting that already uses
 //     another option; with Sorcery Incarnate (Innate Sorcery active) any two options may be combined. The engine enforces that.
@@ -40,7 +50,7 @@
 //   * `kind: "recover"` with `econ: "none"` is a rest-time effect (Arcane Recovery, Sorcerous Restoration, Magical Cunning),
 //     not an in-fight action. Magical Cunning is a 1-minute rite, so it is a between-fights action.
 //   * `kind: "free-cast"` with no `uses` is at will (the invocations that grant a spell at will).
-//   * `cost.n` for Healing Light is the most dice one use may spend ("CHA_MIN1"); each die heals `heal`.
+//   * Healing Light spends one die per use (cost.n 1, heal 1d6); see the ally QA note below.
 //   * Keys that share a name with another owner are `"Name|Owner"`: Choose a Subclass, Expertise, and every Elemental
 //     Affinity and Fiendish Resilience option (Acid, Cold, Fire, Lightning and Poison appear in both).
 //
@@ -220,8 +230,8 @@ window.ACTION_FX = Object.assign(window.ACTION_FX || {}, {
   "Archfey Spells": { owner: "Archfey Patron", combat: "none", notes: "Always-prepared spell list (bonusSpells)." },
   "Steps of the Fey": { owner: "Archfey Patron", kind: "free-cast", spell: "Misty Step", econ: "bonus", uses: "Steps of the Fey",
     notes: "Cast Misty Step with no slot CHA modifier (min 1) times per Long Rest. Whenever you cast Misty Step (free or with a slot) you may add ONE of the Steps of the Fey effects you know (Refreshing Step, Taunting Step; from level 6 also Disappearing Step, Dreadful Step). Each effect is its own option entry." },
-  "Misty Escape": { owner: "Archfey Patron", combat: "zones", trigger: "damaged", econ: "reaction", spell: "Misty Step",
-    notes: "You can cast Misty Step as a Reaction in response to taking damage (using a slot or a Steps of the Fey use) and may add a Steps of the Fey effect. Adds the Disappearing Step and Dreadful Step options." },
+  "Misty Escape": { owner: "Archfey Patron", kind: "free-cast", spell: "Misty Step", trigger: "damaged", econ: "reaction", uses: "Steps of the Fey",
+    notes: "You can cast Misty Step as a Reaction in response to taking damage and may add a Steps of the Fey effect. Here it spends a Steps of the Fey use; casting it with a spell slot isn't offered. Adds the Disappearing Step and Dreadful Step options." },
   "Beguiling Defenses": { owner: "Archfey Patron", kind: "reaction", trigger: "hit", econ: "reaction", target: "enemy", usesFlat: 1, rest: { short: "none", long: "all" },
     effect: { halve: true }, save: "WIS", dc: "SPELL", onFail: [{ note: "the attacker takes Psychic damage equal to the damage you take after halving" }],
     fx: { condImmune: ["charmed"] },
@@ -231,8 +241,8 @@ window.ACTION_FX = Object.assign(window.ACTION_FX || {}, {
 
   // Celestial Patron
   "Celestial Spells": { owner: "Celestial Patron", combat: "none", notes: "Always-prepared spell list (bonusSpells), including the Light and Sacred Flame cantrips." },
-  "Healing Light": { owner: "Celestial Patron", kind: "heal", econ: "bonus", target: "creature", cost: { pool: "Healing Light", n: "CHA_MIN1" }, heal: "1d6",
-    notes: "Pool of d6s equal to 1 + Warlock level, regained on a Long Rest. Bonus Action: heal yourself or a creature you can see within 60 ft by expending up to CHA modifier (min 1) dice at once and rolling them. cost.n is that maximum; each die spent heals 1d6." },
+  "Healing Light": { owner: "Celestial Patron", kind: "heal", econ: "bonus", target: "creature", cost: { pool: "Healing Light", n: 1 }, heal: "1d6",
+    notes: "Pool of d6s equal to 1 + Warlock level, regained on a Long Rest. Bonus Action: heal yourself or a creature you can see within 60 ft by expending up to CHA modifier (min 1) dice at once and rolling them. Modelled as ONE die per use (cost.n 1, heal 1d6): the engine charges a numeric cost.n and rolls one heal, so the pool's total healing is right (each die heals 1d6) but it takes one bonus action per die." },
   "Radiant Soul": { owner: "Celestial Patron", kind: "passive", mods: { resist: ["radiant"] }, dmg: [{ dice: "MOD_CHA", type: ["radiant", "fire"] }], once: "turn",
     notes: "Resistance to Radiant damage. Typed spell bonus: once per turn, when a spell you cast deals Radiant or Fire damage, add CHA modifier to that spell's damage against ONE of its targets." },
   "Celestial Resilience": { owner: "Celestial Patron", kind: "temphp", econ: "none", target: "self", temp: "CLASS_LEVEL+MOD_CHA",
@@ -451,6 +461,10 @@ window.RESOURCE_REST = Object.assign(window.RESOURCE_REST || {}, {
 /* ============================================================================================================
    data/fx/actions_divine.js : combat effects for Cleric, Paladin, Druid and Ranger  (docs/Combat_Schema.md, B and C)
 
+   ALLY QA FIX (tests/suites/ally.js): Nature's Sanctuary and Smite of Protection had target "allies" and no `n` (Nature's Sanctuary
+   also has an area), so the engine (effectSteps counts only `n`) reached ONE creature. Both now carry n: 4 (a full party). Combat_Schema A:
+   "allies" goes with `n`.
+
    SCOPE
    Every feature of Cleric, Paladin, Druid and Ranger and of their subclasses in data/data_classes_*.js (Life, Light,
    Trickery and War Domains; Devotion, Glory, Ancients and Vengeance; Land, Moon, Sea and Stars; Beast Master, Fey
@@ -491,6 +505,10 @@ window.RESOURCE_REST = Object.assign(window.RESOURCE_REST || {}, {
    - A reaction that changes one roll (Warding Flare, Shadowy Dodge) has mods and no "until": the change applies to
      the triggering roll only.
    - combat:"zones" marks features that only move or place creatures, or change vision or light.
+     Zone data (Combat_Schema F.2) reviewed: none of the seven combat:"zones" entries (Trickster's Transposition, Aura Expansion,
+     Relentless Avenger, Aquatic Affinity, Feral Senses, Umbral Sight, Escape the Horde) can become kind "move" or "zone". They
+     are an illusion swap, an aura radius, a rider on an Opportunity Attack, a Swim Speed, vision, or a passive Opportunity
+     Attack rule. They stay combat:"zones" for the engine to read by name.
    - A pool's rest may carry shortFrom, as RESOURCE_REST does (Warding Flare returns on a Short Rest from Cleric 6).
    - An entry with combat:"todo" has no kind. Where part of a feature is modelled in another key, or by the engine,
      its notes say which part is left.
@@ -670,7 +688,7 @@ window.ACTION_FX = Object.assign(window.ACTION_FX || {}, {
     notes: "When you take the Attack action. One melee weapon you hold, 10 minutes: add CHA modifier (min +1) to its attack rolls; each hit may deal its normal type or Radiant; sheds 20 ft Bright Light and 20 ft Dim Light. Ends if you stop carrying it." },
   "Aura of Devotion": { owner: "Oath of Devotion", kind: "passive", mods: { condImmune: ["charmed"] },
     notes: "You and allies in your Aura of Protection are immune to Charmed." },
-  "Smite of Protection": { owner: "Oath of Devotion", kind: "buff", econ: "none", trigger: "youHit", target: "allies", mods: { ac: 2 }, until: "srcTurnStart",
+  "Smite of Protection": { owner: "Oath of Devotion", kind: "buff", econ: "none", trigger: "youHit", target: "allies", n: 4, mods: { ac: 2 }, until: "srcTurnStart",
     notes: "Whenever you cast Divine Smite, you and allies in your Aura of Protection have Half Cover until the start of your next turn: +2 AC and +2 DEX saves (only AC is modelled). The engine should fire it when Divine Smite is cast." },
   "Holy Nimbus": { owner: "Oath of Devotion", kind: "aura", econ: "bonus", usesFlat: 1, rest: { short: "none", long: "all" },
     target: "area", area: { shape: "emanation", size: 30 }, ability: "CHA", dmg: [{ dice: "MOD_CHA+PB", type: "radiant" }], until: "rounds:100",
@@ -767,7 +785,7 @@ window.ACTION_FX = Object.assign(window.ACTION_FX || {}, {
     notes: "Cast one prepared level 1+ Circle spell without a slot, once per Long Rest (casting time of that spell). The second half, recovering slots on a Short Rest (combined level up to half Druid level, none level 6+, once per Long Rest), is rest-time and isn't a fight action." },
   "Nature's Ward": { owner: "Circle of the Land", kind: "passive", mods: { condImmune: ["poisoned"] },
     notes: "Immune to Poisoned. The Resistance for your land is on the Arid, Polar, Temperate and Tropical options." },
-  "Nature's Sanctuary": { owner: "Circle of the Land", kind: "buff", econ: "action", uses: "Wild Shape", target: "allies", range: 120,
+  "Nature's Sanctuary": { owner: "Circle of the Land", kind: "buff", econ: "action", uses: "Wild Shape", target: "allies", n: 4, range: 120,
     area: { shape: "cube", size: 15 }, mods: { ac: 2 }, until: "rounds:10",
     notes: "1 minute; you and allies in the cube have Half Cover (+2 AC and +2 DEX saves; only AC modelled), and allies also gain the Resistance of your current Nature's Ward (not modelled). Bonus Action to move the cube up to 60 ft. Ends if you are Incapacitated or die." },
 
@@ -953,6 +971,14 @@ window.ACTION_FX = Object.assign(window.ACTION_FX || {}, {
 //      whose owner is the option feature's key.
 //   3. combat "zones" marks movement and positioning that does nothing until Phase 2 (the validator accepts it and
 //      section D already uses it). combat "todo" means the engine needs more than the contract can say; notes say what.
+//      Zone data (Combat_Schema F.2): four of the 25 combat "zones" entries now express their movement as kind "move" and are
+//      listed in a fight: Soul Blades|Psychic Teleportation (teleport 40, costs a Psionic Energy Die), Travel Along the Tree
+//      (teleport 60, "Only while Rage is on"), Shadow Step (teleport 60, light gate and Advantage left in notes) and Telekinetic
+//      Adept|Psi-Powered Leap (fly 60). The other 21 stay "zones" because they are a rider on another feature (Instinctive
+//      Pounce, Tactical Shift, Arcane Charge, Withdraw, Fleet Step, Addle, Lunging Attack, Bait and Switch, Versatile Trickster,
+//      Infiltration Expertise, Supreme Sneak, Improved Shadow Step, Cloak of Shadows), a Dash that the engine already does with
+//      the character's real Speed (Cunning Action, Step of the Wind, Eagle), another creature's movement (Telekinetic Movement),
+//      or a flight or swim Speed that lasts past one turn (Panther, Salmon, Falcon, Stride of the Elements).
 //   4. Gates the contract cannot express are the first words of notes: "Only while Rage is on.", "Only while Elemental
 //      Attunement is on.", "Needs Reckless Attack.", "Only on a hit that deals Sneak Attack damage." and so on. The
 //      engine must check them; without a check the effect would apply too widely.
@@ -1112,8 +1138,8 @@ window.ACTION_FX = Object.assign(window.ACTION_FX || {}, {
     notes: "Only while Rage is on. A creature you can see within 30 ft starts its turn. On a failed save it is teleported to an open space within 5 ft of you, and you can set its Speed to 0 until the end of that turn. The move waits for zones." },
   "Battering Roots": { owner: "Path of the World Tree", minLevel: 10, combat: "todo",
     notes: "Your Heavy and Versatile melee weapons get +10 ft reach on your turn (zones), and a hit with one lets you apply Push or Topple mastery in addition to the weapon's own mastery. Needs the mastery engine to allow a second mastery property on one hit." },
-  "Travel Along the Tree": { owner: "Path of the World Tree", minLevel: 14, combat: "zones",
-    notes: "Teleport up to 60 ft when you activate your Rage and as a Bonus Action while raging. Once per Rage, make it 150 ft and bring up to six willing creatures within 10 ft." },
+  "Travel Along the Tree": { owner: "Path of the World Tree", minLevel: 14, kind: "move", econ: "bonus", move: { teleport: 60 },
+    notes: "Only while Rage is on. Teleport up to 60 ft as a Bonus Action. Not modelled: the free teleport when you activate your Rage, and the once-per-Rage 150 ft version that brings up to six willing creatures within 10 ft." },
 
   // ==================================================================== BARBARIAN (Path of the Zealot)
   "Warrior of the Gods": { owner: "Path of the Zealot", minLevel: 3, kind: "heal", econ: "bonus", target: "self",
@@ -1209,9 +1235,9 @@ window.ACTION_FX = Object.assign(window.ACTION_FX || {}, {
   "Psionic Power|Telekinetic Movement": { owner: "Psi Warrior", minLevel: 3, combat: "zones",
     usesFlat: 1, rest: { short: "all", long: "all" },
     notes: "Magic action: move a Large-or-smaller loose object, or one willing creature other than you, up to 30 ft. Free once per Short or Long Rest; expending a Psionic Energy Die (no action) restores the use." },
-  "Telekinetic Adept|Psi-Powered Leap": { owner: "Psi Warrior", minLevel: 7, combat: "zones",
+  "Telekinetic Adept|Psi-Powered Leap": { owner: "Psi Warrior", minLevel: 7, kind: "move", econ: "bonus", move: { fly: 60 },
     usesFlat: 1, rest: { short: "all", long: "all" },
-    notes: "Bonus Action: Fly Speed of twice your Speed until the end of the turn. Free once per Short or Long Rest; expending a Psionic Energy Die (no action) restores the use." },
+    notes: "Bonus Action: Fly Speed of twice your Speed until the end of the turn; move.fly is 60, twice a Speed of 30, because the contract takes a fixed number. Free once per Short or Long Rest; expending a Psionic Energy Die (no action) restores the use." },
   "Telekinetic Adept|Telekinetic Thrust": { owner: "Psi Warrior", minLevel: 7, kind: "on-hit", trigger: "youHit",
     onHit: [
       { cond: "prone", save: "STR", dc: "CLASS_DC:INT", note: "Prone: if Psionic Strike dealt damage, the target makes a Strength save or falls Prone." },
@@ -1307,8 +1333,8 @@ window.ACTION_FX = Object.assign(window.ACTION_FX || {}, {
   "Shadow Arts": { owner: "Warrior of Shadow", minLevel: 3, kind: "free-cast", spell: "Darkness", econ: "action",
     cost: { pool: "Monk's Focus", n: 1 },
     notes: "Cast Darkness for 1 Focus Point without components, and you can see inside it. While it lasts you can move its area up to 60 ft at the start of each of your turns. Also 60 ft Darkvision (or +60 ft) and the Minor Illusion cantrip with Wisdom." },
-  "Shadow Step": { owner: "Warrior of Shadow", minLevel: 6, combat: "zones",
-    notes: "Bonus Action, only while entirely in Dim Light or Darkness: teleport up to 60 ft to an open space you can see that is also dim or dark, then have Advantage on the next melee attack you make before the end of the turn. Needs per-zone light." },
+  "Shadow Step": { owner: "Warrior of Shadow", minLevel: 6, kind: "move", econ: "bonus", move: { teleport: 60 },
+    notes: "Only while entirely in Dim Light or Darkness, and only to a space that is also dim or dark: the engine must check the zone's light. Not modelled: Advantage on the next melee attack you make before the end of the turn." },
   "Improved Shadow Step": { owner: "Warrior of Shadow", minLevel: 11, combat: "zones",
     notes: "Spend 1 Focus Point to ignore the Dim Light or Darkness requirement for one Shadow Step, and make an Unarmed Strike right after teleporting as part of the same Bonus Action." },
   "Cloak of Shadows": { owner: "Warrior of Shadow", minLevel: 17, combat: "zones",
@@ -1450,8 +1476,9 @@ window.ACTION_FX = Object.assign(window.ACTION_FX || {}, {
   "Soul Blades|Homing Strikes": { owner: "Soulknife", minLevel: 9, kind: "on-hit", trigger: "youMiss", econ: "none",
     cost: { pool: "Soulknife Energy Dice", n: 1 }, effect: { bonus: "1d6" },
     notes: "PSI_DIE. When a Psychic Blade attack misses, roll a Psionic Energy Die and add it to the attack roll. The die is spent only if that makes the attack hit. effect.bonus without reroll means a bonus to the roll that just missed." },
-  "Soul Blades|Psychic Teleportation": { owner: "Soulknife", minLevel: 9, combat: "zones",
-    notes: "Bonus Action: expend a Psionic Energy Die, throw a Psychic Blade at an open space you can see up to 10 times the die roll in feet away, and teleport there." },
+  "Soul Blades|Psychic Teleportation": { owner: "Soulknife", minLevel: 9, kind: "move", econ: "bonus",
+    cost: { pool: "Soulknife Energy Dice", n: 1 }, move: { teleport: 40 },
+    notes: "PSI_DIE. Bonus Action: expend a Psionic Energy Die, throw a Psychic Blade at an open space you can see up to 10 times the die roll in feet away, and teleport there. The distance is 10 ft per pip; move.teleport is 40, the average roll of a d8 (the die from level 5), because the contract can't roll it." },
   "Psychic Veil": { owner: "Soulknife", minLevel: 13, kind: "buff", econ: "action", target: "self", until: "nextHit",
     usesFlat: 1, rest: { short: "none", long: "all" }, mods: { atkAdv: true, attackersDis: true },
     notes: "Magic action: you are Invisible for 1 hour, but it ends as soon as you deal damage to a creature or force a save. Here it ends when you next deal damage (until nextHit); the engine should also end it when you force a save. Expending a Psionic Energy Die (no action) restores the use." },
@@ -1593,6 +1620,10 @@ window.RESOURCE_REST = Object.assign(window.RESOURCE_REST || {}, {
  *       Giant Ancestry|<option>, Fiendish Legacy|<legacy>.
  *   - combat:"zones" marks effects that are movement, vision or light only. They wait for the zone rules (Phase 2).
  *     combat:"todo" marks something that matters in a fight and cannot be expressed; notes say what.
+ *   - Zone data (Combat_Schema F.2): Boon of Dimensional Travel is now kind "move" (teleport 30, once per turn). The other six
+ *     combat:"zones" entries stay: Athlete and Speedy (speeds and Opportunity Attack rules), Blind Fighting, Boon of Truesight and
+ *     Boon of the Night Spirit (vision and light rules the engine owns), and Halfling Nimbleness (moving through a larger
+ *     creature's space, which a zone doesn't track).
  *   - econ:"none" marks a benefit that happens at a rest or before the fight and is not an action in the fight.
  *   - once:"turn" means once per turn (the same meaning as mods.dmgDie.once).
  *   - minLevel on a species trait is CHARACTER level (species have no class level).
@@ -1830,8 +1861,8 @@ window.ACTION_FX = Object.assign(window.ACTION_FX || {}, {
   "Boon of Combat Prowess": { owner: "epic-boon", kind: "on-hit", trigger: "youMiss", econ: "free", once: "turn",
     notes: "Peerless Aim: when you miss with an attack roll, you can hit instead (a normal hit, not a critical). After you use it you cannot use it again until the start of your next turn, so it is once per round; once:turn is the closest key." },
 
-  "Boon of Dimensional Travel": { owner: "epic-boon", combat: "zones",
-    notes: "Blink Steps: immediately after you take the Attack action or the Magic action, teleport up to 30 feet to an unoccupied space you can see. Positioning only; no limit on uses." },
+  "Boon of Dimensional Travel": { owner: "epic-boon", kind: "move", econ: "free", once: "turn", move: { teleport: 30 },
+    notes: "Blink Steps: immediately after you take the Attack action or the Magic action, teleport up to 30 feet to an unoccupied space you can see. There is no limit on uses; here it is once per turn, and the engine doesn't check that you took the Attack or Magic action first." },
 
   "Boon of Energy Resistance": { owner: "epic-boon", kind: "reaction", econ: "reaction", trigger: "damaged", target: "enemy",
     save: "DEX", dc: "CLASS_DC:CON",
@@ -2128,7 +2159,10 @@ window.RESOURCE_REST = Object.assign(window.RESOURCE_REST || {}, {
 //   - Searing Smite and Ensnaring Strike deal their ongoing damage through `repeat` at the start of the caster's turn; the
 //     Constitution save that ends Searing Smite and the Athletics check that frees an Ensnaring Strike victim are in notes.
 //   - Chromatic Orb's leaps, Magic Missile's split across targets and Sorcerous Burst's exploding dice aren't modelled.
-//   - Fog Cloud, Grease, Entangle and Expeditious Retreat are zone: true with their nearest fight effect.
+//   - Fog Cloud, Grease, Entangle and Expeditious Retreat were zone: true with their nearest fight effect. They now carry the
+//     Phase 2 zone data (Combat_Schema F.2): Fog Cloud is kind "zone" (Heavily Obscured), Entangle and Grease add Difficult Terrain
+//     (Grease also a prone hazard), and Expeditious Retreat is kind "move" with move.speed 30 for the Dash it grants. The zone: true
+//     flag is dropped from all four.
 //
 // DATA ERRORS FOUND IN data_spells_*.js: none for levels 0-1. Errors in the old data_spell_effects.js entries that this
 // file fixes: Command used an ad-hoc "skipturn" condition; Tasha's Hideous Laughter left out Prone; Mind Sliver, Chill
@@ -2274,12 +2308,13 @@ window.SPELL_FX = Object.assign(window.SPELL_FX || {}, {
     repeat: { auto: true, dmg: [{ dice: "1d6", type: "piercing" }] },
     notes: "Cast right after a weapon hit. The target makes a Strength save (Advantage if Large or larger, not modelled); on a failure it is Restrained and takes 1d6 Piercing damage at the start of each of its turns (modelled in `repeat`, on your turn; `up` raises it by 1d6 per slot level above 1); on a success the vines wither and the spell ends. The target, or a creature within its reach, can use an action for a Strength (Athletics) check against your spell save DC to end it. No damage on the hit itself." },
 
-  "Entangle": { kind: "save", target: "area", area: { shape: "cube", size: 20 }, save: "STR", conc: true, dur: "rounds:10", zone: true,
+  "Entangle": { kind: "save", target: "area", area: { shape: "cube", size: 20 }, save: "STR", conc: true, dur: "rounds:10",
     onFail: [{ cond: "restrained", until: "escape", escape: "SPELL" }],
-    notes: "A 20-ft square. Each creature in it other than you saves when you cast the spell; the ground becomes Difficult Terrain. A Restrained creature uses an action for a Strength (Athletics) check against your spell save DC to break free. Creatures entering later don't save." },
+    zoneFx: { terrain: "difficult", until: "conc" },
+    notes: "A 20-ft square. Each creature in it other than you saves when you cast the spell; the ground becomes Difficult Terrain (zoneFx: the zone is difficult while you concentrate). A Restrained creature uses an action for a Strength (Athletics) check against your spell save DC to break free. Creatures entering later don't save." },
 
-  "Expeditious Retreat": { kind: "utility", econ: "bonus", target: "self", conc: true, dur: "fight", zone: true,
-    notes: "Cast as a Bonus Action, which also takes the Dash action; until the spell ends (10 minutes) you can Dash again as a Bonus Action each turn. Positioning only (Phase 2 zones)." },
+  "Expeditious Retreat": { kind: "move", econ: "bonus", target: "self", conc: true, dur: "fight", move: { speed: 30 },
+    notes: "Cast as a Bonus Action, which also takes the Dash action: move.speed is that Dash, set at 30 ft (a typical Speed; the real Dash equals your Speed). Until the spell ends (10 minutes) you can Dash again as a Bonus Action each turn; those later Dashes aren't modelled." },
 
   "Faerie Fire": { kind: "save", target: "area", area: { shape: "cube", size: 20 }, save: "DEX", conc: true, dur: "rounds:10",
     onFail: [{ mod: { attackersAdv: true }, until: "conc" }],
@@ -2288,12 +2323,14 @@ window.SPELL_FX = Object.assign(window.SPELL_FX || {}, {
   "False Life": { kind: "temphp", target: "self", temp: "2d4+4", tempUp: 5,
     notes: "2d4 + 4 Temporary Hit Points; +5 per slot level above 1. Lasts until used up (no timed duration in 2024)." },
 
-  "Fog Cloud": { kind: "utility", target: "area", area: { shape: "sphere", size: 20 }, conc: true, dur: "fight", zone: true,
-    notes: "A 20-ft-radius Sphere of fog (radius +20 ft per slot level above 1) that is Heavily Obscured; creatures in it can't be seen from outside and can't see out (Phase 2 vision). Lasts up to 1 hour. A strong wind such as Gust of Wind disperses it." },
+  "Fog Cloud": { kind: "zone", target: "zone", conc: true, dur: "fight",
+    zoneFx: { obscured: "heavy", until: "conc" },
+    notes: "A 20-ft-radius Sphere of fog (radius +20 ft per slot level above 1; here it fills one zone) that is Heavily Obscured; creatures in it can't be seen from outside and can't see out. Lasts up to 1 hour. A strong wind such as Gust of Wind disperses it." },
 
-  "Grease": { kind: "save", target: "area", area: { shape: "cube", size: 10 }, save: "DEX", dur: "rounds:10", zone: true,
+  "Grease": { kind: "save", target: "area", area: { shape: "cube", size: 10 }, save: "DEX", dur: "rounds:10",
     onFail: [{ cond: "prone" }],
-    notes: "Not concentration. A 10-ft square becomes slick Difficult Terrain for 1 minute. Each creature standing in it when it appears saves or falls Prone; a creature that enters or ends its turn there saves too (only the cast is modelled)." },
+    zoneFx: { terrain: "difficult", hazard: { name: "Grease", on: ["enter", "end"], save: "DEX", onFail: [{ cond: "prone" }] }, until: "rounds:10" },
+    notes: "Not concentration. A 10-ft square becomes slick Difficult Terrain for 1 minute. Each creature standing in it when it appears saves or falls Prone (the cast); a creature that enters or ends its turn there saves too (the zone hazard)." },
 
   "Guiding Bolt": { kind: "attack", target: "enemy", atk: true, dmg: [{ dice: "4d6", type: "radiant" }], up: "1d6",
     onHit: [{ mod: { attackersAdv: true }, until: "srcTurnEnd" }],
@@ -2421,6 +2458,13 @@ window.SPELL_NONCOMBAT = Object.assign(window.SPELL_NONCOMBAT || {}, {
 //   - A spell with no top-level `dmg` and a `repeat` (Dragon's Breath, Flame Blade): `up` scales `repeat.dmg[0]`.
 //   - `zone: true` marks spells whose RAW effect depends on where creatures stand or move after the cast (areas that
 //     stay put, terrain, walls, pushes, teleports). The cast-time effect is still modelled.
+//   - ZONE DATA (added with Combat_Schema F.2): 11 of the 18 zone spells here now carry `zoneFx` or `move` and lose the
+//     `zone` flag. Cloud of Daggers, Moonbeam, Spike Growth, Web, Sleet Storm, Stinking Cloud and Cordon of Arrows put
+//     their repeating damage or save in a zone hazard instead of an aura (`when` removed), so the hazard is the only
+//     source of repeat damage; upcasting raises the cast-time damage only. Darkness, Plant Growth and Stinking Cloud are
+//     kind "zone"; Misty Step is kind "move" (teleport 30). Hunger of Hadar keeps its aura and adds darkness and
+//     Difficult Terrain. Still `zone: true`, because a zone doesn't express them (7): Conjure Animals (moves with
+//     the caster), Flaming Sphere (rolls), Fly, Gust of Wind, Levitate, Silence (no Verbal spells) and Wind Wall.
 //   - Concentration and ritual flags, levels and class lists in data_spells_*.js were checked against the sources: no
 //     disagreements.
 //
@@ -2447,6 +2491,10 @@ window.SPELL_NONCOMBAT = Object.assign(window.SPELL_NONCOMBAT || {}, {
 // data_spell_effects.js entries that this file fixes: Blindness/Deafness was concentration (it isn't); Barkskin used
 // a base AC of 17 instead of "AC 17 if lower"; the old entries for Hold Person, Slow and Blindness/Deafness
 // used ad-hoc conditions ("slowed", "skipturn") the v2 contract replaces with real modifiers.
+//
+// ALLY QA FIX (tests/suites/ally.js): Calm Emotions and Crusader's Mantle had target "allies" and an area but no `n`. The engine
+//   (effectSteps) only counts `n`, so with no `n` the spell reached ONE creature (an ally aura buffed a single ally and not
+//   the caster). Combat_Schema A says "allies" goes with `n`. They now carry n: 4 (a full party: you and up to three allies).
 
 window.SPELL_FX = Object.assign(window.SPELL_FX || {}, {
 
@@ -2467,24 +2515,26 @@ window.SPELL_FX = Object.assign(window.SPELL_FX || {}, {
   "Blur": { kind: "buff", target: "self", conc: true, dur: "rounds:10", mods: { attackersDis: true },
     notes: "Attackers that perceive you with Blindsight or Truesight ignore it; not tracked." },
 
-  "Calm Emotions": { kind: "buff", target: "allies", area: { shape: "sphere", size: 20 }, types: ["Humanoid"], conc: true, dur: "rounds:10",
+  "Calm Emotions": { kind: "buff", target: "allies", n: 4, area: { shape: "sphere", size: 20 }, types: ["Humanoid"], conc: true, dur: "rounds:10",
     mods: { condImmune: ["charmed", "frightened"] },
     notes: "Willing Humanoids choose to fail the CHA save to get Immunity to Charmed and Frightened (existing conditions are suppressed: the engine should clear them while this lasts). The 'Indifferent' option against hostile creatures (ends when a target takes damage or sees an ally take damage) is not modelled." },
 
-  "Cloud of Daggers": { kind: "aura", target: "area", area: { shape: "cube", size: 5 }, conc: true, dur: "rounds:10",
-    dmg: [{ dice: "4d4", type: "slashing" }], up: "2d4", when: "turnEnd", zone: true,
-    notes: "No save. A creature takes the damage when the Cube appears or moves into its space, when it enters, and when it ends its turn there, once per turn. Hits one creature at a time in a fight. A Magic action on later turns teleports the Cube up to 30 ft." },
+  "Cloud of Daggers": { kind: "auto", target: "area", area: { shape: "cube", size: 5 }, conc: true, dur: "rounds:10",
+    dmg: [{ dice: "4d4", type: "slashing" }], up: "2d4",
+    zoneFx: { hazard: { name: "Cloud of Daggers", on: ["end"], dmg: [{ dice: "4d4", type: "slashing" }] }, until: "conc" },
+    notes: "No save. A creature takes the damage when the Cube appears (the cast), when it enters, and when it ends its turn there, once per turn. Zones: the hazard repeats it at the end of each turn a creature spends in the zone, at the base 4d4 (the +2d4 per slot level applies to the cast only); a creature that only passes through isn't hit. Moving the Cube with a Magic action isn't modelled." },
 
-  "Cordon of Arrows": { kind: "aura", target: "area", area: { shape: "sphere", size: 30 }, n: 4, nUp: 2, dur: "fight", save: "DEX",
-    dmg: [{ dice: "2d4", type: "piercing" }], when: "turnEnd", zone: true,
-    notes: "8 hours, no concentration. Four pieces of ammunition planted in the ground; each time a creature other than you (and creatures you designate) enters within 30 ft of them for the first time on a turn or ends its turn there, one piece strikes it (DEX save negates) and is used up. `n` is the number of pieces (4, +2 per slot level above 2), not the number of targets. Needs casting before the enemies arrive." },
+  "Cordon of Arrows": { kind: "zone", target: "zone", dur: "fight",
+    zoneFx: { hazard: { name: "Cordon of Arrows", on: ["enter", "end"], save: "DEX", dmg: [{ dice: "2d4", type: "piercing" }] }, until: "fight" },
+    notes: "8 hours, no concentration. Four pieces of ammunition planted in the ground (+2 per slot level above 2); each time a creature other than you (and creatures you designate) enters within 30 ft of them for the first time on a turn or ends its turn there, one piece strikes it (DEX save negates) and is used up. Zones: the hazard fires on entering the zone and at the end of a turn there. It doesn't use up pieces, so it can fire more than four times, and it hits allies too: cast it where the enemies will arrive." },
 
   "Crown of Madness": { kind: "save", target: "enemy", types: ["Humanoid"], save: "WIS", conc: true, dur: "rounds:10",
     onFail: [{ cond: "charmed", until: "conc", repeat: "end" }],
     notes: "Non-Humanoids succeed automatically. The charmed target must use its action (before moving) to make a melee attack against a creature the caster picks, if one is within reach; otherwise it acts normally. The caster must take a Magic action each turn to keep control or the spell ends. Engine work: forced attack on a chosen creature; the caster's per-turn action cost." },
 
-  "Darkness": { kind: "utility", target: "area", area: { shape: "sphere", size: 15 }, conc: true, dur: "rounds:100", zone: true,
-    notes: "15-ft sphere of magical Darkness that Darkvision can't see through; creatures that can't see in it can't see targets inside (unseen attacker and target rules, Phase 2 light and vision). Dispels light spells of level 2 or lower it overlaps. No save." },
+  "Darkness": { kind: "zone", target: "zone", conc: true, dur: "rounds:100",
+    zoneFx: { light: "dark", magicalDark: true, until: "conc" },
+    notes: "15-ft sphere of magical Darkness that Darkvision can't see through; creatures that can't see in it can't see targets inside. Only Devil's Sight sees through it. Dispels light spells of level 2 or lower it overlaps. No save." },
 
   "Dragon's Breath": { kind: "buff", econ: "bonus", target: "creature", conc: true, dur: "rounds:10",
     area: { shape: "cone", size: 15 }, save: "DEX", half: true, up: "1d6",
@@ -2543,12 +2593,12 @@ window.SPELL_FX = Object.assign(window.SPELL_FX || {}, {
   "Mirror Image": { kind: "buff", target: "self", dur: "rounds:10", mods: { images: 3 },
     notes: "Not concentration. When a creature hits you, roll a d6 per remaining duplicate; a 3 or higher on any die means a duplicate is hit and destroyed instead. Creatures that are Blinded or have Blindsight or Truesight ignore it." },
 
-  "Misty Step": { kind: "utility", econ: "bonus", target: "self", zone: true,
-    notes: "Teleport up to 30 ft to an unoccupied space you can see. Positioning only (leaves an engagement without an Opportunity Attack, Phase 2 zones)." },
+  "Misty Step": { kind: "move", econ: "bonus", target: "self", move: { teleport: 30 },
+    notes: "Teleport up to 30 ft to an unoccupied space you can see: to any zone within 30 ft by path, with no Opportunity Attacks." },
 
-  "Moonbeam": { kind: "aura", target: "area", area: { shape: "cylinder", size: 5 }, save: "CON", half: true, dmg: [{ dice: "2d10", type: "radiant" }], up: "1d10",
-    conc: true, dur: "rounds:10", when: "turnEnd", zone: true,
-    notes: "A creature saves when the Cylinder appears, when it moves into its space (Magic action on later turns, up to 60 ft), when it enters and when it ends its turn there, once per turn. Shape-shifted creatures revert to true form and can't shape-shift while inside; not modelled." },
+  "Moonbeam": { kind: "save", target: "area", area: { shape: "cylinder", size: 5 }, save: "CON", half: true, dmg: [{ dice: "2d10", type: "radiant" }], up: "1d10", conc: true, dur: "rounds:10",
+    zoneFx: { hazard: { name: "Moonbeam", on: ["end"], save: "CON", half: true, dmg: [{ dice: "2d10", type: "radiant" }] }, until: "conc" },
+    notes: "A creature saves when the Cylinder appears (the cast), when it moves into its space (Magic action on later turns, up to 60 ft), when it enters and when it ends its turn there, once per turn. Zones: the hazard repeats the save at the end of each turn a creature spends in the zone, at the base 2d10 (the +1d10 per slot level applies to the cast only). Moving the beam isn't modelled. Shape-shifted creatures revert to true form and can't shape-shift while inside; not modelled." },
 
   "Phantasmal Force": { kind: "save", target: "enemy", save: "INT", conc: true, dur: "rounds:10",
     onFail: [{ note: "Believes the phantasm is real" }],
@@ -2576,9 +2626,9 @@ window.SPELL_FX = Object.assign(window.SPELL_FX || {}, {
   "Silence": { kind: "utility", target: "area", area: { shape: "sphere", size: 20 }, conc: true, dur: "rounds:100", zone: true,
     notes: "No save. Creatures entirely inside are Deafened and immune to thunder damage, and no spell with a Verbal component can be cast inside. Engine work: block Verbal-component spells for enemy casters inside the sphere." },
 
-  "Spike Growth": { kind: "aura", target: "area", area: { shape: "sphere", size: 20 }, conc: true, dur: "rounds:100", dmg: [{ dice: "2d4", type: "piercing" }],
-    when: "turnEnd", mods: { speedMult: 0.5 }, zone: true,
-    notes: "RAW: Difficult Terrain, and 2d4 piercing for every 5 ft a creature travels inside (no save). Modelled as 2d4 for each turn a creature ends inside, which understates it; Phase 2 zones should charge it by movement." },
+  "Spike Growth": { kind: "zone", target: "zone", conc: true, dur: "rounds:100",
+    zoneFx: { terrain: "difficult", hazard: { name: "Spike Growth", on: ["enter", "start"], dmg: [{ dice: "2d4", type: "piercing" }] }, until: "conc" },
+    notes: "RAW: Difficult Terrain, and 2d4 piercing for every 5 ft a creature travels inside (no save). Zones: Difficult Terrain, and 2d4 whenever a creature enters the zone or starts its turn there; this understates a long walk across it." },
 
   "Spiritual Weapon": { kind: "summon", econ: "bonus", conc: true, dur: "rounds:10",
     summon: { name: "Spiritual Weapon", econ: "bonus", atk: "SPELL", dmg: [{ dice: "1d8+MOD", type: "force" }], up: "1d8" },
@@ -2596,9 +2646,10 @@ window.SPELL_FX = Object.assign(window.SPELL_FX || {}, {
     mods: { ac: 1, save: 1, resist: ["acid", "bludgeoning", "cold", "fire", "force", "lightning", "necrotic", "piercing", "poison", "psychic", "radiant", "slashing", "thunder"] },
     notes: "Willing creature within 60 ft of you: +1 AC and saves, Resistance to all damage, and each time it takes damage you take the same amount. Ends if you drop to 0 HP, the two of you are more than 60 ft apart, or it is cast again. Engine work: linked damage back to the caster." },
 
-  "Web": { kind: "save", target: "area", area: { shape: "cube", size: 20 }, save: "DEX", conc: true, dur: "fight", zone: true,
+  "Web": { kind: "save", target: "area", area: { shape: "cube", size: 20 }, save: "DEX", conc: true, dur: "fight",
     onFail: [{ cond: "restrained", until: "escape", escape: "SPELL" }],
-    notes: "A restrained creature escapes with an action: Athletics check against the caster's save DC. Creatures that later enter or start their turn in the webs also save; the webs are Difficult Terrain and burn away (2d4 fire to a creature that starts its turn in burning web). Spell ends at the start of your next turn if the web isn't anchored." },
+    zoneFx: { terrain: "difficult", hazard: { name: "Web", on: ["enter", "start"], save: "DEX", onFail: [{ cond: "restrained", until: "escape", escape: "SPELL" }] }, until: "conc" },
+    notes: "A restrained creature escapes with an action: Athletics check against the caster's save DC. Creatures that later enter or start their turn in the webs also save (the zone hazard); the webs are Difficult Terrain. Fire burns the webs away (2d4 fire to a creature that starts its turn in burning web): not modelled. The spell ends at the start of your next turn if the web isn't anchored." },
 
   // ================================================================ LEVEL 3
   "Aura of Vitality": { kind: "heal", target: "creature", heal: "2d6", conc: true, dur: "rounds:10", repeat: { auto: true, heal: "2d6" },
@@ -2632,7 +2683,7 @@ window.SPELL_FX = Object.assign(window.SPELL_FX || {}, {
   "Counterspell": { kind: "reaction", trigger: "spell", target: "enemy", save: "CON",
     notes: "2024: reaction when you see a creature within 60 ft cast a spell with Verbal, Somatic or Material components. The caster makes a CON save against your spell save DC. On a failure the spell dissipates and the action, Bonus Action or Reaction used to cast it is wasted; a spell slot is not expended. On a success the spell works normally." },
 
-  "Crusader's Mantle": { kind: "buff", target: "allies", area: { shape: "emanation", size: 30 }, conc: true, dur: "rounds:10",
+  "Crusader's Mantle": { kind: "buff", target: "allies", n: 4, area: { shape: "emanation", size: 30 }, conc: true, dur: "rounds:10",
     mods: { dmgDie: { dice: "1d4", type: "radiant", on: "weapon" } },
     notes: "You and your allies in the aura deal +1d4 radiant when hitting with a weapon or an Unarmed Strike. The aura moves with you." },
 
@@ -2656,11 +2707,12 @@ window.SPELL_FX = Object.assign(window.SPELL_FX || {}, {
     mods: { ac: 2, speedMult: 2, saveAdv: ["DEX"], extraAttacks: 1 },
     notes: "The extra action may be only one attack, Dash, Disengage, Hide or Utilize (modelled as one extra attack). When the spell ends the target is Incapacitated with Speed 0 until the end of its next turn; the engine must apply that lethargy." },
 
-  "Hunger of Hadar": { kind: "aura", target: "area", area: { shape: "sphere", size: 20 }, conc: true, dur: "rounds:10", when: "turnEnd", zone: true,
-    save: "DEX", half: false, dmg: [{ dice: "2d6", type: "acid" }], up: "1d6", mods: { speedMult: 0.5 },
+  "Hunger of Hadar": { kind: "aura", target: "area", area: { shape: "sphere", size: 20 }, conc: true, dur: "rounds:10", when: "turnEnd",
+    save: "DEX", half: false, dmg: [{ dice: "2d6", type: "acid" }], up: "1d6",
+    zoneFx: { light: "dark", magicalDark: true, terrain: "difficult", until: "conc" },
     onFail: [{ dmg: { dice: "2d6", type: "cold" } }, { cond: "blinded", until: "targetTurnEnd" }],
     onSuccess: [{ dmg: { dice: "2d6", type: "cold" } }, { cond: "blinded", until: "targetTurnEnd" }],
-    notes: "RAW: a creature that starts its turn inside takes 2d6 cold (no save), and one that ends its turn inside makes a DEX save or takes 2d6 acid. Modelled together at the end of the turn: cold always (in both rider lists), acid on a failed save. Creatures fully inside are Blinded and the sphere is Difficult Terrain (speed halved). Upcast: +1d6 to the cold OR the acid damage, your choice (`up` is applied to the acid). Darkness blocks all light." },
+    notes: "RAW: a creature that starts its turn inside takes 2d6 cold (no save), and one that ends its turn inside makes a DEX save or takes 2d6 acid. Modelled together at the end of the turn: cold always (in both rider lists), acid on a failed save. Creatures fully inside are Blinded and the sphere is Difficult Terrain (zoneFx; it replaces the old speedMult 0.5, which would slow twice). Upcast: +1d6 to the cold OR the acid damage, your choice (`up` is applied to the acid). Darkness blocks all light." },
 
   "Hypnotic Pattern": { kind: "save", target: "area", area: { shape: "cube", size: 30 }, save: "WIS", conc: true, dur: "rounds:10",
     onFail: [{ cond: "charmed", until: "nextHit" }, { cond: "incapacitated", until: "nextHit" }, { mod: { speedMult: 0 }, until: "nextHit" }],
@@ -2674,8 +2726,9 @@ window.SPELL_FX = Object.assign(window.SPELL_FX || {}, {
 
   "Mass Healing Word": { kind: "heal", econ: "bonus", target: "allies", n: 6, heal: "2d4+MOD", healUp: "1d4" },
 
-  "Plant Growth": { kind: "debuff", target: "area", area: { shape: "sphere", size: 100 }, until: "fight", mods: { speedMult: 0.25 }, zone: true,
-    notes: "Overgrowth: all normal plants in the sphere become thick, so each foot of movement costs 4 ft. No save, no concentration, and it affects every creature in the area (allies too) unless you exclude areas. Cast it where the enemies must cross. Only useful where there are normal plants." },
+  "Plant Growth": { kind: "zone", target: "zone", dur: "fight",
+    zoneFx: { terrain: "difficult", until: "fight" },
+    notes: "Overgrowth: all normal plants in the sphere become thick, so each foot of movement costs 4 ft (the zone is Difficult Terrain, which costs double). No save, no concentration, and it affects every creature in the area (allies too). Cast it on the zone the enemies must cross. Only useful where there are normal plants; the 100-ft radius is one zone here." },
 
   "Protection from Energy": { kind: "buff", target: "creature", conc: true, dur: "fight", mods: { resist: ["fire"] },
     notes: "The caster picks one of acid, cold, fire, lightning or thunder when casting; fire is a stand-in. Engine work: a choice at cast time for mods.resist (default to the enemy's main damage type)." },
@@ -2683,8 +2736,9 @@ window.SPELL_FX = Object.assign(window.SPELL_FX || {}, {
   "Revivify": { kind: "heal", target: "ally", heal: "1",
     notes: "Brings a creature that died within the last minute back with 1 HP. It works on the dead (failed three death saves or killed outright), not on a creature at 0 HP. Costs a 300 gp diamond, which the spell uses up. Engine work: a 'dead' state a party member can be revived from." },
 
-  "Sleet Storm": { kind: "save", target: "area", area: { shape: "cylinder", size: 20 }, save: "DEX", conc: true, dur: "rounds:10", zone: true,
+  "Sleet Storm": { kind: "save", target: "area", area: { shape: "cylinder", size: 20 }, save: "DEX", conc: true, dur: "rounds:10",
     onFail: [{ cond: "prone" }, { note: "Loses concentration" }],
+    zoneFx: { obscured: "heavy", terrain: "difficult", hazard: { name: "Sleet Storm", on: ["enter", "start"], save: "DEX", onFail: [{ cond: "prone" }, { note: "Loses concentration" }] }, until: "conc" },
     notes: "A creature saves the first time it enters on a turn and when it starts its turn there. The area is Heavily Obscured Difficult Terrain and douses flames. Engine work: a rider that breaks concentration." },
 
   "Slow": { kind: "save", target: "area", area: { shape: "cube", size: 40 }, n: 6, save: "WIS", conc: true, dur: "rounds:10",
@@ -2695,8 +2749,8 @@ window.SPELL_FX = Object.assign(window.SPELL_FX || {}, {
     dmg: [{ dice: "3d8", type: ["radiant", "necrotic"] }], up: "1d8", when: "turnEnd", mods: { speedMult: 0.5 },
     notes: "Radiant if you are good or neutral, necrotic if evil. A creature saves when the aura enters its space, when it enters, and when it ends its turn there, once per turn. You can exclude creatures when you cast." },
 
-  "Stinking Cloud": { kind: "aura", target: "area", area: { shape: "sphere", size: 20 }, save: "CON", conc: true, dur: "rounds:10", when: "turnStart", zone: true,
-    onFail: [{ cond: "poisoned", until: "turnEnd" }, { cond: "incapacitated", until: "turnEnd" }],
+  "Stinking Cloud": { kind: "zone", target: "zone", conc: true, dur: "rounds:10",
+    zoneFx: { obscured: "heavy", hazard: { name: "Stinking Cloud", on: ["start"], save: "CON", onFail: [{ cond: "poisoned", until: "turnEnd" }, { cond: "incapacitated", until: "turnEnd" }] }, until: "conc" },
     notes: "A creature that starts its turn inside and fails is Poisoned until the end of that turn and can't take an action or Bonus Action (modelled as Incapacitated, which also removes its Reaction). Creatures immune to Poisoned are unaffected. Heavily Obscured. A strong wind (Gust of Wind) disperses it." },
 
   "Summon Fey": { kind: "summon", conc: true, dur: "fight",
@@ -2783,18 +2837,29 @@ window.SPELL_NONCOMBAT = Object.assign(window.SPELL_NONCOMBAT || {}, {
 //   - Circle of Power and Freedom of Movement apply to every source; the 2024 text limits them to spells and magical
 //     effects, and the engine needs a magical flag to be exact.
 //   - Zone spells (walls, terrain, teleports, forced movement) have zone: true and the nearest damage or condition effect.
+//     ZONE DATA (added with Combat_Schema F.2): 8 of the 17 zone spells now carry `zoneFx` or `move` and lose the flag. Evard's
+//     Black Tentacles, Wall of Fire, Cloudkill and Insect Plague keep their cast-time save (kind "save") and put the repeat in a
+//     zone hazard instead of an aura (`when` removed), so upcasting raises the cast damage only. Control Water is kind "zone"
+//     (a whirlpool hazard). Wall of Force and Wall of Stone are kind "zone" on a link with `blocks`. Dimension Door is kind
+//     "move" (teleport 500). Steel Wind Strike also records move.teleport 30 but stays zone: true until the engine reads move on
+//     an attack. Eight more stay zone: true: Antilife Shell, Compulsion, Conjure Elemental, Guardian of Faith, Jallarzi's Storm of
+//     Radiance, Mordenkainen's Faithful Hound, Telekinesis and Tree Stride (no zoneFx key can say it; reasons are in each note).
 //   - Grasping Vine's extra grapples at higher slots, Control Water's flood, wave and trench, Conjure Woodland Beings'
 //     Bonus Action Disengage and Conjure Minor Elementals' Difficult Terrain are not modelled.
+//
+// ALLY QA FIX (tests/suites/ally.js): Aura of Life, Aura of Purity and Circle of Power had target "allies" and an area but no `n`. The engine
+//   (effectSteps) only counts `n`, so with no `n` the spell reached ONE creature (an ally aura buffed a single ally and not
+//   the caster). Combat_Schema A says "allies" goes with `n`. They now carry n: 4 (a full party: you and up to three allies).
 
 window.SPELL_FX = Object.assign(window.SPELL_FX || {}, {
 
   // ---------------------------------------------------------------------------------------------- Level 4
 
-  "Aura of Life": { kind: "buff", target: "allies", area: { shape: "emanation", size: 30 }, conc: true, dur: "fight",
+  "Aura of Life": { kind: "buff", target: "allies", n: 4, area: { shape: "emanation", size: 30 }, conc: true, dur: "fight",
     mods: { resist: ["necrotic"] },
     notes: "You and your allies inside the 30-ft Emanation have Resistance to Necrotic damage, and Hit Point maximums can't be reduced (blocks maxHpReduce riders). An ally with 0 HP that starts its turn inside regains 1 HP: not modelled." },
 
-  "Aura of Purity": { kind: "buff", target: "allies", area: { shape: "emanation", size: 30 }, conc: true, dur: "fight",
+  "Aura of Purity": { kind: "buff", target: "allies", n: 4, area: { shape: "emanation", size: 30 }, conc: true, dur: "fight",
     mods: { resist: ["poison"], condAdv: ["blinded", "charmed", "deafened", "frightened", "paralyzed", "poisoned", "stunned"] },
     notes: "Resistance to Poison, and Advantage on saves to avoid or end effects that include those conditions. It is not immunity in 2024." },
 
@@ -2825,25 +2890,26 @@ window.SPELL_FX = Object.assign(window.SPELL_FX || {}, {
     save: "WIS", half: true, dmg: [{ dice: "5d8", type: "force" }], up: "1d8", when: "turnEnd",
     notes: "You choose to force a WIS save whenever the Emanation enters a creature's space or a creature you can see enters it or ends its turn there; once per turn per creature. You can also Disengage as a Bonus Action: not modelled." },
 
-  "Control Water": { kind: "aura", target: "area", area: { shape: "cylinder", size: 25 }, conc: true, dur: "fight", zone: true,
-    save: "STR", half: true, dmg: [{ dice: "2d8", type: "bludgeoning" }], when: "turnEnd",
-    notes: "Only the Whirlpool option is modelled, and only where there is water at least 50 ft square and 25 ft deep. Creatures in the water within 25 ft are pulled 10 ft toward it, and a creature that enters it or ends its turn there makes a STR save (2d8 Bludgeoning, half on a success). Flood, Part Water and Redirect Flow aren't modelled. The engine should hide this spell when the zone has no deep water." },
+  "Control Water": { kind: "zone", target: "zone", conc: true, dur: "fight",
+    zoneFx: { hazard: { name: "Whirlpool", on: ["enter", "end"], save: "STR", half: true, dmg: [{ dice: "2d8", type: "bludgeoning" }] }, until: "conc" },
+    notes: "Only the Whirlpool option is modelled, and only where there is water at least 50 ft square and 25 ft deep: cast it on a zone with deep water. A creature that enters the whirlpool or ends its turn there makes a STR save (2d8 Bludgeoning, half on a success). The pull of 10 ft toward the whirlpool isn't modelled. Flood, Part Water and Redirect Flow aren't modelled. The engine should hide this spell when the arena has no deep water." },
 
   "Death Ward": { kind: "buff", target: "creature", dur: "fight",
     mods: { deathWard: true },
     notes: "Lasts 8 hours or until it triggers. The first time the target would drop to 0 HP it drops to 1 HP instead and the spell ends. It also negates one effect that would kill the target instantly without dealing damage (such as Power Word Kill), and then ends." },
 
-  "Dimension Door": { kind: "utility", target: "self", zone: true,
-    notes: "Teleports you, and one willing creature within 5 ft of you, up to 500 ft to a spot you can see, visualize or describe. It breaks engagement and ends a grapple. If either of you would arrive in an occupied space, each of you takes 4d6 Force damage and the teleport fails. Needs zones." },
+  "Dimension Door": { kind: "move", target: "self", move: { teleport: 500 },
+    notes: "Teleports you up to 500 ft to a spot you can see, visualize or describe: to any zone within 500 ft by path, with no Opportunity Attacks. The willing creature within 5 ft of you who can come along isn't modelled. If you would arrive in an occupied space you take 4d6 Force damage and the teleport fails: not modelled." },
 
   "Dominate Beast": { kind: "save", target: "enemy", types: ["Beast"], save: "WIS", conc: true, dur: "rounds:10",
     onFail: [{ cond: "charmed", until: "conc", resaveOnDamage: true }],
     notes: "The target saves with Advantage if you or your allies are fighting it. It repeats the save whenever it takes damage, and a success ends the spell. While Charmed you command it by telepathy at no action cost, and it acts on your side: the engine needs a 'controlled by the caster' state, which Charmed alone doesn't give. You can command its Reaction by spending your own." },
 
-  "Evard's Black Tentacles": { kind: "aura", target: "area", area: { shape: "cube", size: 20 }, conc: true, dur: "rounds:10", zone: true,
-    save: "STR", dmg: [{ dice: "3d6", type: "bludgeoning" }], when: "turnEnd",
+  "Evard's Black Tentacles": { kind: "save", target: "area", area: { shape: "cube", size: 20 }, conc: true, dur: "rounds:10",
+    save: "STR", dmg: [{ dice: "3d6", type: "bludgeoning" }],
     onFail: [{ cond: "restrained", until: "escape", escape: "SPELL" }],
-    notes: "A 20-ft square. Each creature saves when the spell is cast, when it enters, and when it ends its turn there (once per turn). On a failed save it takes 3d6 Bludgeoning damage and is Restrained. A Restrained creature uses its action for a STR (Athletics) check against your spell save DC to break free. No damage on a success. The ground is Difficult Terrain." },
+    zoneFx: { terrain: "difficult", hazard: { name: "Black Tentacles", on: ["end"], save: "STR", dmg: [{ dice: "3d6", type: "bludgeoning" }], onFail: [{ cond: "restrained", until: "escape", escape: "SPELL" }] }, until: "conc" },
+    notes: "A 20-ft square. Each creature saves when the spell is cast, when it enters, and when it ends its turn there (once per turn). On a failed save it takes 3d6 Bludgeoning damage and is Restrained. A Restrained creature uses its action for a STR (Athletics) check against your spell save DC to break free. No damage on a success. The ground is Difficult Terrain. Zones: the hazard repeats the save at the end of each turn a creature spends in the zone." },
 
   "Fire Shield": { kind: "buff", target: "self", dur: "fight",
     mods: { resist: ["fire"] },
@@ -2926,9 +2992,10 @@ window.SPELL_FX = Object.assign(window.SPELL_FX || {}, {
     onFail: [{ dmg: { dice: "5d4", type: "acid" } }],
     notes: "A creature that fails takes the 5d4 Acid at the end of its next turn; the rider applies it with the first hit. A success takes half of the 10d4 only, and no 5d4." },
 
-  "Wall of Fire": { kind: "aura", target: "area", area: { shape: "line", size: 60 }, conc: true, dur: "rounds:10", zone: true,
-    save: "DEX", half: true, dmg: [{ dice: "5d8", type: "fire" }], up: "1d8", when: "turnEnd",
-    notes: "A wall up to 60 ft long, 20 ft high, 1 ft thick (or a ring 20 ft across). Creatures in it make a DEX save when it appears. One side you choose deals 5d8 Fire to a creature that ends its turn within 10 ft of that side or inside the wall, or that enters the wall for the first time on a turn. The other side deals no damage. Where the wall stands decides who is hurt, so it needs zones." },
+  "Wall of Fire": { kind: "save", target: "area", area: { shape: "line", size: 60 }, conc: true, dur: "rounds:10",
+    save: "DEX", half: true, dmg: [{ dice: "5d8", type: "fire" }], up: "1d8",
+    zoneFx: { hazard: { name: "Wall of Fire", on: ["enter", "end"], save: "DEX", half: true, dmg: [{ dice: "5d8", type: "fire" }] }, until: "conc" },
+    notes: "A wall up to 60 ft long, 20 ft high, 1 ft thick (or a ring 20 ft across). Creatures in it make a DEX save when it appears (the cast). One side you choose deals 5d8 Fire to a creature that ends its turn within 10 ft of that side or inside the wall, or that enters the wall for the first time on a turn. The other side deals no damage. Zones: the hazard burns a creature that enters the zone or ends its turn there, at the base 5d8 (the +1d8 per slot level applies to the cast only); the damaging side isn't modelled, so it burns everyone in the zone." },
 
   // ---------------------------------------------------------------------------------------------- Level 5
 
@@ -2948,13 +3015,14 @@ window.SPELL_FX = Object.assign(window.SPELL_FX || {}, {
     summon: { name: "Bigby's Hand", econ: "bonus", atk: "SPELL", dmg: [{ dice: "5d8", type: "force" }], up: "2d8", ac: "20", hp: "HP_MAX" },
     notes: "Clenched Fist: melee spell attack, 5d8 Force, +2d8 per slot level above 5. The hand also acts the turn you cast the spell, then as a Bonus Action on later turns; it moves 60 ft first. Its other options: Grasping Hand (DEX save or Grappled, escape DC your spell save DC; a Bonus Action crush deals 4d6 + your modifier Bludgeoning, +2d6 per level), Forceful Hand (STR save, push 5 ft + 5 x your modifier), Interposing Hand (Half Cover for you, Difficult Terrain for enemies). AC 20, HP equal to your Hit Point maximum; the spell ends if it drops to 0." },
 
-  "Circle of Power": { kind: "buff", target: "allies", area: { shape: "emanation", size: 30 }, conc: true, dur: "fight",
+  "Circle of Power": { kind: "buff", target: "allies", n: 4, area: { shape: "emanation", size: 30 }, conc: true, dur: "fight",
     mods: { saveAdv: "all" },
     notes: "You and your allies in the 30-ft Emanation have Advantage on saves against spells and other magical effects (the mod applies to every save; the engine should limit it to magical sources). When such a save would halve the damage on a success, a success takes no damage: not expressible in mods (needs a half-to-none rule)." },
 
-  "Cloudkill": { kind: "aura", target: "area", area: { shape: "sphere", size: 20 }, conc: true, dur: "fight", zone: true,
-    save: "CON", half: true, dmg: [{ dice: "5d8", type: "poison" }], up: "1d8", when: "turnEnd",
-    notes: "Heavily Obscured fog. A creature saves when the fog appears, when it moves into the creature's space, and when the creature enters or ends its turn in it (once per turn). The fog moves 10 ft away from you at the start of each of your turns, so where it ends up needs zones. Strong wind disperses it." },
+  "Cloudkill": { kind: "save", target: "area", area: { shape: "sphere", size: 20 }, conc: true, dur: "fight",
+    save: "CON", half: true, dmg: [{ dice: "5d8", type: "poison" }], up: "1d8",
+    zoneFx: { obscured: "heavy", hazard: { name: "Cloudkill", on: ["end"], save: "CON", half: true, dmg: [{ dice: "5d8", type: "poison" }] }, until: "conc" },
+    notes: "Heavily Obscured fog. A creature saves when the fog appears (the cast), when it moves into the creature's space, and when the creature enters or ends its turn in it (once per turn). Zones: the hazard repeats the save at the end of each turn a creature spends in the zone, at the base 5d8 (the +1d8 per slot level applies to the cast only). The fog's 10-ft drift away from you each round isn't modelled. Strong wind disperses it." },
 
   "Cone of Cold": { kind: "save", target: "area", area: { shape: "cone", size: 60 }, save: "CON", half: true,
     dmg: [{ dice: "8d8", type: "cold" }], up: "1d8",
@@ -2998,9 +3066,10 @@ window.SPELL_FX = Object.assign(window.SPELL_FX || {}, {
     onFail: [{ cond: "paralyzed", until: "conc", repeat: "end" }],
     notes: "Works on any creature type. The target repeats the save at the end of each of its turns." },
 
-  "Insect Plague": { kind: "aura", target: "area", area: { shape: "sphere", size: 20 }, conc: true, dur: "fight", zone: true,
-    save: "CON", half: true, dmg: [{ dice: "4d10", type: "piercing" }], up: "1d10", when: "turnEnd",
-    notes: "A creature saves when the swarm appears, when it enters the sphere for the first time on a turn, and when it ends its turn there (once per turn). The area is Lightly Obscured Difficult Terrain." },
+  "Insect Plague": { kind: "save", target: "area", area: { shape: "sphere", size: 20 }, conc: true, dur: "fight",
+    save: "CON", half: true, dmg: [{ dice: "4d10", type: "piercing" }], up: "1d10",
+    zoneFx: { obscured: "light", terrain: "difficult", hazard: { name: "Insect Plague", on: ["end"], save: "CON", half: true, dmg: [{ dice: "4d10", type: "piercing" }] }, until: "conc" },
+    notes: "A creature saves when the swarm appears (the cast), when it enters the sphere for the first time on a turn, and when it ends its turn there (once per turn). The area is Lightly Obscured Difficult Terrain. Zones: the hazard repeats the save at the end of each turn a creature spends in the zone, at the base 4d10 (the +1d10 per slot level applies to the cast only)." },
 
   "Jallarzi's Storm of Radiance": { kind: "aura", target: "area", area: { shape: "cylinder", size: 10 }, conc: true, dur: "rounds:10", zone: true,
     save: "CON", half: true, dmg: [{ dice: "2d10", type: "radiant" }, { dice: "2d10", type: "thunder" }], up: "2d10", when: "turnEnd",
@@ -3019,8 +3088,8 @@ window.SPELL_FX = Object.assign(window.SPELL_FX || {}, {
     onFail: [{ cond: "charmed", until: "nextHit" }, { cond: "incapacitated", until: "nextHit" }],
     notes: "The target saves with Advantage if you are fighting it. On a failure it is Charmed and Incapacitated and unaware of its surroundings. Taking any damage, or being targeted by another spell, ends it and no memory changes. As a fight tool it is a one-target disable until damaged; the memory rewrite is not modelled." },
 
-  "Steel Wind Strike": { kind: "attack", target: "enemy", n: 5, atk: true, zone: true, dmg: [{ dice: "6d10", type: "force" }],
-    notes: "A melee spell attack against each of up to five creatures you can see within 30 ft. Afterward you teleport to an unoccupied space you can see within 5 ft of one target: the teleport needs zones." },
+  "Steel Wind Strike": { kind: "attack", target: "enemy", n: 5, atk: true, zone: true, move: { teleport: 30 }, dmg: [{ dice: "6d10", type: "force" }],
+    notes: "A melee spell attack against each of up to five creatures you can see within 30 ft. Afterward you teleport to an unoccupied space you can see within 5 ft of one target: move.teleport records it: the engine should move you to the zone of one target after the attacks. It does not yet read move on an attack, so zone stays true." },
 
   "Summon Celestial": { kind: "summon", conc: true, dur: "fight",
     summon: { name: "Celestial Spirit", econ: "free", atk: "SPELL", dmg: [{ dice: "2d6+7", type: "radiant" }], up: 1,
@@ -3050,11 +3119,13 @@ window.SPELL_FX = Object.assign(window.SPELL_FX || {}, {
   "Tree Stride": { kind: "utility", target: "self", conc: true, dur: "rounds:10", zone: true,
     notes: "Once per turn you spend 5 ft of movement to enter a living tree and come out of another tree of the same kind within 500 ft, using another 5 ft. Both trees must be at least your size, and you must end each turn outside a tree. Mobility only; needs zones and trees." },
 
-  "Wall of Force": { kind: "utility", conc: true, dur: "fight", zone: true,
-    notes: "An invisible wall: ten 10x10-ft panels, or a dome or sphere up to 10 ft in radius. Nothing passes it, it is immune to all damage and Dispel Magic, and only Disintegrate destroys it. A sphere or dome around enemies traps them (no save) until you stop concentrating. It also blocks Ethereal travel. Needs zones." },
+  "Wall of Force": { kind: "zone", target: "link", conc: true, dur: "fight",
+    zoneFx: { blocks: true, until: "conc" },
+    notes: "An invisible wall: ten 10x10-ft panels, or a dome or sphere up to 10 ft in radius. Nothing passes it, it is immune to all damage and Dispel Magic, and only Disintegrate destroys it. Zones: it closes the link you choose, so nobody can cross it or see across it. A sphere or dome around enemies traps them (no save) until you stop concentrating: not modelled. It also blocks Ethereal travel." },
 
-  "Wall of Stone": { kind: "utility", conc: true, dur: "fight", zone: true,
-    notes: "A nonmagical stone wall: ten 10x10-ft panels (6 in thick, AC 15, 30 HP per inch of thickness, immune to Poison and Psychic). A creature that would be enclosed makes a DEX save and moves out with its Reaction on a success. Concentrating for 10 minutes makes it permanent. Needs zones." },
+  "Wall of Stone": { kind: "zone", target: "link", conc: true, dur: "fight",
+    zoneFx: { blocks: true, until: "conc" },
+    notes: "A nonmagical stone wall: ten 10x10-ft panels (6 in thick, AC 15, 30 HP per inch of thickness, immune to Poison and Psychic). Zones: it closes the link you choose, so nobody can cross it or see across it, until you stop concentrating (the wall's AC and HP, and the permanent wall after 10 minutes of concentration, aren't modelled). A creature that would be enclosed makes a DEX save and moves out with its Reaction on a success: not modelled." },
 
   "Yolande's Regal Presence": { kind: "aura", target: "area", area: { shape: "emanation", size: 10 }, conc: true, dur: "rounds:10",
     save: "WIS", half: true, dmg: [{ dice: "4d6", type: "psychic" }], when: "turnEnd",
@@ -3090,4 +3161,386 @@ window.SPELL_NONCOMBAT = Object.assign(window.SPELL_NONCOMBAT || {}, {
   "Scrying": "detection",
   "Seeming": "social",
   "Teleportation Circle": "travel"
+});
+// Combat data for every level 6 and level 7 spell in data_spells_*.js (55 spells: 34 at level 6, 21 at level 7).
+// Contract: docs/Combat_Schema.md sections 0, A, E and F.2. Registers into window.SPELL_FX and window.SPELL_NONCOMBAT.
+// 28 spells go in SPELL_FX (18 at level 6, 10 at level 7); 27 go in SPELL_NONCOMBAT (16 at level 6, 11 at level 7).
+//
+// SOURCES (2024 rules only)
+//   1. SRD 5.2.1 through the open5e v2 API (document__key=srd-2024): 51 of the 55 spells. The SRD uses the short names
+//      for some (Arcane Sword for Mordenkainen's Sword, Freezing Sphere for Otiluke's Freezing Sphere, Irresistible
+//      Dance for Otto's Irresistible Dance, Instant Summons, Magnificent Mansion); the data files use the Player's
+//      Handbook names and so does this file.
+//   2. dnd2024.wikidot.com spell pages (2024 Player's Handbook text) for the spells the SRD omits (Arcane Gate, Summon
+//      Fiend, Power Word Fortify) and for the upcast lines the open5e text drops (Chain Lightning's extra bolt per slot
+//      level above 6 is in the Player's Handbook text). Tasha's Bubbling Cauldron is in neither source; it is classified
+//      from the description in data_spells_4.js alone.
+//   The Summon Fiend stat block (Fiendish Spirit) was read from the wikidot page.
+//
+// CONVENTIONS USED IN THIS FILE
+//   - Duration: a 1-minute spell has dur "rounds:10". Anything of 10 minutes or longer has dur "fight" (the rest of the
+//     fight), because no fight lasts 100 rounds. Same as spells_4_5.js.
+//   - Casting time decides the file. A spell with a casting time longer than one action cannot be cast in a fight, so it
+//     goes in SPELL_NONCOMBAT even when its effect would help in one (Heroes' Feast, Regenerate, Symbol, Contingency,
+//     Guards and Wards). Same policy as spells_2_3.js (Magic Circle, Leomund's Tiny Hut).
+//   - SPELL_NONCOMBAT: "ritual" is used for the two spells with the Ritual flag in the data (Drawmij's Instant Summons,
+//     Forbiddance). Teleports that travel between places (Teleport, Word of Recall, Plane Shift, Etherealness) are
+//     "travel".
+//   - Walls and lingering areas follow F.2: the immediate save and damage stay on the spell, and zoneFx carries the
+//     lasting part (a hazard for a wall that hurts those who cross it, terrain, cover, blocks). A wall that can be
+//     crossed (Blade Barrier, Wall of Thorns) is zoneFx on target "area"; a wall that cannot be crossed (Wall of Ice,
+//     Prismatic Wall) is target "link" with blocks: true.
+//   - Summons: no summon.attacks on Summon Fiend, so the 2024 default applies (one attack per two slot levels, taken from
+//     the slot used). summon.ac and summon.hp use SLOT, the level of the slot used. The damage dice include the fixed
+//     part at the spell's base level (3 + 6 = 9) and "up: 1" adds one per slot level above it.
+//   - A debuff with no save key puts its onFail riders on the target with no save. It is used for the spells that work
+//     with no saving throw (Forcecage).
+//   - repeat with no econ is an automatic follow-up on the affected creature's own turn (Weird, like Phantasmal Killer).
+//     repeat with econ is a follow-up the caster makes on later turns (Conjure Fey, Mordenkainen's Sword, Sunbeam). A
+//     rider (onHit, onFail) inside a repeat is the rider that follow-up carries; the validator does not check it.
+//
+// SIMPLIFICATIONS (each is repeated in the entry's notes)
+//   - Spells that remove a creature from the fight (Flesh to Stone, Forcecage) are modelled with a condition that is the
+//     nearest match: Flesh to Stone is Restrained for the whole spell (the real spell frees the target after three
+//     successful saves and petrifies it after three failed ones, which the vocabulary cannot count); Forcecage is
+//     Incapacitated, standing for a creature sealed in a solid box.
+//   - Mass Suggestion is modelled as Charmed and Incapacitated until the target takes damage ("stop fighting"), the same
+//     reading as Suggestion in spells_2_3.js.
+//   - Delayed Blast Fireball is resolved when it is cast, at its base 12d6. The extra 1d6 per turn spent waiting is in the
+//     notes.
+//   - Divine Word applies the banishment of Celestials, Elementals, Fey and Fiends. Its effects by remaining Hit Points
+//     (dies at 20 or fewer, Stunned at 30 or fewer, Blinded and Deafened at 40 or fewer, Deafened at 50 or fewer) need a
+//     current-HP gate on riders, which the vocabulary does not have, so they are a rider note only.
+//   - Prismatic Spray always uses a damage ray. Three of the eight rays are not plain damage (Indigo, Violet, and the
+//     double ray), so the real spell does less damage and more control than this entry.
+//   - Reverse Gravity deals its fall damage (10d6) when cast instead of when the spell ends or the creature strikes a
+//     ceiling, and the creature is Restrained while it hovers.
+//   - Conjure Celestial models Searing Light (the damage option). Healing Light (4d12 + spellcasting modifier) is in the
+//     notes only, because an aura here only hurts enemies.
+//   - Power Word Fortify's 120 Temporary Hit Points are split evenly across four creatures (30 each). Fortify can reach
+//     six creatures and the split is the caster's choice.
+//   - Power Word Fortify, Heal and similar single-value spells use plain numbers as dice ("70", "30").
+//   - Extras that are not a fight effect are left to the notes: Disintegrate's dust, the Zombie Finger of Death raises,
+//     objects set alight by Fire Storm, the ice Freezing Sphere leaves on water.
+//   - Arcane Gate is a "move" with teleport 500 for the caster. The portal also lets allies and enemies cross using
+//     movement, and the second portal must be within 10 ft of the caster; none of that is modelled.
+//   - Mirage Arcane, Programmed Illusion and similar illusions of terrain or scenes are noncombat.
+//
+// DATA ERRORS FOUND IN data_spells_4.js (minor, left alone): Plane Shift's description lists a way to banish an unwilling
+// creature (2014 rule; the 2024 spell only moves you and up to eight willing creatures); Heroes' Feast describes the 2014
+// benefits (cures disease and poison, Advantage on WIS saves; the 2024 feast gives Resistance to Poison, Immunity to
+// Frightened and Poisoned, and 2d10 maximum Hit Points); Wind Walk says Resistance to nonmagical weapon damage (2024:
+// Resistance to Bludgeoning, Piercing and Slashing); Harm says the Hit Point maximum is reduced "minimum 1" (2024: it can't
+// be reduced below 1, so the same).
+
+window.SPELL_FX = Object.assign(window.SPELL_FX || {}, {
+
+  // ---------------------------------------------------------------------------------------------- Level 6
+
+  "Arcane Gate": { kind: "move", target: "self", conc: true, dur: "fight", zone: true, move: { teleport: 500 },
+    notes: "Two Large circular portals: one within 500 ft of you that you can see, the other within 10 ft of you. Anything that enters the open side of one leaves by the open side of the other. Modelled as the caster teleporting up to 500 ft (a step through the portal). Allies and enemies can also cross using movement, and you can change which way the open sides face as a Bonus Action: not modelled. Needs zones." },
+
+  "Blade Barrier": { kind: "save", target: "area", area: { shape: "line", size: 100 }, save: "DEX", half: true, dmg: [{ dice: "6d10", type: "force" }],
+    conc: true, dur: "fight", zone: true,
+    zoneFx: { terrain: "difficult", cover: "three-quarters",
+      hazard: { name: "Blade Barrier", on: ["enter", "end"], save: "DEX", dmg: [{ dice: "6d10", type: "force" }], half: true }, until: "conc" },
+    notes: "A straight wall up to 100 ft long, 20 ft high and 5 ft thick, or a ring up to 60 ft across. Its space gives Three-Quarters Cover and is Difficult Terrain. A creature in the wall's space when it appears, or that enters it or ends its turn there, makes a DEX save: 6d10 Force, half on a success, once per turn. The hazard is the lasting part; the save and damage on the spell are the cast-time hit on creatures already in the wall." },
+
+  "Chain Lightning": { kind: "save", target: "enemy", n: 4, nUp: 1, save: "DEX", half: true, dmg: [{ dice: "10d8", type: "lightning" }],
+    notes: "One bolt hits a target within range, then three bolts leap to up to three other targets of your choice within 30 ft of the first. Each target is hit by only one bolt. Each slot level above 6 adds one more bolt (nUp). A target can also be an object. The 30-ft limit around the first target needs zones." },
+
+  "Circle of Death": { kind: "save", target: "area", area: { shape: "sphere", size: 60 }, save: "CON", half: true, dmg: [{ dice: "8d8", type: "necrotic" }], up: "2d8",
+    notes: "A 60-ft-radius Sphere from a point within 150 ft. It catches every creature in it, allies included." },
+
+  "Conjure Fey": { kind: "attack", target: "enemy", atk: true, conc: true, dur: "fight", dmg: [{ dice: "3d12+MOD", type: "psychic" }], up: "1d12",
+    onHit: [{ cond: "frightened", until: "srcTurnStart" }],
+    repeat: { econ: "bonus", atk: true, dmg: [{ dice: "3d12+MOD", type: "psychic" }], up: "1d12", onHit: [{ cond: "frightened", until: "srcTurnStart" }] },
+    notes: "A Medium Fey spirit appears within 60 ft and you make a melee spell attack from it against a creature within 5 ft of it: 3d12 + your spellcasting modifier Psychic, and the target is Frightened until the start of your next turn, with you and the spirit as the source. As a Bonus Action on later turns you teleport the spirit up to 30 ft and attack again. The spirit cannot be attacked. The teleport needs zones." },
+
+  "Disintegrate": { kind: "save", target: "enemy", save: "DEX", dmg: [{ dice: "10d6+40", type: "force" }], up: "3d6",
+    notes: "No damage on a successful save. A creature reduced to 0 Hit Points is turned to gray dust with its nonmagical gear, and can come back only through True Resurrection or Wish. The spell also destroys a Large or smaller nonmagical object or a creation of force (a Wall of Force): not a combat effect here." },
+
+  "Eyebite": { kind: "save", target: "enemy", save: "WIS", conc: true, dur: "rounds:10",
+    onFail: [{ cond: "unconscious", until: "nextHit" }],
+    repeat: { econ: "action", save: "WIS", onFail: [{ cond: "unconscious", until: "nextHit" }] },
+    notes: "Models the Asleep option: the target has the Unconscious condition until it takes any damage (modelled as the next hit; another creature can also spend an action to shake it awake). The other options are Panicked (Frightened, and it must Dash away from you each turn; ends if it gets 60 ft away out of sight) and Sickened (Poisoned). On each of your later turns you use a Magic action to target a new creature, or the same one if it has not succeeded against this casting. The target must be within 60 ft and you must see it." },
+
+  "Flesh to Stone": { kind: "save", target: "enemy", save: "CON", conc: true, dur: "rounds:10",
+    onFail: [{ cond: "restrained", until: "conc", notTypes: ["Construct"] }],
+    onSuccess: [{ mod: { speedMult: 0 }, until: "srcTurnStart" }],
+    notes: "Approximation. A failed save makes the target Restrained for the spell. At the end of each of its turns it saves again: three successes (not necessarily in a row) end the spell, three failures turn it to stone (Petrified) for the duration, and for good if you hold Concentration for the full minute (only Greater Restoration or similar magic undoes it). The vocabulary cannot count saves, so it is Restrained throughout with no repeat save. A success leaves its Speed at 0 until the start of your next turn. Constructs automatically succeed." },
+
+  "Globe of Invulnerability": { kind: "utility", target: "self", conc: true, dur: "rounds:10", area: { shape: "emanation", size: 10 },
+    notes: "An immobile 10-ft Emanation around you. A spell of level 5 or lower cast from outside can't affect anything inside: it can target a creature inside but does nothing, and the area inside is cut out of any area that spell makes. Each slot level above 6 raises the blocked level by 1. The engine needs a way to cancel a spell by its level when the target is inside the globe; nothing in the modifier list does that." },
+
+  "Harm": { kind: "save", target: "enemy", save: "CON", half: true, dmg: [{ dice: "14d6", type: "necrotic" }],
+    onFail: [{ maxHpReduce: true }],
+    notes: "On a failed save the target also has its Hit Point maximum reduced by the Necrotic damage it took; the reduction can't take the maximum below 1. A success takes half damage and no reduction." },
+
+  "Heal": { kind: "heal", target: "creature", heal: "70", healUp: "10",
+    notes: "Restores 70 Hit Points (+10 per slot level above 6) and ends the Blinded, Deafened and Poisoned conditions on the target. Ending conditions is not modelled by kind heal; the engine needs a cure effect." },
+
+  "Mass Suggestion": { kind: "save", target: "enemy", n: 12, save: "WIS", dur: "fight",
+    onFail: [{ cond: "charmed", until: "nextHit" }, { cond: "incapacitated", until: "nextHit" }],
+    notes: "Up to twelve creatures you can see that can hear and understand you. The suggestion can't obviously harm them or their allies, so in a fight it is 'stop fighting': each target stands down until you or your allies damage it (modelled as the next hit; the engine should end it on any damage). Not concentration; the duration is 24 hours (10 days at slot 7, 30 days at 8, 366 days at 9). The suggestion ends for a target when the task is done." },
+
+  "Otiluke's Freezing Sphere": { kind: "save", target: "area", area: { shape: "sphere", size: 60 }, save: "CON", half: true, dmg: [{ dice: "10d6", type: "cold" }], up: "1d6",
+    notes: "A 60-ft-radius Sphere from a point within 300 ft. If it strikes water it freezes the surface to a depth of 6 in over 30 ft square for 1 minute, and creatures swimming there are Restrained (an Athletics check against your save DC frees them): not modelled. You can instead hold the globe after casting and throw it later; it explodes on its own after 1 minute." },
+
+  "Otto's Irresistible Dance": { kind: "save", target: "enemy", save: "WIS", conc: true, dur: "rounds:10",
+    onFail: [{ cond: "charmed", until: "conc" }, { mod: { atkDis: true, saveDis: ["DEX"], attackersAdv: true }, until: "conc" }],
+    onSuccess: [{ mod: { speedMult: 0 }, until: "targetTurnEnd" }],
+    notes: "On a failed save the target is Charmed, must spend all its movement dancing in place, has Disadvantage on DEX saves and attack rolls, and attackers have Advantage against it. On each of its turns it can use its action to collect itself and repeat the save, ending the spell on a success: that costs its action, so it is not the free end-of-turn repeat (repeat: end) and is left out. A success makes it dance in place (Speed 0) until the end of its next turn." },
+
+  "Summon Fiend": { kind: "summon", conc: true, dur: "fight",
+    summon: { name: "Fiendish Spirit", econ: "free", atk: "SPELL", dmg: [{ dice: "2d6+9", type: "fire" }], up: 1,
+              ac: "12+SLOT", hp: "40+15*(SLOT-6)" },
+    notes: "Models the Devil form: Fiery Strike (melee reach 5 ft or ranged 150 ft), 2d6 + 3 + slot level Fire, Hit Points 40 + 15 per slot level above 6, flies 60 ft. Demon form: Bite 1d12 + 3 + slot level Necrotic, Hit Points 50 + 15 per level above 6, climbs 40 ft, and Death Throes (DEX save, 2d10 + slot level Fire, half on a success, each creature in a 10-ft Emanation) when it drops to 0 or the spell ends. Yugoloth form: Claws 1d8 + 3 + slot level Slashing and a free teleport of 30 ft after each attack, Hit Points 60 + 15 per level above 6. Multiattack: half the slot level (round down) attacks. Large Fiend, AC 12 + slot level, Speed 40 ft, Resistance to Fire, immune to Poison and Poisoned, Magic Resistance (Advantage on saves against spells). Requires a 600+ GP vial of blood." },
+
+  "Sunbeam": { kind: "save", target: "area", area: { shape: "line", size: 60 }, save: "CON", half: true, dmg: [{ dice: "6d8", type: "radiant" }], conc: true, dur: "rounds:10",
+    onFail: [{ cond: "blinded", until: "srcTurnStart" }],
+    repeat: { econ: "action", save: "CON", half: true, dmg: [{ dice: "6d8", type: "radiant" }], onFail: [{ cond: "blinded", until: "srcTurnStart" }] },
+    notes: "A 5-ft-wide, 60-ft-long Line from you. A failed save takes 6d8 Radiant and is Blinded until the start of your next turn; a success takes half and is not Blinded. On each of your later turns you take a Magic action to make a new Line. A mote of sunlight above you sheds bright light in a 30-ft radius and dim light for another 30 ft; it is sunlight. The Line's reach needs zones." },
+
+  "Wall of Ice": { kind: "save", target: "link", area: { shape: "line", size: 100 }, save: "DEX", half: true, dmg: [{ dice: "10d6", type: "cold" }], up: "2d6",
+    conc: true, dur: "fight", zone: true, zoneFx: { blocks: true, until: "conc" },
+    notes: "Ten 10-ft panels, a dome or a globe up to 10 ft in radius; 1 ft thick. A creature in a panel's space when it appears is pushed to the side you choose and makes a DEX save: 10d6 Cold, half on a success (+2d6 per slot level above 6). Nothing crosses it until a panel is broken: AC 12, 30 Hit Points per 10-ft section, Immune to Cold, Poison and Psychic, Vulnerable to Fire. A broken section leaves frigid air: a creature moving through it for the first time on a turn makes a CON save, 5d6 Cold, half on a success (+1d6 per slot level above 6). The frigid-air hazard and the section Hit Points are not modelled." },
+
+  "Wall of Thorns": { kind: "save", target: "area", area: { shape: "line", size: 60 }, save: "DEX", half: true, dmg: [{ dice: "7d8", type: "piercing" }], up: "1d8",
+    conc: true, dur: "fight", zone: true,
+    zoneFx: { terrain: "difficult",
+      hazard: { name: "Wall of Thorns", on: ["enter", "end"], save: "DEX", dmg: [{ dice: "7d8", type: "slashing" }], half: true }, until: "conc" },
+    notes: "A wall up to 60 ft long, 10 ft high and 5 ft thick, or a circle 20 ft across and up to 20 ft high. It blocks line of sight. Creatures in it when it appears make a DEX save: 7d8 Piercing, half on a success. A creature can move through it, spending 4 ft of movement per foot (modelled as Difficult Terrain, which is only double). The first time a creature enters the wall on a turn or ends its turn there it makes a DEX save: 7d8 Slashing, half on a success (the hazard). Each type rises 1d8 per slot level above 6: up covers the Piercing part and the hazard stays at 7d8." },
+
+  // ---------------------------------------------------------------------------------------------- Level 7
+
+  "Conjure Celestial": { kind: "aura", target: "area", area: { shape: "cylinder", size: 10 }, conc: true, dur: "fight", zone: true,
+    save: "DEX", half: true, dmg: [{ dice: "6d12", type: "radiant" }], up: "1d12", when: "turnEnd",
+    notes: "A pillar of light, a 10-ft-radius, 40-ft-high Cylinder within 90 ft. Models Searing Light: whenever the Cylinder moves into a creature's space, or a creature you can see enters it or ends its turn there, you can bathe it: DEX save, 6d12 Radiant, half on a success, once per turn per creature. You choose the light for each creature, so Healing Light (the target regains 4d12 + your spellcasting modifier Hit Points, +1d12 per slot level above 7) is the other option; it heals allies and is not modelled because an aura only hurts enemies. When you move on your turn you can also move the Cylinder up to 30 ft: needs zones." },
+
+  "Delayed Blast Fireball": { kind: "save", target: "area", area: { shape: "sphere", size: 20 }, save: "DEX", half: true, dmg: [{ dice: "12d6", type: "fire" }], up: "1d6",
+    conc: true, dur: "rounds:10", zone: true,
+    notes: "Approximation. A bead lodges at a point within 150 ft and bursts in a 20-ft-radius Sphere when the spell ends. Its damage grows by 1d6 each time your turn ends before it bursts, so the longer you wait the more it deals; this entry resolves it at once at its base 12d6. A creature that touches the bead makes a DEX save or sets it off, and on a success may throw it up to 40 ft; it bursts where it lands. Upcasting adds 1d6 to the base damage per slot level above 7." },
+
+  "Divine Word": { kind: "save", econ: "bonus", target: "area", area: { shape: "emanation", size: 30 }, save: "CHA",
+    onFail: [{ cond: "incapacitated", until: "fight", types: ["Celestial", "Elemental", "Fey", "Fiend"], note: "Forced back to its plane of origin; it can't return to this plane for 24 hours by any means short of Wish." },
+             { note: "Effect by the target's current Hit Points when it fails (only if it has 50 or fewer): 41-50 Deafened for 1 minute; 31-40 Blinded and Deafened for 10 minutes; 21-30 Blinded, Deafened and Stunned for 1 hour; 20 or fewer dies." }],
+    notes: "Bonus Action; each creature of your choice that you can see within 30 ft. A Celestial, Elemental, Fey or Fiend that fails is banished to its plane of origin whatever its Hit Points (modelled as Incapacitated for the fight, as with Banishment). The Hit Point tiers are listed in the rider note only: the vocabulary has no current-HP gate on riders, so the engine or the player applies them by the target's current Hit Points. No damage." },
+
+  "Finger of Death": { kind: "save", target: "enemy", save: "CON", half: true, dmg: [{ dice: "7d8+30", type: "necrotic" }],
+    notes: "A Humanoid killed by this spell rises at the start of your next turn as a Zombie that follows your verbal orders: not modelled (the engine has no way to raise a new ally from a kill)." },
+
+  "Fire Storm": { kind: "save", target: "area", area: { shape: "cube", size: 25 }, save: "DEX", half: true, dmg: [{ dice: "7d10", type: "fire" }],
+    notes: "Up to ten 10-ft Cubes that you arrange as you like, each touching at least one other, within 150 ft. The cube of size 25 stands in for the total area. Flammable objects not worn or carried start burning." },
+
+  "Forcecage": { kind: "debuff", target: "enemy", conc: true, dur: "fight", zone: true,
+    onFail: [{ cond: "incapacitated", until: "conc", sizeMax: "Large" }],
+    notes: "Approximation. No saving throw to be trapped. Models the solid box (up to 10 ft on a side): nothing passes through it in either direction, so the creature inside cannot hurt or be hurt from outside and is treated as out of the fight while you concentrate. A creature larger than the box is pushed out instead (sizeMax Large). It is not really Incapacitated and can still act inside. The cage form (up to 20 ft on a side, bars) lets creatures inside attack out with reach or ranged attacks and traps several creatures: not modelled. A creature inside that tries to teleport or travel planes must first make a CHA save, and on a failure the attempt is wasted. It cannot be dispelled. Requires 1,500+ GP of ruby dust." },
+
+  "Mordenkainen's Sword": { kind: "attack", target: "enemy", atk: true, conc: true, dur: "rounds:10", dmg: [{ dice: "4d12+MOD", type: "force" }],
+    repeat: { econ: "bonus", atk: true, dmg: [{ dice: "4d12+MOD", type: "force" }] },
+    notes: "A spectral sword hovers within 90 ft. When it appears you make a melee spell attack against a target within 5 ft of it: 4d12 + your spellcasting modifier Force. On your later turns you use a Bonus Action to move it up to 30 ft and make the attack again against the same target or a different one. The 5-ft and 30-ft limits need zones. The sword cannot be attacked." },
+
+  "Power Word Fortify": { kind: "temphp", target: "allies", n: 4, temp: "30", dur: "fight",
+    notes: "120 Temporary Hit Points divided among up to six creatures you can see within 60 ft, no save, no attack roll. Modelled as 30 each for four creatures. For a different number of creatures, split 120 as you like." },
+
+  "Prismatic Spray": { kind: "save", target: "area", area: { shape: "cone", size: 60 }, save: "DEX", half: true,
+    dmg: [{ dice: "12d6", type: ["fire", "acid", "lightning", "poison", "cold"] }],
+    notes: "Approximation. Each creature in the 60-ft Cone is struck by one ray chosen by 1d8: Red Fire, Orange Acid, Yellow Lightning, Green Poison, Blue Cold (each 12d6, half on a success); Indigo (Restrained, then a CON save at the end of each of its turns: three successes free it, three failures Petrify it); Violet (Blinded, then a WIS save at the start of your next turn: a failure sends it to another plane); 8 means two rays (reroll any 8). The damage type is rolled per target in the rules; here the caster's list stands in for it. Three of the eight results are not damage, so this entry deals more damage and less control than the real spell." },
+
+  "Reverse Gravity": { kind: "save", target: "area", area: { shape: "cylinder", size: 50 }, save: "DEX", dmg: [{ dice: "10d6", type: "bludgeoning" }],
+    conc: true, dur: "rounds:10", zone: true,
+    onFail: [{ cond: "restrained", until: "conc" }],
+    notes: "Approximation. Gravity reverses in a 50-ft-radius, 100-ft-high Cylinder. Unanchored creatures and objects fall upward to the top, and a creature can make a DEX save to grab a fixed object it can reach and so avoid falling. A creature that strikes a ceiling or anchored object takes falling damage as in a normal fall; one that reaches the top hovers there, and all of them fall downward when the spell ends. Modelled as the 10d6 Bludgeoning of a 100-ft fall dealt to a creature that fails, applied at once, and Restrained while it hovers. A success takes nothing." }
+});
+
+window.SPELL_NONCOMBAT = Object.assign(window.SPELL_NONCOMBAT || {}, {
+  // Level 6
+  "Contingency": "utility",
+  "Create Undead": "summon-outside-combat",
+  "Drawmij's Instant Summons": "ritual",
+  "Find the Path": "exploration",
+  "Forbiddance": "ritual",
+  "Guards and Wards": "defense-outside-combat",
+  "Heroes' Feast": "defense-outside-combat",
+  "Magic Jar": "utility",
+  "Move Earth": "utility",
+  "Planar Ally": "summon-outside-combat",
+  "Programmed Illusion": "utility",
+  "Tasha's Bubbling Cauldron": "utility",
+  "Transport via Plants": "travel",
+  "True Seeing": "detection",
+  "Wind Walk": "travel",
+  "Word of Recall": "travel",
+  // Level 7
+  "Etherealness": "travel",
+  "Mirage Arcane": "utility",
+  "Mordenkainen's Magnificent Mansion": "utility",
+  "Plane Shift": "travel",
+  "Project Image": "utility",
+  "Regenerate": "healing-outside-combat",
+  "Resurrection": "healing-outside-combat",
+  "Sequester": "utility",
+  "Simulacrum": "summon-outside-combat",
+  "Symbol": "defense-outside-combat",
+  "Teleport": "travel"
+});
+// Combat data for every level 8 and level 9 spell in data_spells_*.js (34 spells: 18 at level 8, 16 at level 9).
+// Contract: docs/Combat_Schema.md sections 0, A, E and F.2. Registers into window.SPELL_FX and window.SPELL_NONCOMBAT.
+// 21 spells go in SPELL_FX (11 at level 8, 10 at level 9); 13 go in SPELL_NONCOMBAT (7 at level 8, 6 at level 9).
+//
+// SOURCES (2024 rules only)
+//   1. SRD 5.2.1 through the open5e v2 API (document__key=srd-2024): 33 of the 34 spells. Telepathy is not in the SRD; it
+//      is classified from the description in data_spells_4.js alone (it is a 24-hour link with a willing creature).
+//   2. dnd2024.wikidot.com (2024 Player's Handbook text): Power Word Stun, checked against the SRD wording.
+//
+// CONVENTIONS USED IN THIS FILE
+//   - Duration: a 1-minute spell has dur "rounds:10". Anything of 10 minutes or longer has dur "fight" (the rest of the
+//     fight), because no fight lasts 100 rounds. Same as spells_4_5.js.
+//   - Casting time decides the file. A spell with a casting time longer than one action cannot be cast in a fight, so it
+//     goes in SPELL_NONCOMBAT even when its effect would help in one (Foresight, Imprisonment, Tsunami, Antipathy/
+//     Sympathy). Same policy as spells_2_3.js. Wish, Gate, Astral Projection and similar are noncombat too: Wish's useful
+//     fight use is to duplicate another spell, which the player casts as that spell.
+//   - Walls and lingering areas follow F.2: the immediate save and damage stay on the spell, and zoneFx carries the
+//     lasting part (a hazard for a cloud or wall that hurts those who stay in it, terrain, obscured, blocks). A wall
+//     that cannot be crossed (Prismatic Wall) is kind "zone" with target "link" and blocks: true.
+//   - A debuff with no save key puts its onFail riders on the target with no save. It is used for the spells that work
+//     with no saving throw (Maze, Power Word Stun).
+//   - repeat with no econ is an automatic follow-up on the affected creature's own turn (Weird, like Phantasmal Killer).
+//   - Temporary Hit Points that stand for a transformation (Animal Shapes, Shapechange) use kind "temphp".
+//
+// SIMPLIFICATIONS (each is repeated in the entry's notes)
+//   - Animal Shapes and Shapechange are modelled as the Temporary Hit Points the new form grants and nothing else. The
+//     form's statistics, attacks, the loss of spellcasting (Animal Shapes) and the choice of form are not modelled.
+//     Animal Shapes uses 60 (a Giant Constrictor Snake, a typical Large Beast of CR 2); Shapechange uses 10 per class
+//     level, a rough Hit Point total for a creature of CR equal to your level.
+//   - True Polymorph is modelled like Polymorph in spells_4_5.js: the target becomes a harmless Beast, written as
+//     Incapacitated until it is hit. Turning an ally into a stronger creature, an object into a creature or a creature
+//     into an object are not modelled.
+//   - Maze and Power Word Stun use the nearest condition: Maze is Incapacitated while you concentrate (the target can try
+//     a DC 20 Investigation check each turn to escape); Power Word Stun is Stunned for two rounds (the real condition
+//     lasts until a CON save at the end of one of its turns succeeds), and it also applies the Speed 0 rider.
+//   - Power Word Stun cannot gate on "150 Hit Points or fewer": the Stunned rider is given for the case the spell is
+//     built for and the note tells the player the Speed 0 case. Aim it at a creature with 150 Hit Points or fewer.
+//   - Storm of Vengeance is modelled as an aura that deals 2d6 per turn, an average of the escalating table (the table
+//     is in the notes). The first-turn CON save and the Deafened condition are not applied.
+//   - Prismatic Wall is a barrier that cannot be crossed. The real wall lets the caster and chosen creatures through and
+//     hurts others one colour at a time; the layer table is in the notes.
+//   - Mass Heal restores each of up to six allies to full Hit Points; the real spell has a pool of 700 Hit Points that you
+//     split. With a party of four that is almost always the same result.
+//   - Earthquake applies Prone and broken Concentration to creatures that fail a save on the ground in a 100-ft radius at
+//     casting and at the end of each of your turns; fissures and collapsing structures are not modelled.
+//   - Time Stop is a utility: the engine would need to give the caster 1d4 + 1 extra turns in a row.
+//   - Befuddlement's loss of spellcasting is a rider note; there is no modifier for "cannot cast spells".
+//
+// ALLY QA FIX (tests/suites/ally.js): Holy Aura had target "allies" and an area but no `n`. The engine
+//   (effectSteps) only counts `n`, so with no `n` the spell reached ONE creature (an ally aura buffed a single ally and not
+//   the caster). Combat_Schema A says "allies" goes with `n`. They now carry n: 4 (a full party: you and up to three allies).
+
+window.SPELL_FX = Object.assign(window.SPELL_FX || {}, {
+
+  // ---------------------------------------------------------------------------------------------- Level 8
+
+  "Animal Shapes": { kind: "temphp", target: "allies", n: 4, temp: "60", dur: "fight",
+    notes: "Approximation. Each willing creature you can see within 30 ft becomes a Large or smaller Beast of CR 4 or lower that you choose (a different form for each), and gains Temporary Hit Points equal to the Hit Points of the first form it takes. It keeps its creature type, Hit Points, Intelligence, Wisdom and Charisma, uses the Beast's other statistics and attacks, cannot cast spells, and its gear melds into the form. The Temporary Hit Points vanish if any remain when the spell ends. Modelled as 60 Temporary Hit Points (a Giant Constrictor Snake) for up to four creatures, and nothing else. A target can end it as a Bonus Action; you can change the forms with a Magic action on later turns. Not concentration; lasts 24 hours." },
+
+  "Antimagic Field": { kind: "utility", target: "self", conc: true, dur: "fight", area: { shape: "emanation", size: 10 },
+    notes: "A 10-ft Emanation around you. Inside it nobody can cast spells, take the Magic action or create magical effects, and magic cannot target or affect anything inside. Magic item properties stop working inside; areas of effect made by spells cannot extend into it; no teleporting or planar travel into or out of it. Summoned creatures and ongoing spells (except an Artifact's or a deity's) are suppressed while inside, and time suppressed counts against the duration. It cuts both ways: your own spells fail inside. The engine needs a rule that shuts off magic by position." },
+
+  "Befuddlement": { kind: "save", target: "enemy", save: "INT", half: true, dmg: [{ dice: "10d12", type: "psychic" }],
+    onFail: [{ note: "Can't cast spells or take the Magic action. At the end of every 30 days it repeats the save; Greater Restoration, Heal or Wish also end it." }],
+    notes: "On a failed save the target also loses the ability to cast spells and to take the Magic action, which lasts far beyond a fight (the vocabulary has no modifier for it). A success takes half damage and no other effect." },
+
+  "Dominate Monster": { kind: "save", target: "enemy", save: "WIS", conc: true, dur: "fight",
+    onFail: [{ cond: "charmed", until: "conc", resaveOnDamage: true }],
+    notes: "Works on any creature type. The target saves with Advantage if you or your allies are fighting it, and repeats the save whenever it takes damage, ending the spell on a success. While Charmed you command it by telepathy at no action cost, and it acts on your side: the engine needs a 'controlled by the caster' state, which Charmed alone doesn't give. You can command its Reaction by spending your own. A level 9 slot lets you concentrate for up to 8 hours." },
+
+  "Earthquake": { kind: "aura", target: "area", area: { shape: "cylinder", size: 100 }, save: "DEX", conc: true, dur: "rounds:10", zone: true, when: "turnEnd",
+    onFail: [{ cond: "prone" }, { note: "Concentration broken" }],
+    zoneFx: { terrain: "difficult", until: "conc" },
+    notes: "A 100-ft-radius circle within 500 ft. The ground there is Difficult Terrain. When you cast it and at the end of each of your turns, each creature on the ground in the area (allies and you included) makes a DEX save, and on a failure falls Prone and its Concentration is broken. Modelled as the aura applying at the end of each of your turns; the first application is when it is cast. Also: 1d6 fissures (1d10 x 10 ft deep, 10 ft wide) open at the end of the turn you cast it, and a creature in one makes a DEX save or falls in; and the tremor deals 50 Bludgeoning damage to each structure on the ground in the area at casting and at the end of each of your turns, with collapse damage (12d6) near falling structures. Fissures and structures are not modelled." },
+
+  "Holy Aura": { kind: "buff", target: "allies", n: 4, area: { shape: "emanation", size: 30 }, conc: true, dur: "rounds:10",
+    mods: { saveAdv: "all", attackersDis: true },
+    notes: "You emit a 30-ft Emanation. While in it, creatures of your choice have Advantage on all saving throws, and other creatures have Disadvantage on attack rolls against them. When a Fiend or an Undead hits an affected creature with a melee attack roll, the attacker makes a CON save or is Blinded until the end of its next turn: not modelled (the vocabulary has no rider for what happens to the attacker when it hits)." },
+
+  "Incendiary Cloud": { kind: "save", target: "area", area: { shape: "sphere", size: 20 }, save: "DEX", half: true, dmg: [{ dice: "10d8", type: "fire" }],
+    conc: true, dur: "rounds:10", zone: true,
+    zoneFx: { obscured: "heavy",
+      hazard: { name: "Incendiary Cloud", on: ["enter", "end"], save: "DEX", dmg: [{ dice: "10d8", type: "fire" }], half: true }, until: "conc" },
+    notes: "A 20-ft-radius Sphere of embers and smoke within 150 ft, Heavily Obscured. A creature makes a DEX save when it appears, when the Sphere moves into its space, and when it enters or ends its turn there (once per turn): 10d8 Fire, half on a success. The cloud moves 10 ft away from you in a direction you choose at the start of each of your turns, so where it ends up needs zones. A strong wind (Gust of Wind) disperses it." },
+
+  "Maze": { kind: "debuff", target: "enemy", conc: true, dur: "fight",
+    onFail: [{ cond: "incapacitated", until: "conc" }],
+    notes: "Approximation. No saving throw. The target is banished to a labyrinthine demiplane for up to 10 minutes. On each of its turns it can take the Study action to make a DC 20 Intelligence (Investigation) check; a success ends the spell and it returns to the space it left (or the nearest free one). Modelled as Incapacitated while you concentrate; treat the creature as removed from the fight. The escape check is not modelled and matters for creatures with a high Intelligence." },
+
+  "Mind Blank": { kind: "buff", target: "creature", dur: "fight",
+    mods: { immune: ["psychic"], condImmune: ["charmed"] },
+    notes: "One willing creature you touch, for 24 hours: Immunity to Psychic damage and the Charmed condition. It is also hidden from anything that would sense its emotions or alignment, read its thoughts or locate it by magic, and no spell, not even Wish, can gather information about it or control its mind: the last two have no fight effect." },
+
+  "Power Word Stun": { kind: "debuff", target: "enemy",
+    onFail: [{ cond: "stunned", until: "rounds:2", note: "Only if the target has 150 Hit Points or fewer; it saves CON at the end of each of its turns to recover. If it has more than 150, its Speed is 0 until the start of your next turn and it is not Stunned." },
+             { mod: { speedMult: 0 }, until: "srcTurnStart" }],
+    notes: "Approximation. No saving throw. A target with 150 Hit Points or fewer has the Stunned condition and makes a CON save at the end of each of its turns, ending it on a success. A target above 150 Hit Points has its Speed set to 0 until the start of your next turn. There is no Hit Point gate on riders, so both riders are given: aim the spell at a creature with 150 Hit Points or fewer. Stunned is modelled as lasting two rounds (the real length is until a CON save succeeds)." },
+
+  "Sunburst": { kind: "save", target: "area", area: { shape: "sphere", size: 60 }, save: "CON", half: true, dmg: [{ dice: "12d6", type: "radiant" }],
+    onFail: [{ cond: "blinded", until: "save", repeat: "end" }],
+    notes: "A 60-ft-radius Sphere within 150 ft. A failed save takes 12d6 Radiant and is Blinded; a Blinded creature repeats the CON save at the end of each of its turns, ending the condition on a success. A success takes half damage and is not Blinded. It also dispels Darkness made by any spell in the area: not modelled." },
+
+  // ---------------------------------------------------------------------------------------------- Level 9
+
+  "Mass Heal": { kind: "heal", target: "allies", n: 6, fullHeal: true,
+    notes: "Approximation. You restore up to 700 Hit Points, divided as you choose among any number of creatures you can see within 60 ft, and each creature healed has the Blinded, Deafened and Poisoned conditions removed. Modelled as each of up to six allies healed to full, which matches the real spell whenever the party's missing Hit Points total 700 or less. Ending the conditions is not modelled." },
+
+  "Meteor Swarm": { kind: "save", target: "area", area: { shape: "sphere", size: 40 }, save: "DEX", half: true,
+    dmg: [{ dice: "20d6", type: "fire" }, { dice: "20d6", type: "bludgeoning" }],
+    notes: "Four blazing orbs fall at four different points within 1 mile that you can see; each bursts in a 40-ft-radius Sphere. A creature in more than one Sphere is affected once. Modelled as one Sphere: the other three are separate points the engine needs zones to place. A nonmagical object in the area takes the damage and starts burning if flammable." },
+
+  "Power Word Heal": { kind: "heal", target: "creature", fullHeal: true,
+    notes: "The target regains all its Hit Points, and the Charmed, Frightened, Paralyzed, Poisoned and Stunned conditions on it end; if it is Prone it can stand up using its Reaction. Ending the conditions and the free stand are not modelled; the engine needs a cure effect." },
+
+  "Power Word Kill": { kind: "auto", target: "enemy", killBelow: 100, dmg: [{ dice: "12d12", type: "psychic" }],
+    notes: "No saving throw and no attack roll. A creature with 100 Hit Points or fewer dies. Otherwise it takes 12d12 Psychic." },
+
+  "Prismatic Wall": { kind: "zone", target: "link", dur: "fight", zone: true,
+    zoneFx: { blocks: true, until: "fight" },
+    notes: "Approximation. A wall of seven layers up to 90 ft long, 30 ft high and 1 inch thick (or a globe up to 30 ft across), for 10 minutes, no Concentration. It is opaque, sheds bright light 100 ft and dim light 100 ft more, and blinds (CON save, 1 minute) any creature that sees it and moves within 20 ft or starts its turn there. You and creatures you name can cross it freely; anyone else makes a DEX save against each layer in order from red to violet: Red 12d6 Fire, Orange 12d6 Acid, Yellow 12d6 Lightning, Green 12d6 Poison, Blue 12d6 Cold (each half on a success), Indigo (Restrained, then CON saves at the end of its turns: three successes free it, three failures Petrify it), Violet (Blinded, then a WIS save at the start of your next turn: a failure sends it to another plane). Layers fall one at a time in order to specific counters. Modelled as a barrier nothing crosses, which suits the enemy and not you or your allies; the engine should let the caster's side through." },
+
+  "Shapechange": { kind: "temphp", target: "self", conc: true, dur: "fight", temp: "CLASS_LEVEL*10",
+    notes: "Approximation. You turn into a creature you have seen with a Challenge Rating no higher than your level or CR (not a Construct or an Undead), and gain Temporary Hit Points equal to the Hit Points of the first form. Your game statistics are replaced by the form's, except you keep your creature type, alignment, personality, Intelligence, Wisdom, Charisma, Hit Points, proficiencies, ability to communicate and your spellcasting. The Temporary Hit Points vanish if any remain when the spell ends. Modelled as 10 Temporary Hit Points per class level and nothing else; the form's attacks, Speed and features are not modelled. A Magic action changes the form (and grants new Temporary Hit Points)." },
+
+  "Storm of Vengeance": { kind: "aura", target: "area", area: { shape: "sphere", size: 360 }, conc: true, dur: "rounds:10", when: "turnEnd",
+    dmg: [{ dice: "2d6", type: "lightning" }],
+    notes: "Approximation. A storm cloud with a 360-ft radius over a point within 1 mile. When it appears each creature under it makes a CON save or takes 2d6 Thunder and is Deafened for the duration (not applied here). At the start of each of your later turns: turn 2 acid rain, 4d6 Acid to each creature and object; turn 3 six bolts at six creatures or objects, each making a DEX save for 10d6 Lightning (half on a success); turn 4 hail, 2d6 Bludgeoning to each creature; turns 5-10 gales and freezing rain, 1d6 Cold to each creature, the area is Difficult Terrain and Heavily Obscured, and ranged weapon attacks are impossible. The aura deals 2d6 a turn, about the average of turns 2 to 10 once the six bolts are spread over the creatures under the cloud." },
+
+  "Time Stop": { kind: "utility", target: "self",
+    notes: "You take 1d4 + 1 turns in a row while time stands still for everyone else; you act and move as normal. The spell ends if an action you take, or an effect you create, affects a creature other than you or something another creature wears or carries, and if you move more than 1,000 ft from where you cast it. In a fight it is mostly set-up: buffing yourself, positioning, casting a spell that makes an area or a wall. The engine would need to give the caster extra consecutive turns." },
+
+  "True Polymorph": { kind: "save", target: "enemy", save: "WIS", conc: true, dur: "fight",
+    onFail: [{ cond: "incapacitated", until: "nextHit" }],
+    notes: "Approximation, modelled like Polymorph. The target becomes a creature you choose with a Challenge Rating no higher than its own or your level; it keeps its Hit Points, alignment and personality, gains Temporary Hit Points equal to the new form's, can't speak or cast spells, and its gear melds into the form. Choosing the weakest creature leaves it nearly harmless and the spell ends once the Temporary Hit Points are gone, so it is Incapacitated until the next hit. A willing creature takes no save; turning an ally into a strong creature, an object into a creature, or a creature into an object is not modelled. Concentrating for the full hour makes the change last until dispelled." },
+
+  "Weird": { kind: "save", target: "area", area: { shape: "sphere", size: 30 }, save: "WIS", half: true, dmg: [{ dice: "10d10", type: "psychic" }],
+    conc: true, dur: "rounds:10",
+    onFail: [{ cond: "frightened", until: "conc", repeat: "end" }],
+    repeat: { save: "WIS", when: "targetTurnEnd", dmg: [{ dice: "5d10", type: "psychic" }] },
+    notes: "Each creature of your choice in a 30-ft-radius Sphere within 120 ft. A failed save takes 10d10 Psychic and is Frightened for the duration; a success takes half and is not Frightened. A Frightened target repeats the save at the end of each of its turns: on a failure it takes 5d10 Psychic, on a success the spell ends for it. repeat has no econ: it is automatic on the target's turn and applies to each Frightened target." }
+});
+
+window.SPELL_NONCOMBAT = Object.assign(window.SPELL_NONCOMBAT || {}, {
+  // Level 8
+  "Antipathy/Sympathy": "defense-outside-combat",
+  "Clone": "healing-outside-combat",
+  "Control Weather": "utility",
+  "Demiplane": "utility",
+  "Glibness": "social",
+  "Telepathy": "social",
+  "Tsunami": "utility",
+  // Level 9
+  "Astral Projection": "travel",
+  "Foresight": "defense-outside-combat",
+  "Gate": "travel",
+  "Imprisonment": "utility",
+  "True Resurrection": "healing-outside-combat",
+  "Wish": "utility"
 });
